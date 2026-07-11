@@ -1,4 +1,5 @@
 import * as THREE from "three";
+import { scapularReductionDeg } from "./scapularRhythm";
 
 /**
  * v0.2 arm rig — a small, purpose-built armature (v2_arm_rig, 6 bones:
@@ -103,6 +104,16 @@ const AXIS_INDEX = { x: 0, y: 1, z: 2 } as const;
  * the bones no longer match that bind pose at all). Fix: compose
  * `finalQuat = restQuat * deltaQuat` — same relationship as Blender's own
  * `pose_bone.matrix_local = rest_matrix_local @ pose_delta_matrix`.
+ *
+ * TRUE scapulohumeral chain: `upper_arm.L/R`'s bone is now a real child of
+ * `scapula.L/R` (reparented in Blender, rest position verified to match
+ * the old thoracic-parented arm exactly first). That means the scapula's
+ * own rotation (applied separately by applyScapularRhythm) ADDS to
+ * whatever the humerus does here — so for the total arm elevation to
+ * still equal the user's dialled clinical angle, the shoulder's OWN
+ * abdAdd/flexExt must be reduced by the scapula's share before being
+ * applied. See scapularRhythm.ts for the shared formula both this
+ * function and the scapula's own rotation are built from.
  */
 export function applyArmPose(
   bones: Record<string, THREE.Object3D | undefined>,
@@ -114,8 +125,12 @@ export function applyArmPose(
   for (const [jointId, dofs] of Object.entries(ARM_JOINT_DOFS)) {
     const angleMap = angles[jointId];
     if (!angleMap) continue;
+    const isShoulder = jointId.startsWith("shoulder_");
     for (const [dofId, spec] of Object.entries(dofs)) {
-      const degrees = angleMap[dofId] ?? 0;
+      let degrees = angleMap[dofId] ?? 0;
+      if (isShoulder && (dofId === "abdAdd" || dofId === "flexExt")) {
+        degrees -= scapularReductionDeg(dofId, degrees);
+      }
       const euler = eulerByBone.get(spec.bone) ?? [0, 0, 0];
       euler[AXIS_INDEX[spec.axis]] = THREE.MathUtils.degToRad(degrees * spec.sign);
       eulerByBone.set(spec.bone, euler);
