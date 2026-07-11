@@ -1,13 +1,17 @@
 import { create } from "zustand";
 import { ARM_JOINT_DOFS } from "./armDofs";
+import { TRUNK_JOINT_DOFS } from "./trunkDofs";
 
 export const JOINT_IDS = Object.keys(ARM_JOINT_DOFS);
+export const TRUNK_IDS = Object.keys(TRUNK_JOINT_DOFS);
 
 function neutralAngles(): Record<string, Record<string, number>> {
   const out: Record<string, Record<string, number>> = {};
-  for (const [jointId, dofs] of Object.entries(ARM_JOINT_DOFS)) {
-    out[jointId] = {};
-    for (const dofId of Object.keys(dofs)) out[jointId][dofId] = 0;
+  for (const dofs of [ARM_JOINT_DOFS, TRUNK_JOINT_DOFS]) {
+    for (const [jointId, jointDofs] of Object.entries(dofs)) {
+      out[jointId] = {};
+      for (const dofId of Object.keys(jointDofs)) out[jointId][dofId] = 0;
+    }
   }
   return out;
 }

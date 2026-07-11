@@ -5,46 +5,37 @@ import * as THREE from "three";
 import { useFrame, useLoader } from "@react-three/fiber";
 import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js";
 import { clone as cloneSkinned } from "three/examples/jsm/utils/SkeletonUtils.js";
-import { useArmSimStore, JOINT_IDS } from "@/lib/store";
-import { applyArmPose, ARM_BONE_NAMES } from "@/lib/armDofs";
+import { useArmSimStore, TRUNK_IDS } from "@/lib/store";
+import { applyTrunkPose, TRUNK_BONE_NAMES } from "@/lib/trunkDofs";
 import { recolorMaterials, JOINT_MARKER_COLORS as COLORS } from "@/lib/materials";
 
-// Joint id -> the bone whose own local origin (head) IS that joint's pivot.
+const MODEL_URL = "/models/v2-trunk-skeleton.glb";
+
+// Joint id === bone name here (one bone per region, no L/R pairing).
 const JOINT_MARKER_BONE: Record<string, string> = {
-  shoulder_left: "upper_armL",
-  shoulder_right: "upper_armR",
-  elbow_left: "forearmL",
-  elbow_right: "forearmR",
-  wrist_left: "handL",
-  wrist_right: "handR",
+  pelvis: "pelvis",
+  lumbar: "lumbar",
+  thoracic: "thoracic",
+  cervical: "cervical",
 };
 
 /**
- * v0.2 arm model — loads the fresh v2-arms.glb (see lib/armDofs.ts for the
- * rig/binding background) and drives it live from the store.
- *
- * Two lessons carried over from the v1 attempt's post-mortem, applied here
- * from the START instead of discovered by a bug report:
- *  1. SkeletonUtils.clone (NOT Object3D.clone(true)) — plain clone breaks
- *     SkinnedMesh->skeleton binding, silently freezing the mesh at rest pose.
- *  2. Joint markers are independent sibling <mesh> elements whose position
- *     is resynced every frame from the driving bone's world transform, NOT
- *     reparented into the bone hierarchy (which would tear the skeleton).
- *
- * Takes a `modelUrl` so the SAME component drives both the skeleton-only
- * and muscles-only GLBs (both exported from the same Blender armature, so
- * they share identical bone names/DOF mapping — see armDofs.ts).
+ * v0.2 trunk/spine model — same pattern as ArmModel.tsx (see that file's
+ * doc comment for the two lessons baked in from the start: SkeletonUtils
+ * clone, and frame-synced sibling joint markers instead of reparenting).
+ * Rendered as a SEPARATE sibling object in the same scene as ArmModel —
+ * not spatially attached/parented to it — but both were built from the
+ * SAME atlas's real-world coordinates, so they land in a consistent
+ * position/scale without any extra alignment step (verified live).
  */
-export function ArmModel({ modelUrl }: { modelUrl: string }) {
-  const gltf = useLoader(GLTFLoader, modelUrl);
+export function TrunkModel() {
+  const gltf = useLoader(GLTFLoader, MODEL_URL);
   const scene = useMemo(() => {
     const cloned = cloneSkinned(gltf.scene) as THREE.Object3D;
     recolorMaterials(cloned);
     return cloned;
   }, [gltf]);
   const bonesRef = useRef<Record<string, THREE.Object3D | undefined>>({});
-  // Rest-pose quaternion per bone, captured once right after load/clone —
-  // see armDofs.ts's applyArmPose doc comment for why this is required.
   const restQuatsRef = useRef<Record<string, THREE.Quaternion | undefined>>({});
   const markerRefs = useRef<Record<string, THREE.Mesh | null>>({});
   const groupRef = useRef<THREE.Group>(null);
@@ -57,7 +48,7 @@ export function ArmModel({ modelUrl }: { modelUrl: string }) {
 
   const markerJoints = useMemo(() => {
     const found: Record<string, THREE.Object3D | undefined> = {};
-    for (const name of ARM_BONE_NAMES) {
+    for (const name of TRUNK_BONE_NAMES) {
       found[name] = scene.getObjectByName(name) ?? undefined;
     }
     bonesRef.current = found;
@@ -67,7 +58,7 @@ export function ArmModel({ modelUrl }: { modelUrl: string }) {
     }
     restQuatsRef.current = restQuats;
     if (typeof window !== "undefined") {
-      (window as unknown as { __armScene: THREE.Object3D }).__armScene = scene;
+      (window as unknown as { __trunkScene: THREE.Object3D }).__trunkScene = scene;
     }
     return Object.entries(JOINT_MARKER_BONE)
       .map(([jointId, boneName]) => ({ jointId, bone: found[boneName] }))
@@ -76,8 +67,8 @@ export function ArmModel({ modelUrl }: { modelUrl: string }) {
 
   useEffect(() => {
     const subset: Record<string, Record<string, number> | undefined> = {};
-    for (const id of JOINT_IDS) subset[id] = angles[id];
-    applyArmPose(bonesRef.current, restQuatsRef.current, subset);
+    for (const id of TRUNK_IDS) subset[id] = angles[id];
+    applyTrunkPose(bonesRef.current, restQuatsRef.current, subset);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [angles]);
 
@@ -121,7 +112,7 @@ export function ArmModel({ modelUrl }: { modelUrl: string }) {
               document.body.style.cursor = "default";
             }}
           >
-            <sphereGeometry args={[isSelected || isHovered ? 0.022 : 0.017, 16, 14]} />
+            <sphereGeometry args={[isSelected || isHovered ? 0.024 : 0.019, 16, 14]} />
             <meshStandardMaterial
               color={color}
               emissive={color}

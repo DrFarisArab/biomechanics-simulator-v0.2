@@ -2,6 +2,10 @@
 
 import { useArmSimStore } from "@/lib/store";
 import { ARM_JOINT_DOFS, ARM_DOF_META } from "@/lib/armDofs";
+import { TRUNK_JOINT_DOFS, TRUNK_DOF_META } from "@/lib/trunkDofs";
+
+const ALL_JOINT_DOFS = { ...ARM_JOINT_DOFS, ...TRUNK_JOINT_DOFS };
+const ALL_DOF_META = { ...ARM_DOF_META, ...TRUNK_DOF_META };
 
 const JOINT_LABELS: Record<string, string> = {
   shoulder_left: "Left Shoulder",
@@ -10,6 +14,10 @@ const JOINT_LABELS: Record<string, string> = {
   elbow_right: "Right Elbow",
   wrist_left: "Left Wrist",
   wrist_right: "Right Wrist",
+  pelvis: "Pelvis",
+  lumbar: "Lumbar Spine",
+  thoracic: "Thoracic Spine",
+  cervical: "Cervical Spine",
 };
 
 function movementLabel(meta: { positive: string; negative: string }, value: number) {
@@ -37,8 +45,8 @@ export function Sidebar() {
     );
   }
 
-  const dofs = ARM_JOINT_DOFS[selectedJoint];
-  const meta = ARM_DOF_META[selectedJoint];
+  const dofs = ALL_JOINT_DOFS[selectedJoint];
+  const meta = ALL_DOF_META[selectedJoint];
   const jointAngles = angles[selectedJoint] ?? {};
 
   return (
