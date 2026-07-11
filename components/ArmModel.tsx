@@ -26,9 +26,11 @@ const TENDON_COLOR = new THREE.Color("#e5ddc8");
  * lighting) — confirmed by reading the raw glTF JSON, not guessed. The
  * material NAMES ("Bone-5", "Abductor", "Flexion", "Cartilage"...) are the
  * atlas's own functional/movement-type labels, not color data, so there's
- * nothing to recover from the file — colors are assigned here instead.
+ * nothing to recover from the file — colors are assigned here instead,
+ * purely by material name so the SAME function works whether a given GLB
+ * has only bones, only muscles, or (v2-arm-full.glb) both together.
  */
-function recolorMaterials(scene: THREE.Object3D, kind: "skeleton" | "muscles") {
+function recolorMaterials(scene: THREE.Object3D) {
   scene.traverse((child) => {
     const mesh = child as THREE.Mesh;
     if (!mesh.isMesh) return;
@@ -37,10 +39,14 @@ function recolorMaterials(scene: THREE.Object3D, kind: "skeleton" | "muscles") {
       const mat = m as THREE.MeshStandardMaterial;
       if (!mat.isMeshStandardMaterial) continue;
       mat.emissive.setRGB(0, 0, 0);
-      if (kind === "skeleton") {
-        mat.color.copy(mat.name === "Cartilage" ? CARTILAGE_COLOR : BONE_COLOR);
+      if (mat.name.startsWith("Bone")) {
+        mat.color.copy(BONE_COLOR);
+      } else if (mat.name === "Cartilage") {
+        mat.color.copy(CARTILAGE_COLOR);
+      } else if (mat.name === "Tendon") {
+        mat.color.copy(TENDON_COLOR);
       } else {
-        mat.color.copy(mat.name === "Tendon" ? TENDON_COLOR : MUSCLE_COLOR);
+        mat.color.copy(MUSCLE_COLOR);
       }
       mat.roughness = 0.6;
       mat.metalness = 0.05;
@@ -76,12 +82,10 @@ const JOINT_MARKER_BONE: Record<string, string> = {
  */
 export function ArmModel({ modelUrl }: { modelUrl: string }) {
   const gltf = useLoader(GLTFLoader, modelUrl);
-  const kind = modelUrl.includes("skeleton") ? "skeleton" : "muscles";
   const scene = useMemo(() => {
     const cloned = cloneSkinned(gltf.scene) as THREE.Object3D;
-    recolorMaterials(cloned, kind);
+    recolorMaterials(cloned);
     return cloned;
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [gltf]);
   const bonesRef = useRef<Record<string, THREE.Object3D | undefined>>({});
   // Rest-pose quaternion per bone, captured once right after load/clone —

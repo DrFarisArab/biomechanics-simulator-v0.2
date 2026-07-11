@@ -9,7 +9,10 @@ import { useArmSimStore } from "@/lib/store";
 
 const MODEL_URLS = {
   skeleton: "/models/v2-arm-skeleton.glb",
-  muscles: "/models/v2-arm-muscles.glb",
+  // Bones + muscles together (same rig, exported combined) — clinician
+  // asked to see the skeleton for anatomical reference while the muscles
+  // are visible too, not muscles floating with nothing underneath.
+  muscles: "/models/v2-arm-full.glb",
 } as const;
 
 export function Scene() {
