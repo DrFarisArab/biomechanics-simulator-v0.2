@@ -14,11 +14,14 @@ import { computePelvisPivotOffset } from "@/lib/stanceMode";
 import { recolorMaterials, JOINT_MARKER_COLORS as COLORS } from "@/lib/materials";
 
 // Joint id -> the bone whose own local origin (head) IS that joint's pivot.
+// lumbar/thoracic/cervical are now per-vertebra CHAINS (see trunkDofs.ts) —
+// the marker sits at the bottom of each chain (v0), i.e. where that region
+// begins, same conceptual spot the old single region bone's marker sat.
 const JOINT_MARKER_BONE: Record<string, string> = {
   pelvis: "pelvis",
-  lumbar: "lumbar",
-  thoracic: "thoracic",
-  cervical: "cervical",
+  lumbar: "lumbar_v0",
+  thoracic: "thoracic_v0",
+  cervical: "cervical_v0",
   head: "head",
   shoulder_left: "upper_armL",
   shoulder_right: "upper_armR",
