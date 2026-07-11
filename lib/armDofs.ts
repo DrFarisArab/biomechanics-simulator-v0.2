@@ -85,11 +85,28 @@ ARM_DOF_META.wrist_right = ARM_DOF_META.wrist_left;
 
 const AXIS_INDEX = { x: 0, y: 1, z: 2 } as const;
 
-/** Applies every joint's current angle map onto the loaded bone objects,
+/**
+ * Applies every joint's current angle map onto the loaded bone objects,
  * composing multiple DOFs sharing one bone (e.g. shoulder's 3 DOFs all live
- * on upper_arm.*) into a single euler before writing it once. */
+ * on upper_arm.*) into a single euler before writing it once.
+ *
+ * CRITICAL: this rig's bones do NOT have identity rotation at rest (unlike
+ * Rigify's DEF bones, which are built so rotation=(0,0,0) IS the rest pose —
+ * true there because Blender's own pose system separates "rest" from "pose"
+ * and always composes them for you). Our bones were built with an explicit
+ * Gram-Schmidt matrix per bone, so each one's LOADED rotation already
+ * encodes a real, non-identity rest orientation. Calling
+ * `bone.rotation.set(x,y,z)` directly (as the v1 arm code did) OVERWRITES
+ * that rest orientation with the pose delta, collapsing the whole rig and
+ * breaking the skin binding — this was found live ("model is upside down
+ * without colors": the mesh renders using the bind-pose skin weights while
+ * the bones no longer match that bind pose at all). Fix: compose
+ * `finalQuat = restQuat * deltaQuat` — same relationship as Blender's own
+ * `pose_bone.matrix_local = rest_matrix_local @ pose_delta_matrix`.
+ */
 export function applyArmPose(
   bones: Record<string, THREE.Object3D | undefined>,
+  restQuats: Record<string, THREE.Quaternion | undefined>,
   angles: Record<string, Record<string, number> | undefined>
 ) {
   const eulerByBone = new Map<string, [number, number, number]>();
@@ -107,8 +124,10 @@ export function applyArmPose(
 
   eulerByBone.forEach(([x, y, z], boneName) => {
     const bone = bones[boneName];
-    if (!bone) return;
-    bone.rotation.set(x, y, z, "XYZ");
+    const rest = restQuats[boneName];
+    if (!bone || !rest) return;
+    const delta = new THREE.Quaternion().setFromEuler(new THREE.Euler(x, y, z, "XYZ"));
+    bone.quaternion.copy(rest).multiply(delta);
   });
 }
 

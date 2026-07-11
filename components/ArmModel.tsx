@@ -14,6 +14,40 @@ const COLORS = {
   jointSelected: "#2dd4bf",
 };
 
+const BONE_COLOR = new THREE.Color("#e8dcc4");
+const CARTILAGE_COLOR = new THREE.Color("#cfe0e6");
+const MUSCLE_COLOR = new THREE.Color("#ad584c");
+const TENDON_COLOR = new THREE.Color("#e5ddc8");
+
+/**
+ * The atlas's exported materials carry NO usable color: every one has
+ * `baseColorFactor` unset (defaults to white) AND `emissiveFactor: [1,1,1]`
+ * (full white self-illumination, washing out all shading regardless of
+ * lighting) — confirmed by reading the raw glTF JSON, not guessed. The
+ * material NAMES ("Bone-5", "Abductor", "Flexion", "Cartilage"...) are the
+ * atlas's own functional/movement-type labels, not color data, so there's
+ * nothing to recover from the file — colors are assigned here instead.
+ */
+function recolorMaterials(scene: THREE.Object3D, kind: "skeleton" | "muscles") {
+  scene.traverse((child) => {
+    const mesh = child as THREE.Mesh;
+    if (!mesh.isMesh) return;
+    const mats = Array.isArray(mesh.material) ? mesh.material : [mesh.material];
+    for (const m of mats) {
+      const mat = m as THREE.MeshStandardMaterial;
+      if (!mat.isMeshStandardMaterial) continue;
+      mat.emissive.setRGB(0, 0, 0);
+      if (kind === "skeleton") {
+        mat.color.copy(mat.name === "Cartilage" ? CARTILAGE_COLOR : BONE_COLOR);
+      } else {
+        mat.color.copy(mat.name === "Tendon" ? TENDON_COLOR : MUSCLE_COLOR);
+      }
+      mat.roughness = 0.6;
+      mat.metalness = 0.05;
+    }
+  });
+}
+
 // Joint id -> the bone whose own local origin (head) IS that joint's pivot.
 const JOINT_MARKER_BONE: Record<string, string> = {
   shoulder_left: "upper_armL",
@@ -42,8 +76,17 @@ const JOINT_MARKER_BONE: Record<string, string> = {
  */
 export function ArmModel({ modelUrl }: { modelUrl: string }) {
   const gltf = useLoader(GLTFLoader, modelUrl);
-  const scene = useMemo(() => cloneSkinned(gltf.scene) as THREE.Object3D, [gltf]);
+  const kind = modelUrl.includes("skeleton") ? "skeleton" : "muscles";
+  const scene = useMemo(() => {
+    const cloned = cloneSkinned(gltf.scene) as THREE.Object3D;
+    recolorMaterials(cloned, kind);
+    return cloned;
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [gltf]);
   const bonesRef = useRef<Record<string, THREE.Object3D | undefined>>({});
+  // Rest-pose quaternion per bone, captured once right after load/clone —
+  // see armDofs.ts's applyArmPose doc comment for why this is required.
+  const restQuatsRef = useRef<Record<string, THREE.Quaternion | undefined>>({});
   const markerRefs = useRef<Record<string, THREE.Mesh | null>>({});
   const groupRef = useRef<THREE.Group>(null);
 
@@ -59,6 +102,11 @@ export function ArmModel({ modelUrl }: { modelUrl: string }) {
       found[name] = scene.getObjectByName(name) ?? undefined;
     }
     bonesRef.current = found;
+    const restQuats: Record<string, THREE.Quaternion | undefined> = {};
+    for (const [name, bone] of Object.entries(found)) {
+      restQuats[name] = bone?.quaternion.clone();
+    }
+    restQuatsRef.current = restQuats;
     if (typeof window !== "undefined") {
       (window as unknown as { __armScene: THREE.Object3D }).__armScene = scene;
     }
@@ -70,7 +118,7 @@ export function ArmModel({ modelUrl }: { modelUrl: string }) {
   useEffect(() => {
     const subset: Record<string, Record<string, number> | undefined> = {};
     for (const id of JOINT_IDS) subset[id] = angles[id];
-    applyArmPose(bonesRef.current, subset);
+    applyArmPose(bonesRef.current, restQuatsRef.current, subset);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [angles]);
 
