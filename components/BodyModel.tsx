@@ -9,6 +9,7 @@ import { useArmSimStore, JOINT_IDS, TRUNK_IDS, LEG_IDS } from "@/lib/store";
 import { applyArmPose, ARM_BONE_NAMES } from "@/lib/armDofs";
 import { applyTrunkPose, TRUNK_BONE_NAMES } from "@/lib/trunkDofs";
 import { applyLegPose, LEG_BONE_NAMES } from "@/lib/legDofs";
+import { applyScapularRhythm } from "@/lib/scapularRhythm";
 import { recolorMaterials, JOINT_MARKER_COLORS as COLORS } from "@/lib/materials";
 
 // Joint id -> the bone whose own local origin (head) IS that joint's pivot.
@@ -33,7 +34,7 @@ const JOINT_MARKER_BONE: Record<string, string> = {
 };
 
 const ALL_BONE_NAMES = Array.from(
-  new Set([...ARM_BONE_NAMES, ...TRUNK_BONE_NAMES, ...LEG_BONE_NAMES, "head"])
+  new Set([...ARM_BONE_NAMES, ...TRUNK_BONE_NAMES, ...LEG_BONE_NAMES, "head", "scapulaL", "scapulaR"])
 );
 
 /**
@@ -101,6 +102,8 @@ export function BodyModel({ modelUrl }: { modelUrl: string }) {
     const legSubset: Record<string, Record<string, number> | undefined> = {};
     for (const id of LEG_IDS) legSubset[id] = angles[id];
     applyLegPose(bonesRef.current, restQuatsRef.current, legSubset);
+
+    applyScapularRhythm(bonesRef.current, restQuatsRef.current, angles);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [angles]);
 
