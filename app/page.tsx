@@ -21,7 +21,7 @@ export default function Home() {
         <div className="flex items-center">
           <div className="text-[13px] font-semibold tracking-tight">Human Biomechanics Simulator</div>
           <div className="ml-2 rounded bg-teal-900/40 px-1.5 py-0.5 text-[10px] font-medium text-teal-400">
-            v0.2 · arms
+            v0.2 · trunk + arms
           </div>
         </div>
         <div className="flex items-center gap-0.5 rounded-md border border-neutral-700 bg-neutral-950/60 p-0.5">
