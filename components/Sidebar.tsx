@@ -33,11 +33,19 @@ function movementLabel(meta: { positive: string; negative: string }, value: numb
   return value > 0 ? meta.positive : meta.negative;
 }
 
+const STANCE_OPTIONS: { id: "none" | "left" | "right"; label: string }[] = [
+  { id: "none", label: "Double" },
+  { id: "left", label: "L stance" },
+  { id: "right", label: "R stance" },
+];
+
 export function Sidebar() {
   const selectedJoint = useArmSimStore((s) => s.selectedJoint);
   const angles = useArmSimStore((s) => s.angles);
   const setAngle = useArmSimStore((s) => s.setAngle);
   const resetAll = useArmSimStore((s) => s.resetAll);
+  const stanceLeg = useArmSimStore((s) => s.stanceLeg);
+  const setStanceLeg = useArmSimStore((s) => s.setStanceLeg);
 
   if (!selectedJoint) {
     return (
@@ -67,6 +75,36 @@ export function Sidebar() {
           {JOINT_LABELS[selectedJoint]}
         </div>
       </div>
+
+      {selectedJoint === "pelvis" && (
+        <div className="border-b border-neutral-800 px-4 py-3">
+          <div className="mb-1.5 text-[10px] font-semibold uppercase tracking-wider text-neutral-500">
+            Ground contact (weight-bearing leg)
+          </div>
+          <div className="flex gap-1">
+            {STANCE_OPTIONS.map((opt) => (
+              <button
+                key={opt.id}
+                onClick={() => setStanceLeg(opt.id)}
+                className={`flex-1 rounded border px-1.5 py-1 text-[11px] font-medium transition ${
+                  stanceLeg === opt.id
+                    ? "border-teal-600/60 bg-teal-900/25 text-teal-400"
+                    : "border-neutral-700 text-neutral-400 hover:text-neutral-200"
+                }`}
+              >
+                {opt.label}
+              </button>
+            ))}
+          </div>
+          {stanceLeg !== "none" && (
+            <div className="mt-1.5 text-[10px] leading-relaxed text-neutral-500">
+              Pelvic obliquity now pivots about the {stanceLeg} hip (stays planted) —
+              the other hip drops/lifts to compensate, matching real single-limb
+              stance mechanics.
+            </div>
+          )}
+        </div>
+      )}
 
       <div className="flex flex-col gap-2 px-4 py-3">
         {Object.keys(dofs).map((dofId) => {

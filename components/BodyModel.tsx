@@ -10,6 +10,7 @@ import { applyArmPose, ARM_BONE_NAMES } from "@/lib/armDofs";
 import { applyTrunkPose, TRUNK_BONE_NAMES } from "@/lib/trunkDofs";
 import { applyLegPose, LEG_BONE_NAMES } from "@/lib/legDofs";
 import { applyScapularRhythm } from "@/lib/scapularRhythm";
+import { computePelvisPivotOffset } from "@/lib/stanceMode";
 import { recolorMaterials, JOINT_MARKER_COLORS as COLORS } from "@/lib/materials";
 
 // Joint id -> the bone whose own local origin (head) IS that joint's pivot.
@@ -60,6 +61,12 @@ export function BodyModel({ modelUrl }: { modelUrl: string }) {
   }, [gltf]);
   const bonesRef = useRef<Record<string, THREE.Object3D | undefined>>({});
   const restQuatsRef = useRef<Record<string, THREE.Quaternion | undefined>>({});
+  // Pelvis's own rest LOCAL position, plus the stance hips' rest local
+  // offsets FROM pelvis (i.e. thighL/thighR's own .position, since they're
+  // direct children of pelvis in the loaded scene graph) — the inputs
+  // computePelvisPivotOffset needs for the ground-contact stance pivot.
+  const pelvisRestPosRef = useRef<THREE.Vector3 | null>(null);
+  const hipLocalOffsetsRef = useRef<{ left?: THREE.Vector3; right?: THREE.Vector3 }>({});
   const markerRefs = useRef<Record<string, THREE.Mesh | null>>({});
   const groupRef = useRef<THREE.Group>(null);
 
@@ -70,6 +77,7 @@ export function BodyModel({ modelUrl }: { modelUrl: string }) {
   const angles = useArmSimStore((s) => s.angles);
   const rootPosition = useArmSimStore((s) => s.rootPosition);
   const rootRotation = useArmSimStore((s) => s.rootRotation);
+  const stanceLeg = useArmSimStore((s) => s.stanceLeg);
 
   const markerJoints = useMemo(() => {
     const found: Record<string, THREE.Object3D | undefined> = {};
@@ -82,6 +90,12 @@ export function BodyModel({ modelUrl }: { modelUrl: string }) {
       restQuats[name] = bone?.quaternion.clone();
     }
     restQuatsRef.current = restQuats;
+    const pelvisBone = found.pelvis;
+    pelvisRestPosRef.current = pelvisBone ? pelvisBone.position.clone() : null;
+    hipLocalOffsetsRef.current = {
+      left: found.thighL?.position.clone(),
+      right: found.thighR?.position.clone(),
+    };
     if (typeof window !== "undefined") {
       (window as unknown as { __bodyScene: THREE.Object3D }).__bodyScene = scene;
     }
@@ -104,8 +118,23 @@ export function BodyModel({ modelUrl }: { modelUrl: string }) {
     applyLegPose(bonesRef.current, restQuatsRef.current, legSubset);
 
     applyScapularRhythm(bonesRef.current, restQuatsRef.current, angles);
+
+    // Ground-contact stance pivot — must run AFTER applyTrunkPose (which
+    // only touches rotation); this adjusts the pelvis bone's own POSITION
+    // so the stance hip stays planted in world space while it hikes.
+    const pelvisBone = bonesRef.current.pelvis;
+    const restPos = pelvisRestPosRef.current;
+    if (pelvisBone && restPos) {
+      const offset = computePelvisPivotOffset(
+        stanceLeg,
+        restPos,
+        hipLocalOffsetsRef.current,
+        angles.pelvis?.obliquity ?? 0
+      );
+      pelvisBone.position.copy(offset);
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [angles]);
+  }, [angles, stanceLeg]);
 
   const tmpWorld = useMemo(() => new THREE.Vector3(), []);
   useFrame(() => {

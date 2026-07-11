@@ -1,4 +1,5 @@
 import * as THREE from "three";
+import { lumbopelvicTiltDeg } from "./lumbopelvicRhythm";
 
 /**
  * v0.2 trunk/spine rig — a small, purpose-built armature (v2_trunk_rig, 4
@@ -99,9 +100,18 @@ export const TRUNK_DOF_META: Record<
 
 const AXIS_INDEX = { x: 0, y: 1, z: 2 } as const;
 
-/** Same rest+delta composition as armDofs.ts's applyArmPose — see that
+/**
+ * Same rest+delta composition as armDofs.ts's applyArmPose — see that
  * file's doc comment for why an absolute rotation.set() is wrong for this
- * rig (bones don't have identity rotation at rest). */
+ * rig (bones don't have identity rotation at rest).
+ *
+ * Lumbopelvic rhythm: pelvis.tilt gets an ADDITIVE derived contribution
+ * from the lumbar spine's current flexion (see lumbopelvicRhythm.ts) on
+ * top of whatever the user dialled directly — the user's own pelvis.tilt
+ * slider stays fully live, this just adds to it. Clamped implicitly by
+ * the shared ROM clamp in the UI (Sidebar.tsx's slider min/max), same as
+ * every other DOF.
+ */
 export function applyTrunkPose(
   bones: Record<string, THREE.Object3D | undefined>,
   restQuats: Record<string, THREE.Quaternion | undefined>,
@@ -113,7 +123,10 @@ export function applyTrunkPose(
     const angleMap = angles[jointId];
     if (!angleMap) continue;
     for (const [dofId, spec] of Object.entries(dofs)) {
-      const degrees = angleMap[dofId] ?? 0;
+      let degrees = angleMap[dofId] ?? 0;
+      if (jointId === "pelvis" && dofId === "tilt") {
+        degrees += lumbopelvicTiltDeg(angles.lumbar?.flexExt ?? 0);
+      }
       const euler = eulerByBone.get(spec.bone) ?? [0, 0, 0];
       euler[AXIS_INDEX[spec.axis]] = THREE.MathUtils.degToRad(degrees * spec.sign);
       eulerByBone.set(spec.bone, euler);
