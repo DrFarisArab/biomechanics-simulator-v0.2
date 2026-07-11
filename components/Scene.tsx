@@ -5,8 +5,15 @@ import { Canvas } from "@react-three/fiber";
 import { OrbitControls, Grid } from "@react-three/drei";
 import { ArmModel } from "./ArmModel";
 import { ErrorBoundary } from "./ErrorBoundary";
+import { useArmSimStore } from "@/lib/store";
+
+const MODEL_URLS = {
+  skeleton: "/models/v2-arm-skeleton.glb",
+  muscles: "/models/v2-arm-muscles.glb",
+} as const;
 
 export function Scene() {
+  const appearance = useArmSimStore((s) => s.appearance);
   return (
     <ErrorBoundary>
       <Canvas
@@ -17,7 +24,7 @@ export function Scene() {
         <directionalLight position={[1, 2, 1]} intensity={1.3} />
         <directionalLight position={[-1, 0.5, -1]} intensity={0.4} />
         <Suspense fallback={null}>
-          <ArmModel />
+          <ArmModel key={appearance} modelUrl={MODEL_URLS[appearance]} />
         </Suspense>
         <Grid args={[4, 4]} position={[0, 0, 0]} cellColor="#26333f" sectionColor="#374151" fadeDistance={6} />
         <OrbitControls makeDefault target={[0, 1.0, 0]} />

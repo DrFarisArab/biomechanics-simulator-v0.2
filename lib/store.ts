@@ -12,10 +12,14 @@ function neutralAngles(): Record<string, Record<string, number>> {
   return out;
 }
 
+export type Appearance = "skeleton" | "muscles";
+
 interface ArmSimState {
+  appearance: Appearance;
   angles: Record<string, Record<string, number>>;
   selectedJoint: string | null;
   hoveredJoint: string | null;
+  setAppearance: (a: Appearance) => void;
   setAngle: (jointId: string, dofId: string, value: number) => void;
   selectJoint: (jointId: string | null) => void;
   hoverJoint: (jointId: string | null) => void;
@@ -23,9 +27,11 @@ interface ArmSimState {
 }
 
 export const useArmSimStore = create<ArmSimState>((set) => ({
+  appearance: "skeleton",
   angles: neutralAngles(),
   selectedJoint: null,
   hoveredJoint: null,
+  setAppearance: (a) => set({ appearance: a }),
   setAngle: (jointId, dofId, value) =>
     set((s) => ({
       angles: {

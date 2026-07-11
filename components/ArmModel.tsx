@@ -8,8 +8,6 @@ import { clone as cloneSkinned } from "three/examples/jsm/utils/SkeletonUtils.js
 import { useArmSimStore, JOINT_IDS } from "@/lib/store";
 import { applyArmPose, ARM_BONE_NAMES } from "@/lib/armDofs";
 
-const MODEL_URL = "/models/v2-arms.glb";
-
 const COLORS = {
   joint: "#1f6f6a",
   jointHover: "#5eead4",
@@ -37,9 +35,13 @@ const JOINT_MARKER_BONE: Record<string, string> = {
  *  2. Joint markers are independent sibling <mesh> elements whose position
  *     is resynced every frame from the driving bone's world transform, NOT
  *     reparented into the bone hierarchy (which would tear the skeleton).
+ *
+ * Takes a `modelUrl` so the SAME component drives both the skeleton-only
+ * and muscles-only GLBs (both exported from the same Blender armature, so
+ * they share identical bone names/DOF mapping — see armDofs.ts).
  */
-export function ArmModel() {
-  const gltf = useLoader(GLTFLoader, MODEL_URL);
+export function ArmModel({ modelUrl }: { modelUrl: string }) {
+  const gltf = useLoader(GLTFLoader, modelUrl);
   const scene = useMemo(() => cloneSkinned(gltf.scene) as THREE.Object3D, [gltf]);
   const bonesRef = useRef<Record<string, THREE.Object3D | undefined>>({});
   const markerRefs = useRef<Record<string, THREE.Mesh | null>>({});
