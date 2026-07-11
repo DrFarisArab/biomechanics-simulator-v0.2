@@ -5,9 +5,10 @@ import * as THREE from "three";
 import { useFrame, useLoader } from "@react-three/fiber";
 import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js";
 import { clone as cloneSkinned } from "three/examples/jsm/utils/SkeletonUtils.js";
-import { useArmSimStore, JOINT_IDS, TRUNK_IDS } from "@/lib/store";
+import { useArmSimStore, JOINT_IDS, TRUNK_IDS, LEG_IDS } from "@/lib/store";
 import { applyArmPose, ARM_BONE_NAMES } from "@/lib/armDofs";
 import { applyTrunkPose, TRUNK_BONE_NAMES } from "@/lib/trunkDofs";
+import { applyLegPose, LEG_BONE_NAMES } from "@/lib/legDofs";
 import { recolorMaterials, JOINT_MARKER_COLORS as COLORS } from "@/lib/materials";
 
 // Joint id -> the bone whose own local origin (head) IS that joint's pivot.
@@ -16,32 +17,38 @@ const JOINT_MARKER_BONE: Record<string, string> = {
   lumbar: "lumbar",
   thoracic: "thoracic",
   cervical: "cervical",
+  head: "head",
   shoulder_left: "upper_armL",
   shoulder_right: "upper_armR",
   elbow_left: "forearmL",
   elbow_right: "forearmR",
   wrist_left: "handL",
   wrist_right: "handR",
+  hip_left: "thighL",
+  hip_right: "thighR",
+  knee_left: "shinL",
+  knee_right: "shinR",
+  ankle_left: "footL",
+  ankle_right: "footR",
 };
 
-const ALL_BONE_NAMES = Array.from(new Set([...ARM_BONE_NAMES, ...TRUNK_BONE_NAMES]));
+const ALL_BONE_NAMES = Array.from(
+  new Set([...ARM_BONE_NAMES, ...TRUNK_BONE_NAMES, ...LEG_BONE_NAMES, "head"])
+);
 
 /**
- * v0.2 unified body model — ONE armature (v2_body_rig) covering trunk
- * (pelvis/lumbar/thoracic/cervical) and both arms (shoulder->elbow->wrist),
- * with the arms parented to the thoracic bone so trunk motion correctly
- * carries the arms (verified live in Blender before export: flexing the
- * thoracic bone moved the shoulder's world position with it). Replaces the
- * earlier ArmModel+TrunkModel pair, which were two independent armatures
- * that only LOOKED connected because they shared the same source
- * coordinates — moving one didn't move the other.
+ * v0.2 unified body model — ONE armature (v2_body_rig) covering the full
+ * body: pelvis/lumbar/thoracic/cervical/head, both arms (shoulder->elbow->
+ * wrist), and both legs (hip->knee->ankle), all as one connected skeleton
+ * (arms parented to thoracic, legs parented to pelvis — verified live that
+ * trunk motion carries the arms with it before this was extended to legs).
  *
  * Same two lessons from the original ArmModel.tsx post-mortem, still
  * applied: SkeletonUtils.clone (not Object3D.clone(true)), and frame-
  * synced sibling joint markers (not reparented into the bone hierarchy).
- * Same rest+delta quaternion composition as armDofs.ts/trunkDofs.ts's
- * apply*Pose — see armDofs.ts's doc comment for why an absolute
- * rotation.set() is wrong for this rig.
+ * Same rest+delta quaternion composition as every apply*Pose function —
+ * see armDofs.ts's doc comment for why an absolute rotation.set() is wrong
+ * for this rig (bones don't have identity rotation at rest).
  */
 export function BodyModel({ modelUrl }: { modelUrl: string }) {
   const gltf = useLoader(GLTFLoader, modelUrl);
@@ -60,6 +67,8 @@ export function BodyModel({ modelUrl }: { modelUrl: string }) {
   const selectedJoint = useArmSimStore((s) => s.selectedJoint);
   const hoveredJoint = useArmSimStore((s) => s.hoveredJoint);
   const angles = useArmSimStore((s) => s.angles);
+  const rootPosition = useArmSimStore((s) => s.rootPosition);
+  const rootRotation = useArmSimStore((s) => s.rootRotation);
 
   const markerJoints = useMemo(() => {
     const found: Record<string, THREE.Object3D | undefined> = {};
@@ -88,6 +97,10 @@ export function BodyModel({ modelUrl }: { modelUrl: string }) {
     const trunkSubset: Record<string, Record<string, number> | undefined> = {};
     for (const id of TRUNK_IDS) trunkSubset[id] = angles[id];
     applyTrunkPose(bonesRef.current, restQuatsRef.current, trunkSubset);
+
+    const legSubset: Record<string, Record<string, number> | undefined> = {};
+    for (const id of LEG_IDS) legSubset[id] = angles[id];
+    applyLegPose(bonesRef.current, restQuatsRef.current, legSubset);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [angles]);
 
@@ -104,43 +117,50 @@ export function BodyModel({ modelUrl }: { modelUrl: string }) {
     }
   });
 
+  const quaternion = useMemo(
+    () => new THREE.Quaternion().setFromEuler(new THREE.Euler(rootRotation[0], rootRotation[1], rootRotation[2], "XYZ")),
+    [rootRotation]
+  );
+
   return (
-    <group ref={groupRef}>
-      <primitive object={scene} />
-      {markerJoints.map(({ jointId }) => {
-        const isSelected = selectedJoint === jointId;
-        const isHovered = hoveredJoint === jointId;
-        const color = isSelected ? COLORS.jointSelected : isHovered ? COLORS.jointHover : COLORS.joint;
-        return (
-          <mesh
-            key={jointId}
-            ref={(el) => {
-              markerRefs.current[jointId] = el;
-            }}
-            onClick={(e) => {
-              e.stopPropagation();
-              selectJoint(jointId);
-            }}
-            onPointerOver={(e) => {
-              e.stopPropagation();
-              hoverJoint(jointId);
-              document.body.style.cursor = "pointer";
-            }}
-            onPointerOut={() => {
-              hoverJoint(null);
-              document.body.style.cursor = "default";
-            }}
-          >
-            <sphereGeometry args={[isSelected || isHovered ? 0.022 : 0.017, 16, 14]} />
-            <meshStandardMaterial
-              color={color}
-              emissive={color}
-              emissiveIntensity={isSelected ? 0.6 : isHovered ? 0.35 : 0.12}
-              roughness={0.4}
-            />
-          </mesh>
-        );
-      })}
+    <group position={rootPosition}>
+      <group ref={groupRef} quaternion={quaternion}>
+        <primitive object={scene} />
+        {markerJoints.map(({ jointId }) => {
+          const isSelected = selectedJoint === jointId;
+          const isHovered = hoveredJoint === jointId;
+          const color = isSelected ? COLORS.jointSelected : isHovered ? COLORS.jointHover : COLORS.joint;
+          return (
+            <mesh
+              key={jointId}
+              ref={(el) => {
+                markerRefs.current[jointId] = el;
+              }}
+              onClick={(e) => {
+                e.stopPropagation();
+                selectJoint(jointId);
+              }}
+              onPointerOver={(e) => {
+                e.stopPropagation();
+                hoverJoint(jointId);
+                document.body.style.cursor = "pointer";
+              }}
+              onPointerOut={() => {
+                hoverJoint(null);
+                document.body.style.cursor = "default";
+              }}
+            >
+              <sphereGeometry args={[isSelected || isHovered ? 0.022 : 0.017, 16, 14]} />
+              <meshStandardMaterial
+                color={color}
+                emissive={color}
+                emissiveIntensity={isSelected ? 0.6 : isHovered ? 0.35 : 0.12}
+                roughness={0.4}
+              />
+            </mesh>
+          );
+        })}
+      </group>
     </group>
   );
 }

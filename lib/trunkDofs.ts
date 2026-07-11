@@ -53,6 +53,15 @@ export const TRUNK_JOINT_DOFS: Record<string, JointSpec> = {
     lateral: { bone: "cervical", axis: "z", sign: 1 },
     rotation: { bone: "cervical", axis: "y", sign: 1 },
   },
+  // head bone added later (same session, full-body build), child of
+  // cervical, built with the identical Gram-Schmidt method — reuses the
+  // cervical sign convention by construction-similarity, NOT independently
+  // spot-checked with its own rotation-delta test.
+  head: {
+    flexExt: { bone: "head", axis: "x", sign: 1 },
+    lateral: { bone: "head", axis: "z", sign: 1 },
+    rotation: { bone: "head", axis: "y", sign: 1 },
+  },
 };
 
 // Clinical ROM limits (AAOS-style, matching the v1 app's rom.ts values for
@@ -80,6 +89,11 @@ export const TRUNK_DOF_META: Record<
     flexExt: { label: "Extension · Flexion", positive: "Flexion", negative: "Extension", min: -60, max: 50 },
     lateral: { label: "Left · Right lateral flexion", positive: "Right lateral flexion", negative: "Left lateral flexion", min: -45, max: 45 },
     rotation: { label: "Left · Right rotation", positive: "Left rotation", negative: "Right rotation", min: -80, max: 80 },
+  },
+  head: {
+    flexExt: { label: "Extension · Flexion (head on neck)", positive: "Flexion", negative: "Extension", min: -30, max: 25 },
+    lateral: { label: "Left · Right tilt (head on neck)", positive: "Right tilt", negative: "Left tilt", min: -20, max: 20 },
+    rotation: { label: "Left · Right rotation (head on neck)", positive: "Left rotation", negative: "Right rotation", min: -20, max: 20 },
   },
 };
 
