@@ -25,3 +25,101 @@ body {
     text-wrap: balance;
   }
 }
+
+/* Degree slider — modern rectangular thumb, filled track, snaps to whole
+   degrees (step=1 on the underlying input does the snapping; this is the
+   visual language on top of that). Thumb/track pseudo-elements need real
+   CSS (Tailwind arbitrary variants for ::-webkit-slider-thumb get
+   unreadable fast), so they live here; the fill gradient itself is set
+   inline per-instance since it depends on the live value. */
+.degree-range {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 100%;
+  height: 20px;
+  background: transparent;
+  cursor: pointer;
+}
+
+.degree-range::-webkit-slider-runnable-track {
+  height: 6px;
+  border-radius: 3px;
+  background: linear-gradient(
+    to right,
+    #134e4a var(--degree-fill-start, 0%),
+    #2dd4bf var(--degree-fill-start, 0%),
+    #2dd4bf var(--degree-fill-end, 0%),
+    #27272a var(--degree-fill-end, 0%)
+  );
+}
+
+.degree-range::-moz-range-track {
+  height: 6px;
+  border-radius: 3px;
+  background: #27272a;
+}
+
+.degree-range::-moz-range-progress {
+  height: 6px;
+  border-radius: 3px;
+  background: #2dd4bf;
+}
+
+.degree-range::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 10px;
+  height: 20px;
+  margin-top: -7px;
+  border-radius: 3px;
+  background: linear-gradient(to bottom, #5eead4, #14b8a6);
+  border: 1px solid #0f766e;
+  box-shadow: 0 0 0 3px rgba(45, 212, 191, 0.15), 0 1px 2px rgba(0, 0, 0, 0.4);
+  transition: box-shadow 0.12s ease, transform 0.12s ease;
+}
+
+.degree-range::-moz-range-thumb {
+  width: 10px;
+  height: 20px;
+  border-radius: 3px;
+  background: linear-gradient(to bottom, #5eead4, #14b8a6);
+  border: 1px solid #0f766e;
+  box-shadow: 0 0 0 3px rgba(45, 212, 191, 0.15), 0 1px 2px rgba(0, 0, 0, 0.4);
+  transition: box-shadow 0.12s ease, transform 0.12s ease;
+}
+
+.degree-range:hover::-webkit-slider-thumb,
+.degree-range:focus-visible::-webkit-slider-thumb {
+  box-shadow: 0 0 0 5px rgba(45, 212, 191, 0.22), 0 1px 3px rgba(0, 0, 0, 0.5);
+  transform: scaleY(1.05);
+}
+
+.degree-range:hover::-moz-range-thumb,
+.degree-range:focus-visible::-moz-range-thumb {
+  box-shadow: 0 0 0 5px rgba(45, 212, 191, 0.22), 0 1px 3px rgba(0, 0, 0, 0.5);
+  transform: scaleY(1.05);
+}
+
+.degree-range:active::-webkit-slider-thumb {
+  background: linear-gradient(to bottom, #99f6e4, #2dd4bf);
+}
+
+.degree-range:active::-moz-range-thumb {
+  background: linear-gradient(to bottom, #99f6e4, #2dd4bf);
+}
+
+.degree-range:disabled {
+  cursor: not-allowed;
+}
+
+.degree-range:disabled::-webkit-slider-thumb {
+  background: #52525b;
+  border-color: #3f3f46;
+  box-shadow: none;
+}
+
+.degree-range:disabled::-moz-range-thumb {
+  background: #52525b;
+  border-color: #3f3f46;
+  box-shadow: none;
+}

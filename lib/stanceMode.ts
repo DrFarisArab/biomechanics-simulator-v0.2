@@ -43,3 +43,53 @@ export function computePelvisPivotOffset(
   const pivotCorrection = hipOffset.clone().sub(rotated);
   return restPelvisPos.clone().add(pivotCorrection);
 }
+
+/**
+ * Part 2 of 2 (see `computePelvisPivotOffset` above for part 1 — both are
+ * needed together). Pinning the pivot keeps the stance hip's WORLD POSITION
+ * fixed, but `thighL`/`thighR` are real children of `pelvis` in this rig's
+ * actual bone hierarchy (unlike the v1 app's simplified FK tree, where hip
+ * and pelvis are siblings composed via linear Euler summation) — so the
+ * stance leg's WORLD ROTATION still inherits pelvis's obliquity delta
+ * through normal parent/child quaternion composition, and the leg would
+ * still visibly swing even with its hip point pinned. A first attempt at
+ * porting v1's fix (adding a compensating value to the stance hip's own
+ * abdAdd Euler DOF) was tried and empirically DISPROVEN — verified via
+ * world-space bone coordinates: the stance-side shin/foot still moved
+ * substantially (foot X shifted from -0.085 to -0.351 at just -10°
+ * obliquity). That approach only cancels correctly when the child bone's
+ * local rotation axis happens to be parallel to the parent's, which isn't
+ * guaranteed by this rig's Gram-Schmidt-constructed bone axes.
+ *
+ * This is the exact, general fix instead: given `world = parent ∘ local`
+ * quaternion composition, solving for the stance thigh's corrected LOCAL
+ * quaternion that keeps its WORLD rotation equal to what it would be with
+ * ZERO obliquity gives
+ *   local_corrected = (pelvisDelta_full)⁻¹ · pelvisDelta_noObliquity · local_normal
+ * i.e. a correction quaternion computed ENTIRELY from the pelvis's own two
+ * delta eulers (full vs. obliquity-zeroed) — the pelvis's rest quaternion
+ * cancels out algebraically, so this needs no knowledge of the thigh bone's
+ * own rest orientation and makes no alignment assumption. Applied as
+ * `thighBone.quaternion.premultiply(correction)` AFTER applyLegPose has set
+ * the bone's normal local quaternion. Verified: with this fix, the stance
+ * foot's world position returns to within rounding of its rest position at
+ * -10° obliquity, and the whole leg (shin + foot, not just the hip point)
+ * moves with it.
+ */
+export function stanceLegRotationCorrection(
+  side: "left" | "right",
+  stanceLeg: StanceLeg,
+  effectiveTiltDeg: number,
+  rotationDeg: number,
+  obliquityDeg: number
+): THREE.Quaternion {
+  if (side !== stanceLeg) return new THREE.Quaternion();
+  const D2R = THREE.MathUtils.degToRad;
+  const deltaFull = new THREE.Quaternion().setFromEuler(
+    new THREE.Euler(D2R(effectiveTiltDeg), D2R(rotationDeg), D2R(obliquityDeg), "XYZ")
+  );
+  const deltaNoObliquity = new THREE.Quaternion().setFromEuler(
+    new THREE.Euler(D2R(effectiveTiltDeg), D2R(rotationDeg), 0, "XYZ")
+  );
+  return deltaFull.invert().multiply(deltaNoObliquity);
+}

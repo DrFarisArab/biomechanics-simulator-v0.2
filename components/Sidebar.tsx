@@ -4,6 +4,7 @@ import { useArmSimStore } from "@/lib/store";
 import { ARM_JOINT_DOFS, ARM_DOF_META } from "@/lib/armDofs";
 import { TRUNK_JOINT_DOFS, TRUNK_DOF_META } from "@/lib/trunkDofs";
 import { LEG_JOINT_DOFS, LEG_DOF_META } from "@/lib/legDofs";
+import { DegreeSlider } from "./DegreeSlider";
 
 const ALL_JOINT_DOFS = { ...ARM_JOINT_DOFS, ...TRUNK_JOINT_DOFS, ...LEG_JOINT_DOFS };
 const ALL_DOF_META = { ...ARM_DOF_META, ...TRUNK_DOF_META, ...LEG_DOF_META };
@@ -65,6 +66,17 @@ export function Sidebar() {
   const meta = ALL_DOF_META[selectedJoint];
   const jointAngles = angles[selectedJoint] ?? {};
 
+  // Ground-contact stance mode locks the stance leg's hip/knee/ankle —
+  // moving them manually would silently invalidate the pinned-hip geometry
+  // (see stanceMode.ts's computePelvisPivotOffset/stanceHipCorrectionDeg,
+  // which only cancels the frontal-plane obliquity contribution, not
+  // arbitrary flexion/rotation that would lift the "planted" foot).
+  const isStanceLegJoint =
+    stanceLeg !== "none" &&
+    (selectedJoint === `hip_${stanceLeg}` ||
+      selectedJoint === `knee_${stanceLeg}` ||
+      selectedJoint === `ankle_${stanceLeg}`);
+
   return (
     <aside className="flex w-80 shrink-0 flex-col overflow-y-auto border-l border-neutral-800 bg-neutral-900">
       <div className="border-b border-neutral-800 px-4 py-3">
@@ -110,6 +122,26 @@ export function Sidebar() {
         {Object.keys(dofs).map((dofId) => {
           const dofMeta = meta[dofId];
           const value = jointAngles[dofId] ?? 0;
+          if (isStanceLegJoint) {
+            return (
+              <div
+                key={dofId}
+                className="rounded-md border border-dashed border-neutral-700 bg-neutral-800/20 p-2.5 opacity-60"
+              >
+                <div className="mb-1 flex items-baseline justify-between">
+                  <div className="text-[12px] font-medium text-neutral-300">{dofMeta.label}</div>
+                  <div className="font-mono text-[12px] tabular-nums text-neutral-500">
+                    {value > 0 ? "+" : ""}
+                    {Math.round(value)}°
+                  </div>
+                </div>
+                <div className="text-[10px] text-neutral-500">
+                  Locked — this leg is the ground-contact stance limb. Select
+                  Pelvis to change stance leg.
+                </div>
+              </div>
+            );
+          }
           return (
             <div key={dofId} className="rounded-md border border-neutral-700 bg-neutral-800/50 p-2.5">
               <div className="mb-1 flex items-baseline justify-between">
@@ -119,20 +151,13 @@ export function Sidebar() {
                   {Math.round(value)}°
                 </div>
               </div>
-              <div className="mb-1 text-[10px] text-neutral-500">{movementLabel(dofMeta, value)}</div>
-              <input
-                type="range"
+              <div className="mb-1.5 text-[10px] text-neutral-500">{movementLabel(dofMeta, value)}</div>
+              <DegreeSlider
+                value={value}
                 min={dofMeta.min}
                 max={dofMeta.max}
-                step={1}
-                value={value}
-                onChange={(e) => setAngle(selectedJoint, dofId, Number(e.target.value))}
-                className="w-full"
+                onChange={(next) => setAngle(selectedJoint, dofId, next)}
               />
-              <div className="mt-1 flex justify-between text-[10px] text-neutral-500">
-                <span>{dofMeta.min}°</span>
-                <span>{dofMeta.max}°</span>
-              </div>
             </div>
           );
         })}

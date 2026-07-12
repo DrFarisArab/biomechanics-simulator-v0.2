@@ -74,7 +74,13 @@ LEG_DOF_META.ankle_right = LEG_DOF_META.ankle_left;
 
 const AXIS_INDEX = { x: 0, y: 1, z: 2 } as const;
 
-/** Same rest+delta composition as armDofs.ts's applyArmPose. */
+/**
+ * Same rest+delta composition as armDofs.ts's applyArmPose. Ground-contact
+ * stance leg rotation correction is NOT handled here — it's applied as a
+ * quaternion post-process in BodyModel.tsx after this runs (see
+ * stanceMode.ts's stanceLegRotationCorrection for why it can't be folded
+ * into a single-axis DOF here).
+ */
 export function applyLegPose(
   bones: Record<string, THREE.Object3D | undefined>,
   restQuats: Record<string, THREE.Quaternion | undefined>,

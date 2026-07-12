@@ -1,10 +1,13 @@
 "use client";
 
-import { Suspense } from "react";
+import { Suspense, useMemo } from "react";
+import * as THREE from "three";
 import { Canvas } from "@react-three/fiber";
 import { OrbitControls, Grid } from "@react-three/drei";
 import { BodyModel } from "./BodyModel";
 import { ErrorBoundary } from "./ErrorBoundary";
+import { Chair } from "./furniture/Chair";
+import { Bed } from "./furniture/Bed";
 import { useArmSimStore } from "@/lib/store";
 
 const MODEL_URLS = {
@@ -15,8 +18,33 @@ const MODEL_URLS = {
   muscles: "/models/v2-body-full.glb",
 } as const;
 
+// Rest-pose local point the camera should orbit around — roughly mid-torso
+// height (between pelvis ~0.86 and head ~1.7) at the spine's own AP depth,
+// NOT world Z=0. Verified via world-space bone coordinates: pelvis/thigh/
+// upper-arm all sit at local Z ≈ -0.01 to -0.05 at rest, so a target fixed
+// at Z=0 (the old value) was pinned slightly ANTERIOR of the actual spine —
+// exactly the "feels like it's rotating around its front" complaint.
+// Transformed by the current root position/rotation so the pivot still
+// tracks the body's real center for every preset (recumbent poses
+// translate/rotate the whole root far from the origin; a fixed world-space
+// target would be badly off-center for those).
+const LOCAL_VIEW_CENTER = new THREE.Vector3(0, 1.2, -0.03);
+
 export function Scene() {
   const appearance = useArmSimStore((s) => s.appearance);
+  const furniture = useArmSimStore((s) => s.furniture);
+  const furnitureRotation = useArmSimStore((s) => s.furnitureRotation);
+  const rootPosition = useArmSimStore((s) => s.rootPosition);
+  const rootRotation = useArmSimStore((s) => s.rootRotation);
+
+  const target = useMemo<[number, number, number]>(() => {
+    const quat = new THREE.Quaternion().setFromEuler(
+      new THREE.Euler(rootRotation[0], rootRotation[1], rootRotation[2], "XYZ")
+    );
+    const p = LOCAL_VIEW_CENTER.clone().applyQuaternion(quat).add(new THREE.Vector3(...rootPosition));
+    return [p.x, p.y, p.z];
+  }, [rootPosition, rootRotation]);
+
   return (
     <ErrorBoundary>
       <Canvas
@@ -28,9 +56,11 @@ export function Scene() {
         <directionalLight position={[-1, 0.5, -1]} intensity={0.4} />
         <Suspense fallback={null}>
           <BodyModel key={appearance} modelUrl={MODEL_URLS[appearance]} />
+          {furniture === "chair" && <Chair />}
+          {furniture === "bed" && <Bed rotationY={furnitureRotation} />}
         </Suspense>
         <Grid args={[4, 4]} position={[0, 0, 0]} cellColor="#26333f" sectionColor="#374151" fadeDistance={6} />
-        <OrbitControls makeDefault target={[0, 1.15, 0]} />
+        <OrbitControls makeDefault target={target} />
       </Canvas>
     </ErrorBoundary>
   );

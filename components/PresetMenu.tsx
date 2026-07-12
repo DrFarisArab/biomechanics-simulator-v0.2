@@ -41,7 +41,16 @@ export function PresetMenu() {
                 {groupPresets.map((p) => (
                   <button
                     key={p.id}
-                    onClick={() => applyPose(p.angles, { presetId: p.id })}
+                    onClick={() =>
+                      applyPose(p.angles, {
+                        presetId: p.id,
+                        rootPosition: p.rootPosition,
+                        rootRotation: p.rootRotation,
+                        furniture: p.furniture,
+                        furnitureRotation: p.furnitureRotation,
+                        stanceLeg: p.stanceLeg,
+                      })
+                    }
                     title={p.description}
                     className={`rounded-md px-2.5 py-1.5 text-left text-[12px] transition ${
                       activePreset === p.id

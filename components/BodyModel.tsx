@@ -10,7 +10,8 @@ import { applyArmPose, ARM_BONE_NAMES } from "@/lib/armDofs";
 import { applyTrunkPose, TRUNK_BONE_NAMES } from "@/lib/trunkDofs";
 import { applyLegPose, LEG_BONE_NAMES } from "@/lib/legDofs";
 import { applyScapularRhythm } from "@/lib/scapularRhythm";
-import { computePelvisPivotOffset } from "@/lib/stanceMode";
+import { computePelvisPivotOffset, stanceLegRotationCorrection } from "@/lib/stanceMode";
+import { lumbopelvicTiltDeg } from "@/lib/lumbopelvicRhythm";
 import { recolorMaterials, JOINT_MARKER_COLORS as COLORS } from "@/lib/materials";
 
 // Joint id -> the bone whose own local origin (head) IS that joint's pivot.
@@ -119,6 +120,26 @@ export function BodyModel({ modelUrl }: { modelUrl: string }) {
     const legSubset: Record<string, Record<string, number> | undefined> = {};
     for (const id of LEG_IDS) legSubset[id] = angles[id];
     applyLegPose(bonesRef.current, restQuatsRef.current, legSubset);
+
+    // Ground-contact stance leg rotation correction — must run AFTER
+    // applyLegPose (needs the thigh bone's already-computed normal local
+    // quaternion) and uses the SAME effective pelvis tilt (including the
+    // lumbopelvic rhythm contribution) that applyTrunkPose used, so the
+    // correction is computed from the pelvis's actual total delta, not just
+    // the user-dialled tilt. See stanceMode.ts's stanceLegRotationCorrection
+    // for why this can't be folded into applyLegPose as a simple DOF.
+    if (stanceLeg !== "none") {
+      const effectiveTilt = (angles.pelvis?.tilt ?? 0) + lumbopelvicTiltDeg(angles.lumbar?.flexExt ?? 0);
+      const rotationDeg = angles.pelvis?.rotation ?? 0;
+      const obliquityDeg = angles.pelvis?.obliquity ?? 0;
+      for (const side of ["left", "right"] as const) {
+        const boneName = side === "left" ? "thighL" : "thighR";
+        const bone = bonesRef.current[boneName];
+        if (!bone) continue;
+        const correction = stanceLegRotationCorrection(side, stanceLeg, effectiveTilt, rotationDeg, obliquityDeg);
+        bone.quaternion.premultiply(correction);
+      }
+    }
 
     applyScapularRhythm(bonesRef.current, restQuatsRef.current, angles);
 

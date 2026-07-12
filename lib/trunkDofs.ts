@@ -1,5 +1,5 @@
 import * as THREE from "three";
-import { lumbopelvicTiltDeg } from "./lumbopelvicRhythm";
+import { lumbopelvicTiltDeg, pelvisTiltLumbarCompensationDeg } from "./lumbopelvicRhythm";
 
 /**
  * v0.2 trunk/spine rig — UPGRADED from one rigid bone per region to a real
@@ -141,9 +141,18 @@ const AXIS_INDEX = { x: 0, y: 1, z: 2 } as const;
  * one DOF spec entry (e.g. every lumbar_vN bone gets a share of flexExt,
  * lateral, AND rotation), composed into one euler per bone before writing.
  *
- * Lumbopelvic rhythm: pelvis.tilt gets an ADDITIVE derived contribution
- * from the lumbar spine's current TOTAL flexion (summed across the whole
- * chain) on top of whatever the user dialled directly.
+ * Lumbopelvic rhythm, both directions:
+ *  - pelvis.tilt gets an ADDITIVE derived contribution from the lumbar
+ *    spine's current TOTAL flexion (summed across the whole chain) on top
+ *    of whatever the user dialled directly — forward-bend leads with the
+ *    spine, pelvis follows past a "setting phase" (lumbopelvicTiltDeg).
+ *  - lumbar flexExt gets an ADDITIVE derived contribution from whatever
+ *    pelvis.tilt the user dialled directly, in the OPPOSITE sense, so
+ *    dialing pelvis tilt alone rotates the pelvis without rigidly tipping
+ *    the thoracic/cervical/head chain along with it (pelvisTiltLumbarCompensationDeg).
+ * Both derived terms read the OTHER joint's raw dialled value only (never
+ * each other's already-derived total), so there's no circular dependency —
+ * this stays a single pass, same as every other DOF here.
  */
 export function applyTrunkPose(
   bones: Record<string, THREE.Object3D | undefined>,
@@ -159,6 +168,8 @@ export function applyTrunkPose(
       let degrees = angleMap[dofId] ?? 0;
       if (jointId === "pelvis" && dofId === "tilt") {
         degrees += lumbopelvicTiltDeg(angles.lumbar?.flexExt ?? 0);
+      } else if (jointId === "lumbar" && dofId === "flexExt") {
+        degrees += pelvisTiltLumbarCompensationDeg(angles.pelvis?.tilt ?? 0);
       }
       for (const spec of specs) {
         const euler = eulerByBone.get(spec.bone) ?? [0, 0, 0];

@@ -27,6 +27,22 @@ import { scapularReductionDeg } from "./scapularRhythm";
  * NOT individually spot-checked (same honest disclosure as the original
  * Blender project's own pronation/supination caveat) — flag if they look
  * wrong when actually posed.
+ *
+ * Shoulder has TWO DOFs sharing the same bone+axis (upper_arm's local X):
+ * `flexExt` (UI-labelled "Scaption") and `sagittalFlexExt` (UI-labelled
+ * "Extension · Flexion"). `flexExt` is the original DOF, left mechanically
+ * untouched (still reduced by scapularReductionDeg, same as before — every
+ * existing preset that dials shoulder.flexExt keeps producing exactly the
+ * pose it always did). It's renamed to "Scaption" because, verified via
+ * world-space hand-position deltas, it already reads as scapular-plane
+ * elevation in practice (the scapula's own frontal-plane contribution
+ * during arm raise, from the true scapulohumeral kinematic chain, blends
+ * with it). `sagittalFlexExt` is new: a raw, uncoupled rotation on the
+ * SAME axis (deliberately — the axis itself is verified pure sagittal-
+ * plane, see above) with NO scapular reduction applied, so it's an
+ * independent, un-coupled sagittal-plane flexion/extension control. Both
+ * contribute ADDITIVELY to upper_arm's final X rotation (see applyArmPose's
+ * `+=` accumulation) — dialing one doesn't reset or fight the other.
  */
 export type DofSpec = { bone: string; axis: "x" | "y" | "z"; sign: 1 | -1 };
 export type JointSpec = Record<string, DofSpec>;
@@ -34,11 +50,13 @@ export type JointSpec = Record<string, DofSpec>;
 export const ARM_JOINT_DOFS: Record<string, JointSpec> = {
   shoulder_left: {
     flexExt: { bone: "upper_armL", axis: "x", sign: -1 },
+    sagittalFlexExt: { bone: "upper_armL", axis: "x", sign: -1 },
     abdAdd: { bone: "upper_armL", axis: "z", sign: -1 },
     rotation: { bone: "upper_armL", axis: "y", sign: -1 },
   },
   shoulder_right: {
     flexExt: { bone: "upper_armR", axis: "x", sign: -1 },
+    sagittalFlexExt: { bone: "upper_armR", axis: "x", sign: -1 },
     abdAdd: { bone: "upper_armR", axis: "z", sign: 1 },
     rotation: { bone: "upper_armR", axis: "y", sign: 1 },
   },
@@ -67,7 +85,8 @@ export const ARM_DOF_META: Record<
   Record<string, { label: string; positive: string; negative: string; min: number; max: number }>
 > = {
   shoulder_left: {
-    flexExt: { label: "Extension · Flexion", positive: "Flexion", negative: "Extension", min: -60, max: 180 },
+    flexExt: { label: "Scaption", positive: "Scaption (elevation)", negative: "Extension", min: -60, max: 180 },
+    sagittalFlexExt: { label: "Extension · Flexion", positive: "Flexion", negative: "Extension", min: -60, max: 180 },
     abdAdd: { label: "Adduction · Abduction", positive: "Abduction", negative: "Adduction", min: -40, max: 180 },
     rotation: { label: "Internal · External rotation", positive: "External rotation", negative: "Internal rotation", min: -70, max: 90 },
   },
@@ -132,7 +151,11 @@ export function applyArmPose(
         degrees -= scapularReductionDeg(dofId, degrees);
       }
       const euler = eulerByBone.get(spec.bone) ?? [0, 0, 0];
-      euler[AXIS_INDEX[spec.axis]] = THREE.MathUtils.degToRad(degrees * spec.sign);
+      // += (not =): shoulder's flexExt and sagittalFlexExt both target the
+      // same bone+axis (upper_arm's local X) and must combine additively —
+      // every other DOF here still only ever writes its axis once, so this
+      // is a no-op change for them (starting from 0).
+      euler[AXIS_INDEX[spec.axis]] += THREE.MathUtils.degToRad(degrees * spec.sign);
       eulerByBone.set(spec.bone, euler);
     }
   }

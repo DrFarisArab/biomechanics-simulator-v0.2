@@ -23,6 +23,7 @@ function neutralAngles(): Record<string, Record<string, number>> {
 
 export type Appearance = "skeleton" | "muscles";
 export type Vec3 = [number, number, number];
+export type Furniture = "none" | "chair" | "bed";
 
 interface ArmSimState {
   appearance: Appearance;
@@ -33,13 +34,25 @@ interface ArmSimState {
   rootRotation: Vec3;
   activePreset: string | null;
   stanceLeg: StanceLeg;
+  furniture: Furniture;
+  furnitureRotation: number;
   setAppearance: (a: Appearance) => void;
   setAngle: (jointId: string, dofId: string, value: number) => void;
   selectJoint: (jointId: string | null) => void;
   hoverJoint: (jointId: string | null) => void;
   setStanceLeg: (leg: StanceLeg) => void;
   resetAll: () => void;
-  applyPose: (angles: Record<string, Record<string, number>>, opts?: { rootPosition?: Vec3; rootRotation?: Vec3; presetId?: string }) => void;
+  applyPose: (
+    angles: Record<string, Record<string, number>>,
+    opts?: {
+      rootPosition?: Vec3;
+      rootRotation?: Vec3;
+      presetId?: string;
+      furniture?: Furniture;
+      furnitureRotation?: number;
+      stanceLeg?: StanceLeg;
+    }
+  ) => void;
 }
 
 export const useArmSimStore = create<ArmSimState>((set) => ({
@@ -51,6 +64,8 @@ export const useArmSimStore = create<ArmSimState>((set) => ({
   rootRotation: [0, 0, 0],
   activePreset: null,
   stanceLeg: "none",
+  furniture: "none",
+  furnitureRotation: 0,
   setAppearance: (a) => set({ appearance: a }),
   setAngle: (jointId, dofId, value) =>
     set((s) => ({
@@ -71,6 +86,8 @@ export const useArmSimStore = create<ArmSimState>((set) => ({
       rootRotation: [0, 0, 0],
       activePreset: null,
       stanceLeg: "none",
+      furniture: "none",
+      furnitureRotation: 0,
     }),
   applyPose: (angles, opts) =>
     set((s) => ({
@@ -78,6 +95,9 @@ export const useArmSimStore = create<ArmSimState>((set) => ({
       rootPosition: opts?.rootPosition ?? [0, 0, 0],
       rootRotation: opts?.rootRotation ?? [0, 0, 0],
       activePreset: opts?.presetId ?? null,
+      furniture: opts?.furniture ?? "none",
+      furnitureRotation: opts?.furnitureRotation ?? 0,
+      stanceLeg: opts?.stanceLeg ?? "none",
       selectedJoint: s.selectedJoint,
     })),
 }));

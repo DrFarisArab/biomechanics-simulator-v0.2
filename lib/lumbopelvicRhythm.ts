@@ -26,3 +26,23 @@ export function lumbopelvicTiltDeg(lumbarFlexExtDeg: number): number {
   const past = Math.max(0, lumbarFlexExtDeg - LP_SET_POINT);
   return past * LP_FRACTION;
 }
+
+/**
+ * Reverse coupling: when the user dials PELVIS tilt directly (not via
+ * lumbar flexion), the pelvis's rotation would otherwise propagate rigidly
+ * up through the lumbar→thoracic→cervical→head chain (they're all real
+ * parent/child bones), tipping the ENTIRE trunk over as one straight rod —
+ * anatomically wrong. In real posture, anterior pelvic tilt is compensated
+ * by increased lumbar lordosis (lumbar EXTENSION) so the thorax stays
+ * upright; posterior pelvic tilt is compensated the opposite way. This is
+ * a full, immediate 1:1 cancellation (not the graded "set point" curve
+ * `lumbopelvicTiltDeg` above uses for the other direction) — the whole
+ * point is that dialing pelvis tilt should visibly rotate the PELVIS while
+ * everything above the lumbar chain stays put, not lean progressively more
+ * as the angle increases. Pelvis tilt's own ROM ceiling (+20°/-15°) sits
+ * safely inside lumbar's extension ROM (-25°), so full cancellation never
+ * clips against the lumbar chain's own limits.
+ */
+export function pelvisTiltLumbarCompensationDeg(pelvisTiltDeg: number): number {
+  return -pelvisTiltDeg;
+}
