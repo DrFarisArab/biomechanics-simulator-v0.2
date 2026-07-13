@@ -183,6 +183,14 @@ export const TESTS: SpecialTest[] = [
   { id: "kn16", r: "kn", cat: "Patellofemoral", n: "Patellar grind (Clarke)", t: "Patellofemoral pain / chondral irritation", p: "Press the patella distally while the patient contracts the quads.", pos: "Anterior pain — note the high false-positive rate.", tier: 3, pearl: "Often uncomfortable in healthy knees — low specificity, interpret cautiously." },
   { id: "kn17", r: "kn", cat: "Lateral / ITB", n: "Noble compression", t: "ITB syndrome", p: "Compress over the lateral femoral epicondyle while flexing/extending the knee.", pos: "Lateral pain near 30° flexion.", tier: 3 },
   { id: "kn18", r: "kn", cat: "PLC / rotational", n: "Dial test (30° & 90°)", t: "Posterolateral corner ± PCL", p: "Prone (or supine); compare external tibial rotation at 30° and 90°.", pos: ">10° extra ER at 30° only = PLC; at both 30° and 90° = combined PCL + PLC.", tier: 2 },
+  { id: "kn19", r: "kn", cat: "Meniscus", n: "Ege's test (weight-bearing McMurray)", t: "Meniscal tear (loaded)", p: "Standing, feet 30–40cm apart; squat in max external rotation (medial meniscus) or max internal rotation (lateral meniscus).", pos: "Joint-line pain/click, typically around 90° flexion.", sn: "64–67", sp: "81–90", tier: 2, pearl: "More specific than McMurray's for medial tears — but not everyone can weight-bear enough to perform it." },
+  { id: "kn20", r: "kn", cat: "ACL", n: "Slocum's test", t: "Anterolateral / anteromedial rotary instability", p: "Supine, knee 90°, foot fixed; anterior drawer with the tibia internally rotated 30° (ALRI) or externally rotated 15° (AMRI).", pos: "Excess anterior translation with rotation vs the straight anterior drawer.", tier: 2, pearl: "A rotated variant of the anterior drawer — relaxes the hamstrings via the 90° knee flexion." },
+  { id: "kn21", r: "kn", cat: "Meniscus", n: "Steinman test", t: "Meniscal tear (vs ligament/osteophyte)", p: "Sitting or supine, knee at 90°; rotate the tibia medially/laterally, then track joint-line tenderness through flexion/extension.", pos: "Pain with rotation reproducing the click; tenderness migrates posteriorly with flexion, anteriorly with extension.", sn: "≈96.5", sp: "≈87", tier: 2, pearl: "The tenderness-migration part (part 2) helps distinguish meniscal pain from a fixed ligament or osteophyte tender point." },
+  { id: "kn22", r: "kn", cat: "Osteochondritis", n: "Wilson's test", t: "Osteochondritis dissecans (medial femoral condyle)", p: "Sitting, knee flexed 90° with the tibia internally rotated; slowly extend the leg.", pos: "Pain ~30° short of full extension that resolves with tibial external rotation.", tier: 3, pearl: "No validated sensitivity/specificity data — use as a low-cost screen, not a rule-out." },
+  { id: "kn23", r: "kn", cat: "PCL", n: "Muller's test (Quadriceps Active)", t: "PCL integrity / posterior tibial sag", p: "Supine, hip 45°, knee 90° (posterior-drawer position); ask the patient to gently contract the quads.", pos: "A posteriorly sagged tibia visibly translates anterior as the quads fire.", tier: 2, pearl: "Useful when a torn PCL makes the posterior drawer's start point ambiguous — the active contraction re-references it." },
+  { id: "kn24", r: "kn", cat: "Muscle length", n: "Passive Knee Extension Test", t: "Hamstring flexibility / tightness", p: "Supine, hip flexed 90°; passively extend the knee to the first firm hamstring stretch and measure with a goniometer.", pos: "Popliteal angle (180° − knee extension angle); normal mean ≈75°, more suggests tightness.", tier: 3, pearl: "Used as an ACL return-to-play milestone between rehab phases, not just a flexibility check." },
+  { id: "kn25", r: "kn", cat: "Lateral / ITB", n: "Renne test", t: "ITB friction syndrome", p: "Standing, weight-bearing on the involved leg; palpate the ITB over the lateral epicondyle while single-leg squatting to 60–90°, then repeat with firm compression.", pos: "Crepitus/snapping/pain at the lateral epicondyle, most provocative ~20–30° flexion.", tier: 3, pearl: "Pairs with Noble's test for lateral knee pain in runners/cyclists — Renne adds the weight-bearing squat." },
+  { id: "kn26", r: "kn", cat: "Patellofemoral", n: "Moving Patellar Apprehension Test", t: "Lateral patellar instability", p: "From full extension, apply a lateral force to the patella while cycling the knee to 90° flexion and back (then repeat medially directed, for symptom relief).", pos: "Apprehension with the lateral-force pass that resolves with the medial-force pass.", sn: "100", sp: "≈88", tier: 1, pearl: "More sensitive than the static patellar apprehension sign — the medial-force pass confirms it's instability, not just guarding." },
 
   /* ---- ANKLE & FOOT ---- */
   { id: "ft1", r: "ft", cat: "Lateral ligament", n: "Anterior drawer (ankle)", t: "ATFL integrity", p: "Foot in slight plantarflexion; draw the calcaneus/talus forward on the fixed tibia.", pos: "Excess anterior translation ± an anterolateral 'suction' dimple.", sn: "74–96", sp: "≈84", tier: 2, pearl: "Most useful ~5 days post-injury once acute guarding settles." },
@@ -260,6 +268,19 @@ export const TEST_POSE_MAP: Record<string, string> = {
   kn5: "hooklying", // Posterior drawer
   kn6: "hooklying", // Posterior sag (Godfrey)
   kn9: "hooklying", // Joint-line tenderness (palpated at ~90° flexion)
+  // Knee — remaining tests that reuse an existing preset outright
+  // (position-only: extension/starting-point tests, or the sim has no DOF
+  // for the distinguishing rotation/compression component)
+  kn3: "supine", // Pivot shift (starting position — extension)
+  kn4: "supine", // Lever sign (Lelli) — knee extended
+  kn13: "supine", // Sweep / bulge test — knee extended
+  kn14: "supine", // Patellar tap — knee extended
+  kn16: "supine", // Patellar grind (Clarke) — knee extended
+  kn19: "deep_squat", // Ege's test — weight-bearing squat (rotation not modeled)
+  kn20: "hooklying", // Slocum's test — same base position as anterior drawer
+  kn21: "sitting", // Steinman test — seated, knee hanging at 90°
+  kn23: "hooklying", // Muller's (Quadriceps Active) — posterior-drawer position
+  kn26: "supine", // Moving Patellar Apprehension — starting position, extension
 
   // Shoulder — position-only approximations (does not model IR/ER or resistance)
   sh1: "overhead_reach", // Neer impingement sign (full flexion)
@@ -291,8 +312,18 @@ export const TEST_POSE_MAP: Record<string, string> = {
 function fromBase(baseId: string, commands: string[]): PosePreset {
   const base = PRESETS.find((p) => p.id === baseId);
   if (!base) throw new Error(`buildHipPose: base preset "${baseId}" not found`);
+  // Start from the base preset's own angles (e.g. "sitting"'s 90/90 hip+knee
+  // flexion) so bases with non-empty defaults don't collapse back to neutral
+  // — then let the parsed commands override just the DOFs they touch.
+  const angles: Record<string, Record<string, number>> = {};
+  for (const [joint, dofs] of Object.entries(base.angles)) {
+    angles[joint] = { ...dofs };
+  }
+  for (const [joint, dofs] of Object.entries(buildAnglesFromCommands(commands))) {
+    angles[joint] = { ...angles[joint], ...dofs };
+  }
   return {
-    id: `__custom_${baseId}_${commands.length}`,
+    id: `__custom_${baseId}_${commands.join("|")}`,
     label: base.label,
     group: base.group,
     description: base.description,
@@ -300,7 +331,8 @@ function fromBase(baseId: string, commands: string[]): PosePreset {
     rootRotation: base.rootRotation,
     furniture: base.furniture,
     furnitureRotation: base.furnitureRotation,
-    angles: buildAnglesFromCommands(commands),
+    stanceLeg: base.stanceLeg,
+    angles,
   };
 }
 
@@ -350,4 +382,61 @@ export const SPECIAL_TEST_CUSTOM_POSES: Record<string, PosePreset> = {
   // Log roll — supine, leg extended, passively rolled through IR/ER;
   // snapshotting one direction (external rotation) of the roll.
   hip13: fromBase("supine", ["externally rotate the right hip 20"]),
+
+  // ---- KNEE ---- researched against Physiopedia's knee special-tests
+  // pages (physio-pedia.com/Category:Knee_-_Special_Tests). Where a source
+  // gives a working angle (Lachman's 20–30°, Steinman/Wilson's 90°/30°,
+  // PKET's ~75° popliteal-angle norm) that's used directly; where it only
+  // says "slight flexion" (valgus/varus stress, patellar apprehension,
+  // Noble's), a typical clinical ~30° is used.
+
+  // Lachman test — supine, knee flexed to the low end of the 20–30° window.
+  kn1: fromBase("supine", ["flex the right knee 25"]),
+
+  // Valgus stress at 30° — source gives the angle explicitly.
+  kn7: fromBase("supine", ["flex the right knee 30"]),
+
+  // Varus stress at 30° — same setup as valgus stress, opposite force
+  // direction (not representable — this shows the shared knee position).
+  kn8: fromBase("supine", ["flex the right knee 30"]),
+
+  // McMurray test — snapshotting the test's full-flexion starting point
+  // (rotation-while-extending isn't representable as a static pose).
+  kn10: fromBase("supine", ["flex the right knee 130"]),
+
+  // Thessaly test — single-leg stance at 20° flexion (source gives the
+  // angle explicitly); built on "standing" since the sim's single-leg-stance
+  // preset doesn't expose a custom knee-flexion angle for the stance leg —
+  // position-only, doesn't model the unweighted/rotating contralateral leg.
+  kn11: fromBase("standing", ["flex the right hip 15", "flex the right knee 20"]),
+
+  // Apley grind — prone, knee at 90° (source gives the angle explicitly).
+  kn12: fromBase("prone", ["flex the right knee 90"]),
+
+  // Patellar apprehension — knee "slightly flexed"; ~30° is the typical
+  // clinical value (matches the companion Patellar Apprehension Sign page).
+  kn15: fromBase("supine", ["flex the right knee 30"]),
+
+  // Noble compression — most provocative near 30° flexion (source gives
+  // the angle explicitly); shown supine with the knee at that angle.
+  kn17: fromBase("supine", ["flex the right knee 30"]),
+
+  // Dial test — prone, comparing ER at 30° vs 90°; snapshotting the 30°
+  // position (axial tibial rotation itself isn't a modeled DOF).
+  kn18: fromBase("prone", ["flex the right knee 30"]),
+
+  // Wilson's test — sitting (hip+knee 90° from the base preset), extending
+  // the knee to the diagnostic ~30°-from-full-extension pain point (source
+  // gives the angle explicitly).
+  kn22: fromBase("sitting", ["flex the right knee 30"]),
+
+  // Passive Knee Extension Test — supine, hip flexed 90°, knee extended to
+  // the normative mean popliteal angle (~75°, i.e. 180° − 74.6° per Davis
+  // et al., the value cited on the source page).
+  kn24: fromBase("supine", ["flex the right hip 90", "flex the right knee 75"]),
+
+  // Renne test — single-leg squat to 60–90° (source range); built on
+  // "standing" for the same reason as Thessaly above — position-only,
+  // doesn't model true single-leg weight-bearing/unweighting.
+  kn25: fromBase("standing", ["flex the right hip 70", "flex the right knee 70"]),
 };
