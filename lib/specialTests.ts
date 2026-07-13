@@ -124,6 +124,25 @@ export const TESTS: SpecialTest[] = [
   { id: "sh18", r: "sh", cat: "AC joint", n: "Cross-body adduction", t: "AC joint pathology", p: "Passively adduct the flexed arm across the body.", pos: "Localised pain at the AC joint.", sn: "77", sp: "79", tier: 2 },
   { id: "sh19", r: "sh", cat: "Scapula", n: "Scapular assistance / retraction", t: "Scapular dyskinesis contribution", p: "Manually assist scapular upward rotation (assist) or stabilise it in retraction while re-testing a painful/weak movement.", pos: "Symptoms or strength improve with the correction.", tier: 2, pearl: "A modification procedure, not a pathology test — it identifies a treatable scapular contribution." },
   { id: "sh20", r: "sh", cat: "Frozen shoulder", n: "Passive ER loss in adduction", t: "Adhesive capsulitis vs cuff", p: "Compare passive external rotation with the elbow at the side, both sides.", pos: "A global capsular pattern with markedly limited passive ER points to adhesive capsulitis rather than a cuff tear.", tier: 2 },
+  { id: "sh21", r: "sh", cat: "Instability", n: "Anterior drawer test (shoulder)", t: "Anterior glenohumeral instability", p: "Supine, 80–120° abduction, 0–20° flexion, 0–30° external rotation; stabilise the scapula and draw the humerus forward.", pos: "Increased anterior translation vs the other side, graded 0–3; a click may suggest a labral tear.", sn: "53", sp: "85", tier: 2, pearl: "Useful when the apprehension test is hard to interpret on an aching (rather than unstable-feeling) shoulder." },
+  { id: "sh22", r: "sh", cat: "Neuro differentiation", n: "Arm squeeze test", t: "Cervical radiculopathy vs shoulder pathology", p: "Squeeze the middle third of the upper arm (biceps/triceps belly).", pos: "Local pain on squeeze points to cervical nerve root compression rather than a shoulder source.", tier: 3, pearl: "A quick bedside differentiator when it's unclear whether arm pain is coming from the neck or the shoulder." },
+  { id: "sh23", r: "sh", cat: "Rotator cuff — supraspinatus", n: "Drop arm test (Codman's)", t: "Full-thickness rotator cuff tear (supraspinatus)", p: "Passively abduct the arm to 90°, then ask the patient to slowly lower it back to neutral.", pos: "The arm suddenly drops, or pain/weakness appears, during the lowering.", sn: "73", sp: "77", tier: 2, pearl: "Best combined with the infraspinatus test and painful arc — 3/3 positive raises +LR to ≈15.6 (≈28 if also over 60)." },
+  { id: "sh24", r: "sh", cat: "Labrum (SLAP)", n: "Crank test", t: "Glenoid labral tear / SLAP lesion", p: "Sitting, arm flexed 90°; axially load the humerus while rotating it (usually painful on external rotation).", pos: "Reproduction of pain, with or without a click.", sn: "9–91", sp: "56–100", tier: 3, pearl: "Wide reported accuracy range — treat as one piece of a labral cluster, not a stand-alone rule-in/out." },
+  { id: "sh25", r: "sh", cat: "Scapula", n: "Hara test", t: "Throwing kinetic-chain dysfunction", p: "An 11-item battery of scapular/humeral measures (e.g. scapula-spine distance) used in overhead throwing athletes.", pos: "Abnormal findings across the battery localise where in the kinetic chain the throwing dysfunction originates.", tier: 3, pearl: "Sport-specific (baseball pitching) — a measurement battery rather than a single provocation test." },
+  { id: "sh26", r: "sh", cat: "Rotator cuff — infraspinatus/teres minor", n: "Hornblower's sign (Patte's test)", t: "Teres minor tear", p: "Standing, arm 90° abduction in the scapular plane, elbow 90°; resist active external rotation.", pos: "Inability to externally rotate against resistance; also positive if the patient must abduct the arm to bring the hand to the mouth.", sn: "100", sp: "93", tier: 1, pearl: "A positive Hornblower's alongside a positive external rotation lag sign suggests an irreparable posterosuperior cuff tear." },
+  { id: "sh27", r: "sh", cat: "Rotator cuff — subscapularis", n: "Internal rotation lag sign", t: "Subscapularis tendon tear", p: "Sitting; passively bring the hand off the low back into 20° of extension, then release and ask the patient to hold.", pos: "A lag (the hand drifts back toward the back) — larger lag suggests a larger tear.", sn: "97–100", sp: "84–96", tier: 1, pearl: "Also called the subscapularis 'spring-back' test — pairs with lift-off as the two subscapularis-specific signs." },
+  { id: "sh28", r: "sh", cat: "Instability", n: "Jerk test", t: "Posteroinferior glenohumeral instability", p: "90° abduction + internal rotation; axially load the humerus while moving the arm horizontally across the body.", pos: "A sudden clunk as the humeral head slides off the back of the glenoid (and again, returning it).", sn: "73", sp: "98", tier: 1, pearl: "Combine with the Kim test — sensitivity for posteroinferior labral lesions rises to ≈97% when both are positive." },
+  { id: "sh29", r: "sh", cat: "Labrum (SLAP)", n: "Kim test", t: "Posteroinferior labral lesion", p: "Sitting, arm 90° abduction; strong axial load, then diagonal downward-and-backward force at 45° elevation.", pos: "Sudden posterior shoulder pain, with or without a clunk.", sn: "80", sp: "94", tier: 1, pearl: "More sensitive than the jerk test for a predominantly inferior lesion; the jerk test is better for a posterior one." },
+  { id: "sh30", r: "sh", cat: "Instability", n: "Load and shift", t: "Glenohumeral joint laxity", p: "Sitting; stabilise the scapula and glide the humeral head anteromedially, then posterolaterally.", pos: "Translation beyond half the humeral head's width vs the other side.", sn: "14–50", sp: "≈100", tier: 2, pearl: "Not biomechanically validated, but very specific when translation is clearly excessive." },
+  { id: "sh31", r: "sh", cat: "Instability", n: "Norwood stress test", t: "Posterior instability (posterior capsule)", p: "Supine, shoulder 90° abduction with external rotation (forearm vertical), elbow 90°; passively adduct while palpating for posterior head translation.", pos: "Apprehension, pain, or a posterior semi-luxation as the head glides over the glenoid rim.", tier: 3, pearl: "Posterior instability is uncommon (~2% of dislocations) — keep it on the differential when apprehension tests are equivocal." },
+  { id: "sh32", r: "sh", cat: "Labrum (SLAP)", n: "Passive compression test", t: "SLAP lesion", p: "Side-lying on the unaffected side; 30° abduction, then passively externally rotate while extending and compressing the humeral head onto the glenoid.", pos: "Pain or a painful click in the joint.", sn: "82", sp: "86", tier: 2 },
+  { id: "sh33", r: "sh", cat: "AC joint", n: "Paxinos test", t: "AC joint pathology", p: "Sitting, arm at the side; thumb under the posterolateral acromion, fingers over the mid-clavicle — squeeze the acromion anterosuperior against the clavicle inferior.", pos: "Pain at the AC joint.", sn: "79", sp: "50", tier: 3 },
+  { id: "sh34", r: "sh", cat: "Rotator cuff — supraspinatus", n: "Rent test", t: "Full-thickness rotator cuff tear", p: "Sitting, arm relaxed; palpate the anterior margin of the greater tuberosity through the deltoid for a palpable defect/crepitus.", pos: "A palpable 'rent' (gap) or crepitus at the tuberosity.", tier: 2, pearl: "Trans-deltoid palpation — may be the single best physical exam finding for a full-thickness tear when combined with the other cuff tests." },
+  { id: "sh35", r: "sh", cat: "AC joint", n: "Resisted AC joint extension test", t: "AC joint pathology (vs subacromial impingement)", p: "Sitting, shoulder and elbow flexed 90° with the shoulder internally rotated; resist horizontal abduction (extension).", pos: "Pain localised to the AC joint.", sn: "72", sp: "85", tier: 2, pearl: "Combine with cross-body adduction and O'Brien's — 2 of 3 positive raises sensitivity to ≈81%." },
+  { id: "sh36", r: "sh", cat: "Scapula", n: "Serratus anterior strength (punch-out) test", t: "Serratus anterior weakness / scapular winging", p: "Standing or sitting, arm forward-flexed 90°; apply backward pressure while the patient resists (a wall/floor push-up loads it further).", pos: "Winging of the scapula's medial border.", tier: 2 },
+  { id: "sh37", r: "sh", cat: "Rotator cuff — supraspinatus", n: "Whipple test", t: "Partial rotator cuff tear / SLAP lesion", p: "Standing or sitting; flex the arm 90° and adduct it across the body toward the opposite shoulder; resist downward pressure.", pos: "Pain with resisted downward pressure.", sn: "88.6", sp: "29.4", tier: 3, pearl: "Less specific than empty/full can for supraspinatus — use alongside them, not in place of them." },
+  { id: "sh38", r: "sh", cat: "Biceps", n: "Yergason's test", t: "Biceps tendon pathology / SLAP lesion", p: "Elbow flexed 90°, forearm pronated; resist active supination + external rotation.", pos: "Pain in the bicipital groove, or a click suggesting transverse humeral ligament injury.", sn: "43", sp: "79", tier: 3 },
+  { id: "sh39", r: "sh", cat: "Subacromial / impingement", n: "Yocum's test", t: "Subacromial impingement", p: "Hand placed on the opposite shoulder (cross-body adduction with the elbow flexed); the patient raises the elbow without shrugging the shoulder.", pos: "Pain during elbow elevation.", sn: "79", sp: "40", tier: 3, pearl: "A self-administered alternative to Hawkins-Kennedy — doesn't need the examiner to move the arm." },
 
   /* ---- ELBOW ---- */
   { id: "el1", r: "el", cat: "Epicondylalgia", n: "Cozen test (resisted wrist ext)", t: "Lateral epicondylalgia (tennis elbow)", p: "Elbow extended, forearm pronated; resist wrist extension while palpating the lateral epicondyle.", pos: "Pain at the lateral epicondyle.", sn: "84", sp: "≈50", tier: 2 },
@@ -287,6 +306,16 @@ export const TEST_POSE_MAP: Record<string, string> = {
   sh2: "shoulder_flexion", // Hawkins-Kennedy (90° flexion)
   sh3: "shoulder_abduction", // Painful arc (60-120° abduction band)
   sh11: "shoulder_abduction", // Apprehension test (90° abduction)
+  // Shoulder — remaining tests that reuse an existing preset outright
+  sh22: "standing", // Arm squeeze test — purely a palpation test, no set arm position
+  sh23: "shoulder_abduction", // Drop arm test (Codman's) — starting abduction position
+  sh24: "shoulder_flexion", // Crank test — sitting/standing, ~90° elevation
+  sh25: "standing", // Hara test — an 11-item measurement battery, no single pose
+  sh29: "shoulder_abduction", // Kim test — 90° abduction
+  sh30: "sitting", // Load and shift — seated, arm relaxed, purely a manual glide test
+  sh33: "sitting", // Paxinos test — seated, arm at side, purely a palpation/compression test
+  sh34: "sitting", // Rent test — seated, arm relaxed, purely a palpation test
+  sh36: "shoulder_flexion", // Serratus anterior strength (punch-out) — 90° forward flexion
 
   // Ankle / Achilles
   ft6: "prone", // Thompson test (prone, foot off table edge)
@@ -439,4 +468,52 @@ export const SPECIAL_TEST_CUSTOM_POSES: Record<string, PosePreset> = {
   // "standing" for the same reason as Thessaly above — position-only,
   // doesn't model true single-leg weight-bearing/unweighting.
   kn25: fromBase("standing", ["flex the right hip 70", "flex the right knee 70"]),
+
+  // ---- SHOULDER ---- researched against Physiopedia's shoulder
+  // special-tests pages (physio-pedia.com/Category:Shoulder_-_Special_Tests).
+  // Uses the sim's "sagittalFlexExt" convention for true sagittal-plane
+  // flexion/extension (see commandParser.ts's shoulder note) — plain
+  // "flex"/"extend" on a shoulder joint already resolves to that DOF.
+
+  // Anterior drawer test — supine, mid-range abduction/flexion/ER (source
+  // gives ranges; used the midpoint of each: 100°/10°/15°).
+  sh21: fromBase("supine", ["abduct the right shoulder 100", "flex the right shoulder 10", "externally rotate the right shoulder 15"]),
+
+  // Hornblower's sign (Patte's test) — standing, 90° abduction in the
+  // scapular plane, elbow flexed 90° (source gives both angles explicitly).
+  sh26: fromBase("standing", ["abduct the right shoulder 90", "flex the right elbow 90"]),
+
+  // Jerk test — 90° abduction + internal rotation (source gives both
+  // explicitly); magnitude of IR not specified, used a typical ~30°.
+  sh28: fromBase("standing", ["abduct the right shoulder 90", "internally rotate the right shoulder 30"]),
+
+  // Norwood stress test — supine, 90° abduction with external rotation
+  // (forearm vertical), elbow 90° (source gives all three explicitly; ER
+  // magnitude itself not numbered, used a typical ~30°).
+  sh31: fromBase("supine", ["abduct the right shoulder 90", "externally rotate the right shoulder 30", "flex the right elbow 90"]),
+
+  // Passive compression test — side-lying on the OPPOSITE side (tested
+  // right shoulder on top), 30° abduction with external rotation + slight
+  // extension (source gives the abduction angle explicitly; ER/extension
+  // magnitude not numbered, used typical exam values).
+  sh32: fromBase("sidelying_left", ["abduct the right shoulder 30", "externally rotate the right shoulder 30", "extend the right shoulder 15"]),
+
+  // Resisted AC joint extension test — sitting, shoulder + elbow flexed
+  // 90° with the shoulder internally rotated (source gives all explicitly).
+  sh35: fromBase("sitting", ["flex the right shoulder 90", "internally rotate the right shoulder 30", "flex the right elbow 90"]),
+
+  // Whipple test — arm flexed 90° and adducted across the body toward the
+  // opposite shoulder (source gives the flexion angle explicitly; adduction
+  // magnitude not numbered, used a typical cross-body value).
+  sh37: fromBase("standing", ["flex the right shoulder 90", "adduct the right shoulder 45"]),
+
+  // Yergason's test — elbow flexed 90°, forearm pronated (source gives the
+  // elbow angle explicitly; near-full pronation for the starting position).
+  sh38: fromBase("standing", ["flex the right elbow 90", "pronate the right forearm 80"]),
+
+  // Yocum's test — hand on the opposite shoulder: heavy cross-body
+  // adduction with the elbow substantially flexed (source describes the
+  // position qualitatively, not numerically — approximated to bring the
+  // hand near the opposite shoulder).
+  sh39: fromBase("standing", ["adduct the right shoulder 90", "flex the right elbow 130"]),
 };
