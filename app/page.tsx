@@ -4,14 +4,9 @@ import dynamic from "next/dynamic";
 import { Sidebar } from "@/components/Sidebar";
 import { PresetMenu } from "@/components/PresetMenu";
 import { Footer } from "@/components/Footer";
-import { useArmSimStore, type Appearance } from "@/lib/store";
+import { useArmSimStore } from "@/lib/store";
 
 const Scene = dynamic(() => import("@/components/Scene").then((m) => m.Scene), { ssr: false });
-
-const TABS: { id: Appearance; label: string }[] = [
-  { id: "skeleton", label: "Skeleton" },
-  { id: "muscles", label: "Muscles" },
-];
 
 export default function Home() {
   const appearance = useArmSimStore((s) => s.appearance);
@@ -27,21 +22,33 @@ export default function Home() {
             v0.2 · full body
           </div>
         </div>
-        <div className="flex items-center gap-2">
-          <div className="flex items-center gap-0.5 rounded-md border border-neutral-700 bg-neutral-950/60 p-0.5">
-            {TABS.map((t) => (
-              <button
-                key={t.id}
-                onClick={() => setAppearance(t.id)}
-                className={`rounded px-3 py-1 text-[11px] font-medium transition ${
-                  appearance === t.id
-                    ? "bg-teal-900/40 text-teal-400"
-                    : "text-neutral-500 hover:text-neutral-200"
-                }`}
-              >
-                {t.label}
-              </button>
-            ))}
+        <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2">
+            <span
+              className={`text-[11px] font-medium transition ${
+                appearance === "skeleton" ? "text-teal-400" : "text-neutral-500"
+              }`}
+            >
+              Skeleton
+            </span>
+            <button
+              type="button"
+              role="switch"
+              aria-checked={appearance === "muscles"}
+              aria-label="Toggle between skeleton and muscles view"
+              onClick={() => setAppearance(appearance === "skeleton" ? "muscles" : "skeleton")}
+              data-on={appearance === "muscles"}
+              className="flex h-6 w-11 shrink-0 items-center rounded-full border border-neutral-700 bg-neutral-800 p-0.5 outline-none transition-colors focus-visible:ring-2 focus-visible:ring-teal-500/50 focus-visible:ring-offset-2 focus-visible:ring-offset-neutral-900 data-[on=true]:justify-end data-[on=true]:border-teal-600 data-[on=true]:bg-teal-600"
+            >
+              <span className="h-4 w-4 rounded-full bg-white shadow-sm transition-transform" />
+            </button>
+            <span
+              className={`text-[11px] font-medium transition ${
+                appearance === "muscles" ? "text-teal-400" : "text-neutral-500"
+              }`}
+            >
+              Muscles
+            </span>
           </div>
           <button
             onClick={resetAll}
