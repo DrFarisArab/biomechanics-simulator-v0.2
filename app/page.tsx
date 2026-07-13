@@ -15,6 +15,8 @@ export default function Home() {
   const setAppearance = useArmSimStore((s) => s.setAppearance);
   const showSkin = useArmSimStore((s) => s.showSkin);
   const setShowSkin = useArmSimStore((s) => s.setShowSkin);
+  const showJointMarkers = useArmSimStore((s) => s.showJointMarkers);
+  const setShowJointMarkers = useArmSimStore((s) => s.setShowJointMarkers);
   const resetAll = useArmSimStore((s) => s.resetAll);
   const specialTestsOpen = useArmSimStore((s) => s.specialTestsOpen);
   const setSpecialTestsOpen = useArmSimStore((s) => s.setSpecialTestsOpen);
@@ -29,6 +31,27 @@ export default function Home() {
           </div>
         </div>
         <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2">
+            <span
+              className={`text-[11px] font-medium transition ${
+                showJointMarkers ? "text-teal-400" : "text-neutral-500"
+              }`}
+            >
+              Markers
+            </span>
+            <button
+              type="button"
+              role="switch"
+              aria-checked={showJointMarkers}
+              aria-label="Toggle joint markers"
+              onClick={() => setShowJointMarkers(!showJointMarkers)}
+              data-on={showJointMarkers}
+              className="flex h-6 w-11 shrink-0 items-center rounded-full border border-neutral-700 bg-neutral-800 p-0.5 outline-none transition-colors focus-visible:ring-2 focus-visible:ring-teal-500/50 focus-visible:ring-offset-2 focus-visible:ring-offset-neutral-900 data-[on=true]:justify-end data-[on=true]:border-teal-600 data-[on=true]:bg-teal-600"
+            >
+              <span className="h-4 w-4 rounded-full bg-white shadow-sm transition-transform" />
+            </button>
+          </div>
+          <div className="h-4 w-px bg-neutral-800" />
           <div className="flex items-center gap-2">
             <span className={`text-[11px] font-medium transition ${showSkin ? "text-teal-400" : "text-neutral-500"}`}>
               Skin

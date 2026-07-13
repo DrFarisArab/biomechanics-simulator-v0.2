@@ -82,6 +82,7 @@ export function BodyModel({ modelUrl }: { modelUrl: string }) {
   const rootPosition = useArmSimStore((s) => s.rootPosition);
   const rootRotation = useArmSimStore((s) => s.rootRotation);
   const stanceLeg = useArmSimStore((s) => s.stanceLeg);
+  const showJointMarkers = useArmSimStore((s) => s.showJointMarkers);
 
   const markerJoints = useMemo(() => {
     const found: Record<string, THREE.Object3D | undefined> = {};
@@ -182,7 +183,7 @@ export function BodyModel({ modelUrl }: { modelUrl: string }) {
     <group position={rootPosition}>
       <group ref={groupRef} quaternion={quaternion}>
         <primitive object={scene} />
-        {markerJoints.map(({ jointId }) => {
+        {showJointMarkers && markerJoints.map(({ jointId }) => {
           const isSelected = selectedJoint === jointId;
           const isHovered = hoveredJoint === jointId;
           const color = isSelected ? COLORS.jointSelected : isHovered ? COLORS.jointHover : COLORS.joint;
