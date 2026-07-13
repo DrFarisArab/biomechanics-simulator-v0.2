@@ -46,6 +46,14 @@ export function recolorMaterials(scene: THREE.Object3D) {
   scene.traverse((child) => {
     const mesh = child as THREE.Mesh;
     if (!mesh.isMesh) return;
+    // SkinnedMesh bounding volumes are computed once from the bind pose and
+    // never recomputed as bones move, so the default frustum-cull check
+    // (which relies on that stale volume) can decide a mesh rotated far
+    // from its bind pose is off-screen and skip rendering it — this is what
+    // caused muscles to intermittently vanish at extreme poses (Thomas
+    // Test, Overhead Reach). Disabling per-mesh culling is the standard fix
+    // for skinned/rigged models.
+    mesh.frustumCulled = false;
     const mats = Array.isArray(mesh.material) ? mesh.material : [mesh.material];
     for (const m of mats) {
       const mat = m as THREE.MeshStandardMaterial;
