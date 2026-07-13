@@ -5,6 +5,7 @@ import * as THREE from "three";
 import { Canvas } from "@react-three/fiber";
 import { OrbitControls, Grid } from "@react-three/drei";
 import { BodyModel } from "./BodyModel";
+import { SkinOverlay } from "./SkinOverlay";
 import { ErrorBoundary } from "./ErrorBoundary";
 import { Chair } from "./furniture/Chair";
 import { Bed } from "./furniture/Bed";
@@ -32,6 +33,7 @@ const LOCAL_VIEW_CENTER = new THREE.Vector3(0, 1.2, -0.03);
 
 export function Scene() {
   const appearance = useArmSimStore((s) => s.appearance);
+  const showSkin = useArmSimStore((s) => s.showSkin);
   const furniture = useArmSimStore((s) => s.furniture);
   const furnitureRotation = useArmSimStore((s) => s.furnitureRotation);
   const rootPosition = useArmSimStore((s) => s.rootPosition);
@@ -56,6 +58,7 @@ export function Scene() {
         <directionalLight position={[-1, 0.5, -1]} intensity={0.4} />
         <Suspense fallback={null}>
           <BodyModel key={appearance} modelUrl={MODEL_URLS[appearance]} />
+          {showSkin && <SkinOverlay />}
           {furniture === "chair" && <Chair />}
           {furniture === "bed" && <Bed rotationY={furnitureRotation} />}
         </Suspense>

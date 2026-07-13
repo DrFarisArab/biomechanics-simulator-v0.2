@@ -84,6 +84,29 @@ export function recolorMaterials(scene: THREE.Object3D) {
   });
 }
 
+/**
+ * The reference-skin overlay ships its own translucent material straight
+ * from the glTF export (alpha-blend, skin-tone) — unlike the muscle/bone
+ * models, it should NOT go through recolorMaterials (that would overwrite
+ * the intentional color/alpha with the opaque muscle-red default). Still
+ * needs the same frustumCulled fix, since it's a SkinnedMesh too.
+ */
+export function prepareSkinOverlayMaterial(scene: THREE.Object3D) {
+  scene.traverse((child) => {
+    const mesh = child as THREE.Mesh;
+    if (!mesh.isMesh) return;
+    mesh.frustumCulled = false;
+    const mats = Array.isArray(mesh.material) ? mesh.material : [mesh.material];
+    for (const m of mats) {
+      const mat = m as THREE.MeshStandardMaterial;
+      if (!mat.isMeshStandardMaterial) continue;
+      mat.transparent = true;
+      mat.depthWrite = false;
+      mat.side = THREE.DoubleSide;
+    }
+  });
+}
+
 export const JOINT_MARKER_COLORS = {
   joint: "#1f6f6a",
   jointHover: "#5eead4",
