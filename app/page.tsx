@@ -4,6 +4,7 @@ import dynamic from "next/dynamic";
 import { Sidebar } from "@/components/Sidebar";
 import { PresetMenu } from "@/components/PresetMenu";
 import { SpecialTests } from "@/components/SpecialTests";
+import { CommandBox } from "@/components/CommandBox";
 import { Footer } from "@/components/Footer";
 import { useArmSimStore } from "@/lib/store";
 
@@ -76,6 +77,7 @@ export default function Home() {
         <PresetMenu />
         <main className="relative min-w-0 flex-1">
           <Scene />
+          <CommandBox />
         </main>
         {specialTestsOpen ? <SpecialTests /> : <Sidebar />}
       </div>
