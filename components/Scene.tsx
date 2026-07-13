@@ -50,7 +50,13 @@ export function Scene() {
   return (
     <ErrorBoundary>
       <Canvas
-        camera={{ position: [1.8, 1.3, 2.2], fov: 40, near: 0.01, far: 20 }}
+        // Same viewing direction as before, just pulled back from ~2.87 to
+        // ~4.0 units from the target — at fov 40 the old distance's vertical
+        // frustum only covered y ≈ [0.16, 2.24] around the mid-torso target
+        // (1.2), clipping the feet (y=0) at the bottom on any viewport
+        // taller than the ~650px one this was originally tuned against.
+        // ~4.0 covers y ≈ [-0.26, 2.66], fitting head-to-feet with margin.
+        camera={{ position: [2.51, 1.34, 3.08], fov: 40, near: 0.01, far: 20 }}
         className="!bg-neutral-950"
       >
         <ambientLight intensity={0.6} />
