@@ -3,6 +3,9 @@
 // (r/cat/n/t/p/pos/sn/sp/tier/pearl) to stay a straightforward sync target if
 // the source app's dataset is updated later.
 
+import { PRESETS, type PosePreset } from "./presets";
+import { buildAnglesFromCommands } from "./poseFromCommands";
+
 export interface Region {
   id: string;
   name: string;
@@ -244,9 +247,13 @@ export const TEST_POSE_MAP: Record<string, string> = {
   lx2: "slr_right", // Crossed SLR — same pose, test the OTHER leg's symptoms
   si6: "slr_right", // Active SLR
 
-  // Hip
+  // Hip — see HIP_CUSTOM_POSES below for the position-built ones; these
+  // three reuse an existing preset outright (no custom pose needed).
+  hip5: "single_leg_right", // Resisted external derotation / single-leg stance (position-only)
+  hip7: "single_leg_right", // Trendelenburg
   hip8: "thomas_test_left", // Thomas test
-  hip12: "slr_right", // Stinchfield (resisted SLR ~30°) — position only, not resisted
+  hip14: "sitting", // Fulcrum test (seated, legs dangling — palpation test, sitting matches the setup)
+  hip15: "supine", // Patellar-pubic percussion (supine, legs neutral — auscultation test, no extra angles needed)
 
   // Knee — supine/hook-lying at ~90° knee flexion
   kn2: "hooklying", // Anterior drawer
@@ -262,4 +269,85 @@ export const TEST_POSE_MAP: Record<string, string> = {
 
   // Ankle / Achilles
   ft6: "prone", // Thompson test (prone, foot off table edge)
+};
+
+/**
+ * Custom, purpose-built poses for special tests that don't match any
+ * existing preset — built via buildAnglesFromCommands() (the same NL
+ * command grammar the CommandBox UI accepts), layered on top of an existing
+ * preset's ROOT TRANSFORM (rootPosition/rootRotation/furniture — body
+ * orientation isn't something the command parser sets, only joint angles
+ * are). Positions researched against Physiopedia's hip special-tests pages
+ * (physio-pedia.com/Category:Hip_-_Special_Tests), not guessed from the
+ * dataset's own one-line procedure text — cross-checked joint angles where
+ * the source gave one (e.g. FADIR's 90° hip flexion, Ely's near-full ~140°
+ * knee flexion "heel to buttock"); where a source only says "adduct"/
+ * "internally rotate" without a number, used a clinically typical magnitude
+ * (documented per-test below) rather than an arbitrary one.
+ *
+ * All tested on the RIGHT side, matching the existing hip-region presets'
+ * convention (slr_right, single_leg_right).
+ */
+function fromBase(baseId: string, commands: string[]): PosePreset {
+  const base = PRESETS.find((p) => p.id === baseId);
+  if (!base) throw new Error(`buildHipPose: base preset "${baseId}" not found`);
+  return {
+    id: `__custom_${baseId}_${commands.length}`,
+    label: base.label,
+    group: base.group,
+    description: base.description,
+    rootPosition: base.rootPosition,
+    rootRotation: base.rootRotation,
+    furniture: base.furniture,
+    furnitureRotation: base.furnitureRotation,
+    angles: buildAnglesFromCommands(commands),
+  };
+}
+
+export const SPECIAL_TEST_CUSTOM_POSES: Record<string, PosePreset> = {
+  // FADIR — supine, hip flexed 90°, then adducted + internally rotated.
+  // Adduction/IR magnitude not numerically specified by the source; used
+  // typical clinical exam values (~20°/~30°).
+  hip1: fromBase("supine", ["flex the right hip 90", "adduct the right hip 20", "internally rotate the right hip 30"]),
+
+  // FABER (Patrick) — classic "figure-4": hip flexed, abducted, and
+  // externally rotated so the ankle rests on the opposite knee.
+  hip2: fromBase("supine", ["flex the right hip 45", "abduct the right hip 45", "externally rotate the right hip 60"]),
+
+  // Hip Quadrant / Scour — source gives a 70–140° flexion arc "scoured"
+  // through adduction then abduction; snapshotting the flexion+adduction
+  // phase at the arc's midpoint (110°) as the representative static pose.
+  hip3: fromBase("supine", ["flex the right hip 110", "adduct the right hip 15"]),
+
+  // McCarthy — dynamic (flex to end-range, then extend while rotating);
+  // snapshotting the flexed+externally-rotated starting position (the ER
+  // variant; the source also describes an IR variant from the same start).
+  hip4: fromBase("supine", ["flex the right hip 100", "externally rotate the right hip 20"]),
+
+  // Ober test — side-lying on the OPPOSITE side (so the tested right hip is
+  // the top leg), abducted and slightly extended, then normally let drop
+  // into adduction (that release isn't representable as a static pose —
+  // this shows the held starting position).
+  hip6: fromBase("sidelying_left", ["abduct the right hip 20", "extend the right hip 10"]),
+
+  // Ely's test — prone, knee passively flexed until the heel nears the
+  // buttock (source: "heel should touch the buttocks") — near the joint's
+  // full 140° flexion ROM.
+  hip9: fromBase("prone", ["flex the right knee 140"]),
+
+  // FAIR test — side-lying on the OPPOSITE side (tested right hip on top),
+  // flexed 90°, adducted, and internally rotated (source gives 90° flexion
+  // explicitly; adduction/IR magnitude not numerically specified, used
+  // typical exam values).
+  hip10: fromBase("sidelying_left", ["flex the right hip 90", "adduct the right hip 20", "internally rotate the right hip 20"]),
+
+  // Stinchfield — resisted SLR held at ~30° hip flexion (source gives the
+  // angle explicitly) — more accurate than reusing the full slr_right
+  // preset (which poses ~70° flexion, appropriate for the Lasègue SLR but
+  // not this test's much lower held angle).
+  hip12: fromBase("supine", ["flex the right hip 30"]),
+
+  // Log roll — supine, leg extended, passively rolled through IR/ER;
+  // snapshotting one direction (external rotation) of the roll.
+  hip13: fromBase("supine", ["externally rotate the right hip 20"]),
 };

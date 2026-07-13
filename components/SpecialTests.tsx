@@ -9,6 +9,7 @@ import {
   CLUSTERS,
   TIER_META,
   TEST_POSE_MAP,
+  SPECIAL_TEST_CUSTOM_POSES,
   type SpecialTest,
   type Region,
 } from "@/lib/specialTests";
@@ -35,7 +36,7 @@ function regionTestCount(regionId: string) {
 function ApplyPoseButton({ test }: { test: SpecialTest }) {
   const applyPose = useArmSimStore((s) => s.applyPose);
   const presetId = TEST_POSE_MAP[test.id];
-  const preset = presetId ? PRESETS.find((p) => p.id === presetId) : undefined;
+  const preset = presetId ? PRESETS.find((p) => p.id === presetId) : SPECIAL_TEST_CUSTOM_POSES[test.id];
 
   if (!preset) {
     return (
@@ -186,7 +187,9 @@ function RegionView({
                   <TierDot tier={t.tier} />
                   {t.n}
                 </span>
-                {TEST_POSE_MAP[t.id] && <span className="shrink-0 text-[9px] font-medium text-teal-500">POSE</span>}
+                {(TEST_POSE_MAP[t.id] || SPECIAL_TEST_CUSTOM_POSES[t.id]) && (
+                  <span className="shrink-0 text-[9px] font-medium text-teal-500">POSE</span>
+                )}
               </button>
             ))}
         </div>
