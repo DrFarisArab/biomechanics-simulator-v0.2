@@ -36,11 +36,13 @@ interface ArmSimState {
   stanceLeg: StanceLeg;
   furniture: Furniture;
   furnitureRotation: number;
+  specialTestsOpen: boolean;
   setAppearance: (a: Appearance) => void;
   setAngle: (jointId: string, dofId: string, value: number) => void;
   selectJoint: (jointId: string | null) => void;
   hoverJoint: (jointId: string | null) => void;
   setStanceLeg: (leg: StanceLeg) => void;
+  setSpecialTestsOpen: (open: boolean) => void;
   resetAll: () => void;
   applyPose: (
     angles: Record<string, Record<string, number>>,
@@ -66,7 +68,9 @@ export const useArmSimStore = create<ArmSimState>((set) => ({
   stanceLeg: "none",
   furniture: "none",
   furnitureRotation: 0,
+  specialTestsOpen: false,
   setAppearance: (a) => set({ appearance: a }),
+  setSpecialTestsOpen: (open) => set({ specialTestsOpen: open }),
   setAngle: (jointId, dofId, value) =>
     set((s) => ({
       angles: {
