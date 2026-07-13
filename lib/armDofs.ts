@@ -22,11 +22,11 @@ import { scapularReductionDeg } from "./scapularRhythm";
  * individually verified via a concrete world-position delta (which way the
  * hand/elbow tip actually moved for a positive test rotation), matching this
  * app's clinical convention (rom.ts's positive/negative labels). Wrist
- * radUlnar/pronSup signs are inferred by the same L/R-mirroring pattern
- * every other paired frontal/transverse DOF in this project follows, but are
- * NOT individually spot-checked (same honest disclosure as the original
- * Blender project's own pronation/supination caveat) — flag if they look
- * wrong when actually posed.
+ * radUlnar and forearm pronSup signs are inferred by the same L/R-mirroring
+ * pattern every other paired frontal/transverse DOF in this project follows,
+ * but are NOT individually spot-checked (same honest disclosure as the
+ * original Blender project's own pronation/supination caveat) — flag if
+ * they look wrong when actually posed.
  *
  * Shoulder has TWO DOFs sharing the same bone+axis (upper_arm's local X):
  * `flexExt` (UI-labelled "Scaption") and `sagittalFlexExt` (UI-labelled
@@ -66,15 +66,32 @@ export const ARM_JOINT_DOFS: Record<string, JointSpec> = {
   elbow_right: {
     flexExt: { bone: "forearmR", axis: "x", sign: -1 },
   },
+  // Pronation/supination is a FOREARM movement (the radius rotating over the
+  // ulna), not a wrist movement — it used to live on wrist's DOFs, rotating
+  // the HAND bone's own local Y. That's wrong on two counts: (1) it's not
+  // anatomically a wrist motion, and (2) mechanically it left the forearm
+  // bone's own rotation untouched, so any soft-tissue mesh weighted to BOTH
+  // forearm and hand near the wrist crease got torn apart at extreme angles
+  // (confirmed live: forearmR's quaternion was byte-identical whether
+  // supination was 0° or 80°, and the muscle mesh visibly degraded at 80°).
+  // Fix: apply it to the forearm bone's own local Y axis (its long axis, by
+  // this rig's own head->tail construction convention — see file header)
+  // instead. Since hand is a direct child of forearm, the hand (and
+  // fingers) inherit this rotation automatically through the scene graph —
+  // no separate wrist-side code needed for "child segments follow".
+  forearm_left: {
+    pronSup: { bone: "forearmL", axis: "y", sign: -1 }, // not concretely spot-checked
+  },
+  forearm_right: {
+    pronSup: { bone: "forearmR", axis: "y", sign: 1 }, // not concretely spot-checked
+  },
   wrist_left: {
     flexExt: { bone: "handL", axis: "x", sign: -1 },
     radUlnar: { bone: "handL", axis: "z", sign: -1 },
-    pronSup: { bone: "handL", axis: "y", sign: -1 }, // not concretely spot-checked
   },
   wrist_right: {
     flexExt: { bone: "handR", axis: "x", sign: -1 },
     radUlnar: { bone: "handR", axis: "z", sign: 1 },
-    pronSup: { bone: "handR", axis: "y", sign: 1 }, // not concretely spot-checked
   },
 };
 
@@ -93,14 +110,20 @@ export const ARM_DOF_META: Record<
   elbow_left: {
     flexExt: { label: "Extension · Flexion", positive: "Flexion", negative: "Extension", min: -5, max: 145 },
   },
+  forearm_left: {
+    // AAOS 0° = neutral (thumb-up/handshake position), matching every other
+    // DOF's convention here — supination (palm up) positive, pronation
+    // (palm down) negative.
+    pronSup: { label: "Pronation · Supination", positive: "Supination", negative: "Pronation", min: -80, max: 85 },
+  },
   wrist_left: {
     flexExt: { label: "Extension · Flexion", positive: "Flexion", negative: "Extension", min: -70, max: 80 },
     radUlnar: { label: "Radial · Ulnar deviation", positive: "Ulnar deviation", negative: "Radial deviation", min: -20, max: 30 },
-    pronSup: { label: "Pronation · Supination", positive: "Supination", negative: "Pronation", min: -80, max: 85 },
   },
 };
 ARM_DOF_META.shoulder_right = ARM_DOF_META.shoulder_left;
 ARM_DOF_META.elbow_right = ARM_DOF_META.elbow_left;
+ARM_DOF_META.forearm_right = ARM_DOF_META.forearm_left;
 ARM_DOF_META.wrist_right = ARM_DOF_META.wrist_left;
 
 const AXIS_INDEX = { x: 0, y: 1, z: 2 } as const;

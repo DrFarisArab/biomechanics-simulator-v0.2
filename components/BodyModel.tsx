@@ -38,6 +38,17 @@ const JOINT_MARKER_BONE: Record<string, string> = {
   ankle_right: "footR",
 };
 
+// Joints with no single bone origin of their own — the marker sits at the
+// midpoint of two OTHER joints' bones instead. Forearm pronation/supination
+// has no discrete joint center (the radius rotates over the ulna along the
+// whole segment), so its marker goes at the visual middle of the forearm:
+// halfway between the elbow (forearm bone's own head) and wrist (hand
+// bone's own head).
+const JOINT_MARKER_MIDPOINT: Record<string, [string, string]> = {
+  forearm_left: ["forearmL", "handL"],
+  forearm_right: ["forearmR", "handR"],
+};
+
 const ALL_BONE_NAMES = Array.from(
   new Set([...ARM_BONE_NAMES, ...TRUNK_BONE_NAMES, ...LEG_BONE_NAMES, "head", "scapulaL", "scapulaR"])
 );
@@ -104,9 +115,21 @@ export function BodyModel({ modelUrl }: { modelUrl: string }) {
     if (typeof window !== "undefined") {
       (window as unknown as { __bodyScene: THREE.Object3D }).__bodyScene = scene;
     }
-    return Object.entries(JOINT_MARKER_BONE)
-      .map(([jointId, boneName]) => ({ jointId, bone: found[boneName] }))
-      .filter((m): m is { jointId: string; bone: THREE.Object3D } => !!m.bone);
+    const direct = Object.entries(JOINT_MARKER_BONE).map(([jointId, boneName]) => ({
+      jointId,
+      bone: found[boneName],
+      bone2: undefined as THREE.Object3D | undefined,
+    }));
+    const midpoints = Object.entries(JOINT_MARKER_MIDPOINT)
+      .map(([jointId, [boneA, boneB]]) => ({
+        jointId,
+        bone: found[boneA],
+        bone2: found[boneB] as THREE.Object3D | undefined,
+      }))
+      .filter((m) => !!m.bone2);
+    return [...direct, ...midpoints].filter(
+      (m): m is { jointId: string; bone: THREE.Object3D; bone2: THREE.Object3D | undefined } => !!m.bone
+    );
   }, [scene]);
 
   useEffect(() => {
@@ -162,13 +185,18 @@ export function BodyModel({ modelUrl }: { modelUrl: string }) {
   }, [angles, stanceLeg]);
 
   const tmpWorld = useMemo(() => new THREE.Vector3(), []);
+  const tmpWorld2 = useMemo(() => new THREE.Vector3(), []);
   useFrame(() => {
     const group = groupRef.current;
     if (!group) return;
-    for (const { jointId, bone } of markerJoints) {
+    for (const { jointId, bone, bone2 } of markerJoints) {
       const marker = markerRefs.current[jointId];
       if (!marker) continue;
       bone.getWorldPosition(tmpWorld);
+      if (bone2) {
+        bone2.getWorldPosition(tmpWorld2);
+        tmpWorld.add(tmpWorld2).multiplyScalar(0.5);
+      }
       group.worldToLocal(tmpWorld);
       marker.position.copy(tmpWorld);
     }

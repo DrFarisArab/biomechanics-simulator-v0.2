@@ -14,6 +14,8 @@ const JOINT_LABELS: Record<string, string> = {
   shoulder_right: "Right Shoulder",
   elbow_left: "Left Elbow",
   elbow_right: "Right Elbow",
+  forearm_left: "Left Forearm",
+  forearm_right: "Right Forearm",
   wrist_left: "Left Wrist",
   wrist_right: "Right Wrist",
   pelvis: "Pelvis",

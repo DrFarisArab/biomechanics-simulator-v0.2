@@ -33,7 +33,7 @@ import { LEG_JOINT_DOFS, LEG_DOF_META } from "./legDofs";
  * because v0.1's rig didn't have this per-joint inconsistency.
  */
 
-type JointKind = "shoulder" | "hip" | "flexExt-only" | "wrist" | "ankle" | "spine" | "pelvis";
+type JointKind = "shoulder" | "hip" | "flexExt-only" | "wrist" | "forearm" | "ankle" | "spine" | "pelvis";
 
 interface JointAlias {
   /** Joint ids to target. Two ids = a paired (left/right) joint. */
@@ -45,7 +45,10 @@ const JOINT_ALIASES: Record<string, JointAlias> = {
   shoulder: { ids: ["shoulder_left", "shoulder_right"], kind: "shoulder" },
   elbow: { ids: ["elbow_left", "elbow_right"], kind: "flexExt-only" },
   wrist: { ids: ["wrist_left", "wrist_right"], kind: "wrist" },
-  forearm: { ids: ["wrist_left", "wrist_right"], kind: "wrist" },
+  // Pronation/supination is a forearm (radioulnar) movement, not a wrist
+  // one — see armDofs.ts's forearm_left/right for why this is its own
+  // joint id rather than folded into wrist.
+  forearm: { ids: ["forearm_left", "forearm_right"], kind: "forearm" },
   hip: { ids: ["hip_left", "hip_right"], kind: "hip" },
   knee: { ids: ["knee_left", "knee_right"], kind: "flexExt-only" },
   ankle: { ids: ["ankle_left", "ankle_right"], kind: "ankle" },
@@ -147,7 +150,7 @@ const MOVEMENTS: MovementConcept[] = [
   },
   {
     dofId: "pronSup",
-    kinds: ["wrist"],
+    kinds: ["forearm"],
     needsSide: false,
     positive: ["supination", "supinate", "palm up", "turn palm up", "rotate palm up"],
     negative: ["pronation", "pronate", "palm down", "turn palm down", "rotate palm down"],
@@ -272,15 +275,17 @@ export function parsePoseCommand(input: string): ParsedCommand | ParseError {
 
   const movementMatch = findMovement(movementJoined, kind);
   if (!movementMatch) {
-    return {
-      error: `Couldn't find a movement for "${jointMatch.key}". Try e.g. flexion/extension${
-        kind === "shoulder" || kind === "hip" ? ", abduction/adduction, or internal/external rotation" : ""
-      }${kind === "spine" ? ", rotation (with left/right), or lateral flexion (with left/right)" : ""}${
-        kind === "pelvis" ? ", anterior/posterior tilt, or hike (with left/right)" : ""
-      }${kind === "wrist" ? ", pronation/supination, or ulnar/radial deviation" : ""}${
-        kind === "ankle" ? ", dorsiflexion/plantarflexion, or inversion/eversion" : ""
-      }.`,
-    };
+    const hint =
+      kind === "forearm"
+        ? "pronation/supination"
+        : `flexion/extension${
+            kind === "shoulder" || kind === "hip" ? ", abduction/adduction, or internal/external rotation" : ""
+          }${kind === "spine" ? ", rotation (with left/right), or lateral flexion (with left/right)" : ""}${
+            kind === "pelvis" ? ", anterior/posterior tilt, or hike (with left/right)" : ""
+          }${kind === "wrist" ? ", or ulnar/radial deviation" : ""}${
+            kind === "ankle" ? ", dorsiflexion/plantarflexion, or inversion/eversion" : ""
+          }`;
+    return { error: `Couldn't find a movement for "${jointMatch.key}". Try e.g. ${hint}.` };
   }
   const { concept, sign } = movementMatch;
 
