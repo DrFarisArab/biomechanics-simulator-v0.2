@@ -93,6 +93,9 @@ export const TESTS: SpecialTest[] = [
   { id: "lx7", r: "lx", cat: "Stenosis", n: "Two-stage treadmill / extension bias", t: "Lumbar spinal stenosis (neurogenic claudication)", p: "Compare walking tolerance on level vs inclined treadmill (flexed posture).", pos: "Later symptom onset and longer tolerance when walking in flexion (inclined) than upright.", tier: 2 },
   { id: "lx8", r: "lx", cat: "Non-organic", n: "Waddell signs (screen)", t: "Non-organic / behavioural component", p: "Screen: superficial/non-anatomic tenderness, axial loading & simulated rotation, distracted SLR, regional non-dermatomal changes, over-reaction.", pos: "Three or more categories suggest a significant behavioural/psychosocial component.", tier: 2, pearl: "A yellow-flag screen, NOT a test for malingering — interpret with care." },
   { id: "lx9", r: "lx", cat: "Radiculopathy / neural", n: "Bowstring / popliteal compression", t: "Sciatic nerve tension", p: "At the SLR symptom point, slightly flex the knee, then apply thumb pressure in the popliteal fossa.", pos: "Reproduction of the same radiating symptoms.", tier: 3 },
+  { id: "lx10", r: "lx", cat: "Radiculopathy / neural", n: "Bragard's sign", t: "Lumbosacral radiculopathy (vs isolated hamstring tightness)", p: "At the SLR pain point, lower the leg just below threshold, then dorsiflex the ankle.", pos: "Return of the familiar radicular pain with dorsiflexion.", sn: "≈69", sp: "≈76", tier: 2, pearl: "An SLR sensitiser in its own right — best used when SLR alone is equivocal, especially within the first 3 weeks of symptoms." },
+  { id: "lx11", r: "lx", cat: "Core / motor control", n: "Double leg lowering test", t: "Abdominal (anterior core) control", p: "Supine, both hips flexed to 90° with a pressure cuff/hand under the low back; slowly lower both legs while maintaining posterior pelvic tilt.", pos: "The angle at which the low back arches and pressure drops — a smaller angle before losing the tilt indicates weaker eccentric abdominal control.", tier: 3, pearl: "Eccentric, harder than a curl-up — tests the abdominals' ability to control the pelvis under increasing hip-flexor load as the legs descend." },
+  { id: "lx12", r: "lx", cat: "Directional preference", n: "McKenzie side glide test", t: "Frontal-plane directional preference / lateral shift", p: "Standing, shoulders kept level; glide the hips sideways as far as possible each direction (therapist can assist/overpressure).", pos: "Asymmetric loss of motion or reproduction/centralisation of symptoms to one side identifies a lateral component.", tier: 3, pearl: "Part of McKenzie/MDT classification — pairs with repeated flexion/extension to find the patient's full directional preference." },
 
   /* ---- SI JOINT & PELVIS ---- */
   { id: "si1", r: "si", cat: "Provocation cluster", n: "Thigh thrust (POSH)", t: "SIJ pain provocation", p: "Supine; flex the hip 90° and apply a posterior shear through the femur.", pos: "Reproduction of familiar SIJ/buttock pain.", sn: "36–88", sp: "≈69", tier: 1, pearl: "Individually the strongest single SIJ provocation test." },
@@ -272,6 +275,7 @@ export const TEST_POSE_MAP: Record<string, string> = {
   // Lumbar / SIJ — supine straight-leg raise family
   lx1: "slr_right", // Straight leg raise (Lasègue)
   lx2: "slr_right", // Crossed SLR — same pose, test the OTHER leg's symptoms
+  lx10: "slr_right", // Bragard's sign — same SLR position, sensitised with ankle dorsiflexion
   si6: "slr_right", // Active SLR
 
   // Hip — see HIP_CUSTOM_POSES below for the position-built ones; these
@@ -516,4 +520,19 @@ export const SPECIAL_TEST_CUSTOM_POSES: Record<string, PosePreset> = {
   // position qualitatively, not numerically — approximated to bring the
   // hand near the opposite shoulder).
   sh39: fromBase("standing", ["adduct the right shoulder 90", "flex the right elbow 130"]),
+
+  // ---- LUMBAR SPINE ---- researched against Physiopedia's lumbar
+  // special-tests pages (physio-pedia.com/Category:Lumbar_Spine_-_Special_Tests).
+
+  // Double leg lowering test — supine, both hips flexed 90° (source gives
+  // the angle explicitly), knees extended, the vertical-legs starting/test
+  // position (the diagnostic angle itself is patient-specific, found as the
+  // legs lower — not a fixed pose to snapshot).
+  lx11: fromBase("supine", ["flex the left hip 90", "flex the right hip 90"]),
+
+  // McKenzie side glide test — standing; the sim has no lateral-translation
+  // DOF for a pure hip shift, so this is approximated with lumbar lateral
+  // flexion (side bend) toward one side (magnitude not numerically
+  // specified by the source — used a typical exam value).
+  lx12: fromBase("standing", ["side bend the lumbar spine right 20"]),
 };
