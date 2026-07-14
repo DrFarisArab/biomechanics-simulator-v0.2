@@ -6,6 +6,7 @@ import { Canvas } from "@react-three/fiber";
 import { OrbitControls, Grid } from "@react-three/drei";
 import { BodyModel } from "./BodyModel";
 import { SkinOverlay } from "./SkinOverlay";
+import { ClipPlaybackDriver } from "./ClipPlaybackDriver";
 import { ErrorBoundary } from "./ErrorBoundary";
 import { Chair } from "./furniture/Chair";
 import { Bed } from "./furniture/Bed";
@@ -74,6 +75,7 @@ export function Scene() {
         </Suspense>
         <Grid args={[4, 4]} position={[0, 0, 0]} cellColor="#26333f" sectionColor="#374151" fadeDistance={6} />
         <OrbitControls makeDefault target={target} />
+        <ClipPlaybackDriver />
       </Canvas>
     </ErrorBoundary>
   );

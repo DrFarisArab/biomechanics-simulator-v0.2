@@ -4,32 +4,11 @@ import { useArmSimStore } from "@/lib/store";
 import { ARM_JOINT_DOFS, ARM_DOF_META } from "@/lib/armDofs";
 import { TRUNK_JOINT_DOFS, TRUNK_DOF_META } from "@/lib/trunkDofs";
 import { LEG_JOINT_DOFS, LEG_DOF_META } from "@/lib/legDofs";
+import { JOINT_LABELS } from "@/lib/jointLabels";
 import { DegreeSlider } from "./DegreeSlider";
 
 const ALL_JOINT_DOFS = { ...ARM_JOINT_DOFS, ...TRUNK_JOINT_DOFS, ...LEG_JOINT_DOFS };
 const ALL_DOF_META = { ...ARM_DOF_META, ...TRUNK_DOF_META, ...LEG_DOF_META };
-
-const JOINT_LABELS: Record<string, string> = {
-  shoulder_left: "Left Shoulder",
-  shoulder_right: "Right Shoulder",
-  elbow_left: "Left Elbow",
-  elbow_right: "Right Elbow",
-  forearm_left: "Left Forearm",
-  forearm_right: "Right Forearm",
-  wrist_left: "Left Wrist",
-  wrist_right: "Right Wrist",
-  pelvis: "Pelvis",
-  lumbar: "Lumbar Spine",
-  thoracic: "Thoracic Spine",
-  cervical: "Cervical Spine",
-  head: "Head",
-  hip_left: "Left Hip",
-  hip_right: "Right Hip",
-  knee_left: "Left Knee",
-  knee_right: "Right Knee",
-  ankle_left: "Left Ankle",
-  ankle_right: "Right Ankle",
-};
 
 function movementLabel(meta: { positive: string; negative: string }, value: number) {
   if (Math.abs(value) < 0.5) return "Neutral";

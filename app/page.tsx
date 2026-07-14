@@ -4,9 +4,11 @@ import dynamic from "next/dynamic";
 import { Sidebar } from "@/components/Sidebar";
 import { PresetMenu } from "@/components/PresetMenu";
 import { SpecialTests } from "@/components/SpecialTests";
+import { RecordReplayPanel } from "@/components/RecordReplayPanel";
 import { CommandBox } from "@/components/CommandBox";
 import { Footer } from "@/components/Footer";
 import { useArmSimStore } from "@/lib/store";
+import { useRecordReplayStore } from "@/lib/recordReplayStore";
 
 const Scene = dynamic(() => import("@/components/Scene").then((m) => m.Scene), { ssr: false });
 
@@ -20,6 +22,8 @@ export default function Home() {
   const resetAll = useArmSimStore((s) => s.resetAll);
   const specialTestsOpen = useArmSimStore((s) => s.specialTestsOpen);
   const setSpecialTestsOpen = useArmSimStore((s) => s.setSpecialTestsOpen);
+  const recordReplayOpen = useRecordReplayStore((s) => s.panelOpen);
+  const setRecordReplayOpen = useRecordReplayStore((s) => s.setPanelOpen);
 
   return (
     <div className="flex h-screen w-screen flex-col bg-neutral-950 text-neutral-100">
@@ -97,7 +101,10 @@ export default function Home() {
             </span>
           </div>
           <button
-            onClick={() => setSpecialTestsOpen(!specialTestsOpen)}
+            onClick={() => {
+              setSpecialTestsOpen(!specialTestsOpen);
+              if (!specialTestsOpen) setRecordReplayOpen(false);
+            }}
             aria-pressed={specialTestsOpen}
             className={`rounded-md border px-2.5 py-1.5 text-[11px] font-medium transition ${
               specialTestsOpen
@@ -106,6 +113,20 @@ export default function Home() {
             }`}
           >
             Special Tests
+          </button>
+          <button
+            onClick={() => {
+              setRecordReplayOpen(!recordReplayOpen);
+              if (!recordReplayOpen) setSpecialTestsOpen(false);
+            }}
+            aria-pressed={recordReplayOpen}
+            className={`rounded-md border px-2.5 py-1.5 text-[11px] font-medium transition ${
+              recordReplayOpen
+                ? "border-teal-600/60 bg-teal-900/30 text-teal-400"
+                : "border-neutral-700 bg-neutral-950/60 text-neutral-400 hover:text-neutral-200"
+            }`}
+          >
+            Record &amp; Replay
           </button>
           <button
             onClick={resetAll}
@@ -121,7 +142,7 @@ export default function Home() {
           <Scene />
           <CommandBox />
         </main>
-        {specialTestsOpen ? <SpecialTests /> : <Sidebar />}
+        {specialTestsOpen ? <SpecialTests /> : recordReplayOpen ? <RecordReplayPanel /> : <Sidebar />}
       </div>
       <Footer />
     </div>

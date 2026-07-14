@@ -41,6 +41,7 @@ interface ArmSimState {
   showJointMarkers: boolean;
   setAppearance: (a: Appearance) => void;
   setAngle: (jointId: string, dofId: string, value: number) => void;
+  patchAngles: (partial: Record<string, Record<string, number>>) => void;
   selectJoint: (jointId: string | null) => void;
   hoverJoint: (jointId: string | null) => void;
   setStanceLeg: (leg: StanceLeg) => void;
@@ -87,6 +88,19 @@ export const useArmSimStore = create<ArmSimState>((set) => ({
       },
       activePreset: null,
     })),
+  // Per-joint merge patch — unlike applyPose (which resets every joint to
+  // neutral first), this touches ONLY the joints present in `partial` and
+  // leaves every other joint's current angles exactly as they were. Built
+  // for Record & Replay playback: a clip only ever supplies its own tracked
+  // joints, so untracked joints must never be reset or overwritten.
+  patchAngles: (partial) =>
+    set((s) => {
+      const next = { ...s.angles };
+      for (const [jointId, dofs] of Object.entries(partial)) {
+        next[jointId] = { ...next[jointId], ...dofs };
+      }
+      return { angles: next };
+    }),
   selectJoint: (jointId) => set({ selectedJoint: jointId }),
   hoverJoint: (jointId) => set({ hoveredJoint: jointId }),
   setStanceLeg: (leg) => set({ stanceLeg: leg }),
