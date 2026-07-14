@@ -97,7 +97,12 @@ interface MovementConcept {
 const MOVEMENTS: MovementConcept[] = [
   {
     dofId: "flexExt",
-    kinds: ["flexExt-only", "hip", "wrist"],
+    // "spine" added here so lumbar/thoracic/cervical/head flexion-extension
+    // is reachable via NL command — the DOF has existed on every spine
+    // region since trunkDofs.ts, but nothing routed to it (only rotation
+    // and lateral flexion had spine-kind concepts) until special-test poses
+    // needed "flex/extend the cervical spine" for CFRT, Sharp-Purser, etc.
+    kinds: ["flexExt-only", "hip", "wrist", "spine"],
     needsSide: false,
     positive: ["flexion", "flex", "bend forward", "forward bend", "bend"],
     negative: ["extension", "extend", "straighten", "bend backward", "backward bend", "hyperextend", "hyperextension"],

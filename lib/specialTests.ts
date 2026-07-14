@@ -74,6 +74,8 @@ export const TESTS: SpecialTest[] = [
   { id: "cx11", r: "cx", cat: "Myelopathy (UMN)", n: "Lhermitte sign", t: "Cord / dorsal column irritation", p: "Passive or active cervical flexion, often in sitting.", pos: "Electric-shock sensation down the spine and/or limbs.", tier: 3, pearl: "Low sensitivity but concerning when present — consider imaging referral." },
   { id: "cx12", r: "cx", cat: "First rib & thoracic", n: "Cervical rotation lateral flexion (CRLF)", t: "Elevated / hypomobile first rib", p: "Passively rotate the head away from the tested side, then attempt to flex the neck toward the chest.", pos: "A firm block to lateral flexion compared with the other side.", tier: 3 },
   { id: "cx13", r: "cx", cat: "Stability & red flags", n: "Vascular screening hold (pre-manipulative)", t: "Symptoms of vertebrobasilar / cervical arterial dysfunction", p: "Sustain end-range rotation (± extension) ~10 s each side while monitoring eyes and symptoms.", pos: "Dizziness, diplopia, dysarthria, dysphagia, drop attacks, nystagmus (the 5 Ds).", tier: 3, pearl: "Poor validity for detecting arterial compromise — treat as symptom screening plus history (BP, smoking, trauma), never as clearance." },
+  { id: "cx14", r: "cx", cat: "Screening / clinical decision rule", n: "Canadian C-Spine Rule", t: "Need for cervical spine imaging after trauma", p: "Algorithm: any high-risk factor (age ≥65, dangerous mechanism, paraesthesia) → image. Else, if a low-risk factor allows safe assessment → test active rotation 45° each way; inability to rotate fully → image.", pos: "Any high-risk factor present, no low-risk factor allowing safe assessment, or <45° active rotation either way.", sn: "99–100", sp: "≈43", tier: 1, pearl: "A clinical decision rule, not a positional maneuver — outperforms the NEXUS criteria for sensitivity in alert, stable trauma patients." },
+  { id: "cx15", r: "cx", cat: "Stability & red flags", n: "Transverse ligament stress test", t: "Atlantoaxial (C1–2) hypermobility", p: "Supine; cup the occiput, index fingers over the C1 neural arch, and lift the head + C1 anteriorly (no flexion/extension) for 10–20 s.", pos: "Soft end-feel, or reproduction of nystagmus, dizziness, nausea, perioral paraesthesia, or a lump-in-throat sensation.", sn: "≈65", sp: "≈99", tier: 1, pearl: "Very specific — sufficient to rule IN upper cervical instability, but a negative test doesn't rule it out (low sensitivity)." },
 
   /* ---- THORACIC & OUTLET ---- */
   { id: "tx1", r: "tx", cat: "Thoracic outlet", n: "Adson test", t: "Scalene-triangle (interscalene) compression", p: "Extend and rotate the head toward the tested side while the patient inhales deeply; monitor the radial pulse and symptoms with the arm slightly abducted-extended.", pos: "Reproduction of the patient's symptoms — pulse obliteration alone is common in normals.", sn: "≈79", sp: "74–100", tier: 3, pearl: "High false-positive rate; only meaningful with symptom reproduction and as part of a TOS battery." },
@@ -321,6 +323,14 @@ export const TEST_POSE_MAP: Record<string, string> = {
   sh34: "sitting", // Rent test — seated, arm relaxed, purely a palpation test
   sh36: "shoulder_flexion", // Serratus anterior strength (punch-out) — 90° forward flexion
 
+  // Cervical — tests that reuse an existing preset outright (position-only:
+  // manual traction/palpation/reflex tests with no dramatic pose of their own)
+  cx2: "supine", // Cervical distraction test — supine, gentle axial traction
+  cx6: "supine", // Craniocervical flexion test — supine, subtle head-nod (biofeedback-driven, not a big pose)
+  cx9: "sitting", // Hoffmann sign — seated, hand relaxed, purely a reflex flick
+  cx10: "sitting", // Inverted supinator sign — seated, purely a tendon-tap reflex
+  cx15: "supine", // Transverse ligament stress test — supine, subtle manual anterior lift
+
   // Ankle / Achilles
   ft6: "prone", // Thompson test (prone, foot off table edge)
 };
@@ -535,4 +545,58 @@ export const SPECIAL_TEST_CUSTOM_POSES: Record<string, PosePreset> = {
   // flexion (side bend) toward one side (magnitude not numerically
   // specified by the source — used a typical exam value).
   lx12: fromBase("standing", ["side bend the lumbar spine right 20"]),
+
+  // ---- CERVICAL SPINE ---- researched against Physiopedia's cervical
+  // special-tests pages (physio-pedia.com/Category:Cervical_Spine_-_Special_Tests).
+
+  // Spurling test — sitting; extend, side-bend, and rotate toward the
+  // symptomatic side (source describes the combined motion; magnitudes not
+  // numerically specified, used typical exam values within the joint's ROM).
+  cx1: fromBase("sitting", ["extend the cervical spine 20", "side bend the cervical spine right 20", "rotate the cervical spine right 30"]),
+
+  // ULNT1 (median nerve bias) — supine; shoulder depression/abduction,
+  // forearm supination, wrist/finger extension, external rotation (source
+  // gives ~110° abduction explicitly, rest are typical exam positions),
+  // plus contralateral cervical side-bend for structural differentiation.
+  cx3: fromBase("supine", [
+    "abduct the right shoulder 100",
+    "externally rotate the right shoulder 60",
+    "supinate the right forearm 45",
+    "extend the right wrist 45",
+    "side bend the cervical spine left 20",
+  ]),
+
+  // Shoulder abduction relief (Bakody) — sitting, symptomatic hand resting
+  // on top of the head (source describes the position qualitatively —
+  // approximated with abduction + substantial elbow flexion).
+  cx4: fromBase("sitting", ["abduct the right shoulder 100", "flex the right elbow 140"]),
+
+  // Cervical flexion-rotation test — supine, full cervical flexion then
+  // rotate (source gives the flexion end-range and normal ~44° rotation;
+  // snapshotting one rotated direction).
+  cx5: fromBase("supine", ["flex the cervical spine 40", "rotate the cervical spine right 30"]),
+
+  // Sharp-Purser test — sitting, SLIGHT cervical flexion (source specifies
+  // "slightly flexes" — a small angle, well short of end-range).
+  cx7: fromBase("sitting", ["flex the cervical spine 15"]),
+
+  // Alar ligament stress test — sitting; passive side-bend (the source also
+  // offers a rotation variant) while C2 is palpated/stabilised — magnitude
+  // not numerically specified, used a typical exam value.
+  cx8: fromBase("sitting", ["side bend the cervical spine right 15"]),
+
+  // Lhermitte sign — sitting, cervical flexion (source: "passive or active
+  // cervical flexion, often in sitting"; magnitude not specified, used a
+  // substantial flexion value since symptoms are typically end-range).
+  cx11: fromBase("sitting", ["flex the cervical spine 40"]),
+
+  // Cervical rotation lateral flexion (CRLF) — sitting; rotate away from
+  // the tested side, then attempt lateral flexion toward the chest (source
+  // describes the sequence; magnitudes not specified, used typical values).
+  cx12: fromBase("sitting", ["rotate the cervical spine right 60", "side bend the cervical spine right 15"]),
+
+  // Vascular screening hold — sitting; sustained end-range rotation with
+  // optional extension (source describes the position, not exact angles —
+  // used typical end-range values for a ~10s sustained hold).
+  cx13: fromBase("sitting", ["rotate the cervical spine right 60", "extend the cervical spine 20"]),
 };
