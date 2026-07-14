@@ -125,13 +125,13 @@ function Timeline() {
         </button>
         <button
           onClick={() => setLoop(!loop)}
-          title="Loop"
+          title="Loop (plays forward, then backward, repeating)"
           aria-pressed={loop}
           className={`grid h-7 w-7 shrink-0 place-items-center rounded-md border text-[12px] transition ${
             loop ? "border-teal-600/60 bg-teal-900/25 text-teal-400" : "border-neutral-700 bg-neutral-800/50 text-neutral-300"
           }`}
         >
-          ↻
+          ⇄
         </button>
         <select
           value={speed}
