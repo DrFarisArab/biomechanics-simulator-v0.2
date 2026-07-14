@@ -6,6 +6,7 @@ import { useFrame, useLoader } from "@react-three/fiber";
 import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js";
 import { clone as cloneSkinned } from "three/examples/jsm/utils/SkeletonUtils.js";
 import { useArmSimStore, JOINT_IDS, TRUNK_IDS, LEG_IDS } from "@/lib/store";
+import { useRecordReplayStore } from "@/lib/recordReplayStore";
 import { applyArmPose, ARM_BONE_NAMES } from "@/lib/armDofs";
 import { applyTrunkPose, TRUNK_BONE_NAMES } from "@/lib/trunkDofs";
 import { applyLegPose, LEG_BONE_NAMES } from "@/lib/legDofs";
@@ -224,6 +225,15 @@ export function BodyModel({ modelUrl }: { modelUrl: string }) {
               onClick={(e) => {
                 e.stopPropagation();
                 selectJoint(jointId);
+                // While the Record & Replay panel is open and still on its
+                // joint-picker step (no clip started yet), clicking a
+                // marker in the viewport is a second way to pick that joint
+                // — same toggle the checkbox itself uses, so clicking twice
+                // un-picks it. Read via getState() (not a hook) so this
+                // component doesn't re-render on every record/replay
+                // state change it has no other reason to care about.
+                const rr = useRecordReplayStore.getState();
+                if (rr.panelOpen && !rr.clip) rr.toggleJoint(jointId);
               }}
               onPointerOver={(e) => {
                 e.stopPropagation();
