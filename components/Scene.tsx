@@ -19,17 +19,21 @@ const MODEL_URLS = {
   muscles: "/models/v2-body-full.glb",
 } as const;
 
-// Rest-pose local point the camera should orbit around — roughly mid-torso
-// height (between pelvis ~0.86 and head ~1.7) at the spine's own AP depth,
-// NOT world Z=0. Verified via world-space bone coordinates: pelvis/thigh/
-// upper-arm all sit at local Z ≈ -0.01 to -0.05 at rest, so a target fixed
-// at Z=0 (the old value) was pinned slightly ANTERIOR of the actual spine —
-// exactly the "feels like it's rotating around its front" complaint.
+// Rest-pose local point the camera should orbit around AND frame the view
+// on (OrbitControls always points the camera at this, so it doubles as the
+// screen-center point) — at the spine's own AP depth, NOT world Z=0.
+// Verified via world-space bone coordinates: pelvis/thigh/upper-arm all sit
+// at local Z ≈ -0.01 to -0.05 at rest, so a target fixed at Z=0 (the old
+// value) was pinned slightly ANTERIOR of the actual spine — exactly the
+// "feels like it's rotating around its front" complaint.
+// Y is the body's true vertical midpoint (feet at 0, head top ≈1.8), NOT
+// mid-torso (~1.2) — mid-torso pushed the framing center too high, leaving
+// dead space above the head while the feet crowded the bottom edge.
 // Transformed by the current root position/rotation so the pivot still
 // tracks the body's real center for every preset (recumbent poses
 // translate/rotate the whole root far from the origin; a fixed world-space
 // target would be badly off-center for those).
-const LOCAL_VIEW_CENTER = new THREE.Vector3(0, 1.2, -0.03);
+const LOCAL_VIEW_CENTER = new THREE.Vector3(0, 0.9, -0.03);
 
 export function Scene() {
   const appearance = useArmSimStore((s) => s.appearance);
