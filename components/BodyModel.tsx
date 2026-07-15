@@ -17,6 +17,7 @@ import { lumbopelvicTiltDeg } from "@/lib/lumbopelvicRhythm";
 import { recolorMaterials, JOINT_MARKER_COLORS as COLORS } from "@/lib/materials";
 import { CONDYLE_OFFSET_LEFT_LOCAL, CONDYLE_OFFSET_RIGHT_LOCAL } from "@/lib/mandibleDofs";
 import { getDracoLoader } from "@/lib/dracoLoader";
+import { unifyDuplicateSkeletons } from "@/lib/unifySkeletons";
 
 // Joint id -> the bone whose own local origin (head) IS that joint's pivot.
 // lumbar/thoracic/cervical are now per-vertebra CHAINS (see trunkDofs.ts) —
@@ -77,6 +78,7 @@ export function BodyModel({ modelUrl }: { modelUrl: string }) {
   });
   const scene = useMemo(() => {
     const cloned = cloneSkinned(gltf.scene) as THREE.Object3D;
+    unifyDuplicateSkeletons(cloned, ALL_BONE_NAMES);
     recolorMaterials(cloned);
     return cloned;
   }, [gltf]);

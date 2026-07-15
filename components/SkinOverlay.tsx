@@ -15,6 +15,7 @@ import { computePelvisPivotOffset, stanceLegRotationCorrection } from "@/lib/sta
 import { lumbopelvicTiltDeg } from "@/lib/lumbopelvicRhythm";
 import { prepareSkinOverlayMaterial } from "@/lib/materials";
 import { getDracoLoader } from "@/lib/dracoLoader";
+import { unifyDuplicateSkeletons } from "@/lib/unifySkeletons";
 
 const ALL_BONE_NAMES = Array.from(
   new Set([...ARM_BONE_NAMES, ...TRUNK_BONE_NAMES, ...LEG_BONE_NAMES, ...MANDIBLE_BONE_NAMES, "head", "scapulaL", "scapulaR"])
@@ -40,6 +41,7 @@ export function SkinOverlay() {
   });
   const scene = useMemo(() => {
     const cloned = cloneSkinned(gltf.scene) as THREE.Object3D;
+    unifyDuplicateSkeletons(cloned, ALL_BONE_NAMES);
     prepareSkinOverlayMaterial(cloned);
     return cloned;
   }, [gltf]);
