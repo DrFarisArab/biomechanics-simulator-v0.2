@@ -49,7 +49,8 @@ export const REGIONS: Region[] = [
   { id: "wr", name: "Wrist & Hand", family: "Upper Limb", color: "#177268", blurb: "CTS, De Quervain, TFCC, carpal instability, CMC" },
   { id: "hip", name: "Hip", family: "Lower Limb", color: "#9A552B", blurb: "FAI, labrum, GTPS, deep gluteal, red flags" },
   { id: "kn", name: "Knee", family: "Lower Limb", color: "#83481F", blurb: "Ligaments, meniscus, patellofemoral, PLC, ITB" },
-  { id: "ft", name: "Ankle & Foot", family: "Lower Limb", color: "#AA6432", blurb: "Lateral ligaments, syndesmosis, Achilles, plantar" },
+  { id: "an", name: "Ankle", family: "Lower Limb", color: "#AA6432", blurb: "Lateral ligaments, syndesmosis, Achilles, impingement" },
+  { id: "ft", name: "Foot", family: "Lower Limb", color: "#C77A3D", blurb: "Plantar fasciopathy, forefoot, midfoot, arch" },
 ];
 
 // tier: 1 stronger evidence · 2 moderate/variable · 3 limited/historical
@@ -216,16 +217,33 @@ export const TESTS: SpecialTest[] = [
   { id: "kn25", r: "kn", cat: "Lateral / ITB", n: "Renne test", t: "ITB friction syndrome", p: "Standing, weight-bearing on the involved leg; palpate the ITB over the lateral epicondyle while single-leg squatting to 60–90°, then repeat with firm compression.", pos: "Crepitus/snapping/pain at the lateral epicondyle, most provocative ~20–30° flexion.", tier: 3, pearl: "Pairs with Noble's test for lateral knee pain in runners/cyclists — Renne adds the weight-bearing squat." },
   { id: "kn26", r: "kn", cat: "Patellofemoral", n: "Moving Patellar Apprehension Test", t: "Lateral patellar instability", p: "From full extension, apply a lateral force to the patella while cycling the knee to 90° flexion and back (then repeat medially directed, for symptom relief).", pos: "Apprehension with the lateral-force pass that resolves with the medial-force pass.", sn: "100", sp: "≈88", tier: 1, pearl: "More sensitive than the static patellar apprehension sign — the medial-force pass confirms it's instability, not just guarding." },
 
-  /* ---- ANKLE & FOOT ---- */
-  { id: "ft1", r: "ft", cat: "Lateral ligament", n: "Anterior drawer (ankle)", t: "ATFL integrity", p: "Foot in slight plantarflexion; draw the calcaneus/talus forward on the fixed tibia.", pos: "Excess anterior translation ± an anterolateral 'suction' dimple.", sn: "74–96", sp: "≈84", tier: 2, pearl: "Most useful ~5 days post-injury once acute guarding settles." },
-  { id: "ft2", r: "ft", cat: "Lateral ligament", n: "Talar tilt (inversion)", t: "ATFL / CFL integrity", p: "Invert the calcaneus and talus as a unit.", pos: "Excess inversion / gapping vs the other side.", tier: 3 },
-  { id: "ft3", r: "ft", cat: "Syndesmosis", n: "Squeeze test", t: "High ankle sprain (syndesmosis)", p: "Compress the tibia and fibula together at mid-calf.", pos: "Pain referred distally to the syndesmosis.", sn: "26–30", sp: "88–93", tier: 2 },
-  { id: "ft4", r: "ft", cat: "Syndesmosis", n: "External rotation stress", t: "Syndesmosis injury", p: "Knee 90°, ankle neutral; externally rotate the foot.", pos: "Pain over the anterolateral syndesmosis.", sn: "≈20", sp: "≈85", tier: 2 },
-  { id: "ft5", r: "ft", cat: "Fracture rule", n: "Ottawa ankle rules", t: "Need for ankle/foot radiograph", p: "Assess bony tenderness at the posterior edge/tip of either malleolus, navicular, and 5th MT base, plus ability to bear weight 4 steps.", pos: "Any positive criterion → image. Near 100% sensitive for excluding fracture.", sn: "≈99", sp: "≈40", tier: 1, pearl: "A validated clinical-decision rule — safely reduces unnecessary X-rays." },
-  { id: "ft6", r: "ft", cat: "Achilles", n: "Thompson (calf squeeze)", t: "Achilles tendon rupture", p: "Prone, foot over the table edge; squeeze the calf.", pos: "Absent plantarflexion indicates a complete rupture.", sn: "96–98", sp: "93–100", tier: 1 },
+  /* ---- ANKLE ---- researched against Physiopedia's Ankle special-tests
+   * category (physio-pedia.com/Category:Ankle_-_Special_Tests). ft1-ft9's
+   * ids are kept as-is (they predate the Ankle/Foot split and are
+   * referenced elsewhere) even though the region below is now "an", not
+   * "ft" — only the region field changed for the ankle-side tests. */
+  { id: "ft1", r: "an", cat: "Lateral ligament", n: "Anterior drawer (ankle)", t: "ATFL integrity", p: "Foot in slight plantarflexion; draw the calcaneus/talus forward on the fixed tibia.", pos: "Excess anterior translation ± an anterolateral 'suction' dimple.", sn: "74–96", sp: "≈84", tier: 2, pearl: "Most useful ~5 days post-injury once acute guarding settles." },
+  { id: "ft2", r: "an", cat: "Lateral ligament", n: "Talar tilt (inversion)", t: "ATFL / CFL integrity", p: "Invert the calcaneus and talus as a unit.", pos: "Excess inversion / gapping vs the other side.", tier: 3 },
+  { id: "ft3", r: "an", cat: "Syndesmosis", n: "Squeeze test", t: "High ankle sprain (syndesmosis)", p: "Compress the tibia and fibula together at mid-calf.", pos: "Pain referred distally to the syndesmosis.", sn: "26–30", sp: "88–93", tier: 2 },
+  { id: "ft4", r: "an", cat: "Syndesmosis", n: "External rotation stress", t: "Syndesmosis injury", p: "Knee 90°, ankle neutral; externally rotate the foot.", pos: "Pain over the anterolateral syndesmosis.", sn: "≈20", sp: "≈85", tier: 2, pearl: "Also listed under Foot on Physiopedia — same test, same position; syndesmosis symptoms can present at either level." },
+  { id: "ft5", r: "an", cat: "Fracture rule", n: "Ottawa ankle rules", t: "Need for ankle/foot radiograph", p: "Assess bony tenderness at the posterior edge/tip of either malleolus, navicular, and 5th MT base, plus ability to bear weight 4 steps.", pos: "Any positive criterion → image. Near 100% sensitive for excluding fracture.", sn: "≈99", sp: "≈40", tier: 1, pearl: "A validated clinical-decision rule — safely reduces unnecessary X-rays." },
+  { id: "ft6", r: "an", cat: "Achilles", n: "Thompson (calf squeeze)", t: "Achilles tendon rupture", p: "Prone, foot over the table edge; squeeze the calf.", pos: "Absent plantarflexion indicates a complete rupture.", sn: "96–98", sp: "93–100", tier: 1 },
+  { id: "ft9", r: "an", cat: "Midfoot", n: "Kleiger's test (ER) — deltoid bias", t: "Medial (deltoid) / syndesmosis injury", p: "Seated, knee flexed 90°; externally rotate and evert the foot.", pos: "Medial (deltoid) or anterolateral (syndesmosis) pain, or a sense of fibular displacement.", tier: 3 },
+  { id: "an1", r: "an", cat: "Impingement", n: "Impingement sign (ankle)", t: "Anterior ankle (bony/soft-tissue) impingement", p: "Passively dorsiflex the ankle to end-range with overpressure, sometimes combined with a lunge for a weight-bearing variant.", pos: "Anterior joint-line pain reproduced at, or just before, end-range dorsiflexion.", tier: 3 },
+  { id: "an2", r: "an", cat: "Peroneal", n: "Peroneus longus & brevis tests", t: "Peroneal tendon pathology / instability", p: "Resist active eversion (brevis-biased) and resisted plantarflexion + eversion (longus-biased) while palpating the tendons posterior to the lateral malleolus.", pos: "Pain, weakness, or a palpable/visible subluxation of the tendons over the malleolus.", tier: 3 },
+  { id: "an3", r: "an", cat: "Lateral ligament", n: "Prone anterior drawer test", t: "ATFL integrity (prone variant)", p: "Prone, knee flexed ~90°; draw the calcaneus/talus forward on the fixed tibia.", pos: "Excess anterior translation vs the other side.", tier: 3, pearl: "Same structure as the supine anterior drawer — the prone/knee-flexed setup relaxes the gastrocnemius and can make excess translation easier to feel." },
+  { id: "an4", r: "an", cat: "Achilles / gastroc-soleus", n: "Silfverskiöld test", t: "Isolated gastrocnemius contracture vs soleus/capsular equinus", p: "Measure passive ankle dorsiflexion with the knee extended, then repeat with the knee flexed 90°.", pos: "Dorsiflexion clearly greater with the knee flexed → isolated gastrocnemius tightness. Equally limited in both → soleus or a bony/capsular block.", tier: 2, pearl: "Differentiates WHICH structure to stretch/lengthen — a gastroc-specific contracture responds to gastroc-isolated stretching; a soleus/capsular limit won't." },
+  { id: "an5", r: "an", cat: "Balance / functional", n: "Star Excursion Balance Test", t: "Dynamic postural control / chronic ankle instability screening", p: "Single-leg stance; reach the free foot as far as possible along 8 grid directions without losing balance, touching down lightly, or shifting the stance foot.", pos: "Reach-distance asymmetry vs the other side, or an inability to complete a direction, suggests a postural-control deficit.", tier: 2, pearl: "Multi-directional dynamic reach — not representable as a single static pose here; the reference info above still applies." },
+  { id: "an6", r: "an", cat: "Measurement", n: "Figure-of-eight ankle swelling measurement", t: "Ankle joint effusion / oedema quantification", p: "Wrap a tape in a figure-8 around the ankle (over the tibialis anterior tendon, medial to the ankle, over the Achilles, then lateral to the ankle) and record the circumference.", pos: "Not a provocation test — larger figure-8 circumference vs the other side quantifies swelling, useful for tracking recovery.", tier: 2, pearl: "A measurement technique, not a provocative test — good for objective before/after comparison during rehab." },
+
+  /* ---- FOOT ---- researched against Physiopedia's Foot special-tests
+   * category (physio-pedia.com/Category:Foot_-_Special_Tests). */
   { id: "ft7", r: "ft", cat: "Plantar heel", n: "Windlass test", t: "Plantar fasciopathy", p: "Passively (or in standing) dorsiflex the great toe (MTP).", pos: "Reproduction of plantar heel pain.", sn: "32", sp: "≈100", tier: 2, pearl: "Specific but insensitive — a positive test rules IN, a negative doesn't rule out." },
   { id: "ft8", r: "ft", cat: "Nerve / neuroma", n: "Mulder click", t: "Morton neuroma", p: "Squeeze the metatarsal heads together mediolaterally while pressing the interspace.", pos: "A palpable/audible click with reproduction of forefoot pain.", tier: 3 },
-  { id: "ft9", r: "ft", cat: "Midfoot", n: "Kleiger (ER) — deltoid bias", t: "Medial (deltoid) / syndesmosis injury", p: "Externally rotate the foot with the knee stabilised.", pos: "Medial (deltoid) or anterolateral (syndesmosis) pain.", tier: 3 },
+  { id: "ft10", r: "ft", cat: "Hindfoot alignment", n: "Coleman block test", t: "Flexible vs fixed hindfoot varus (cavovarus foot)", p: "Stand with the heel and lateral foot on a block, letting the plantarflexed first ray hang off the medial edge unsupported.", pos: "Heel varus corrects to neutral → flexible (forefoot-driven) deformity. Heel varus persists → fixed (rearfoot) deformity.", tier: 3, pearl: "Guides surgical planning — flexible deformities are often correctable with a first-ray procedure alone; fixed ones usually need rearfoot correction too." },
+  { id: "ft11", r: "ft", cat: "Arch / midfoot", n: "Feiss line test", t: "Medial longitudinal arch collapse / navicular drop", p: "Mark the medial malleolus and 1st MTP head, join them with an imaginary line, then observe the navicular tuberosity's position relative to it in relaxed standing.", pos: "Navicular drops noticeably below the line (roughly by thirds) → pes planus / arch collapse.", tier: 3 },
+  { id: "ft12", r: "ft", cat: "Arch / midfoot", n: "Navicular drop test", t: "Dynamic midfoot pronation / arch collapse under load", p: "Mark the navicular tuberosity height in subtalar neutral sitting (non-weight-bearing), then again in relaxed double-leg standing; measure the vertical difference.", pos: "Drop > 10 mm suggests excessive midfoot pronation.", tier: 3, pearl: "A measurement technique comparing non-weight-bearing vs weight-bearing navicular height — not itself a provocative maneuver." },
+  { id: "ft13", r: "ft", cat: "Forefoot / neuroma", n: "Toe spread test", t: "Lateral plantar plate / intrinsic weakness screening", p: "Ask the patient to actively spread (abduct) all toes against the examiner's resistance, or observe active toe splay.", pos: "Weak or absent active toe splay on the affected side suggests intrinsic foot muscle weakness or plantar plate/neurologic involvement.", tier: 3 },
 ];
 
 /* ================= CLUSTERS ================= */
@@ -252,7 +270,7 @@ export const CLUSTERS: TestCluster[] = [
   { id: "cl_knee_acl", r: "kn", name: "ACL rupture cluster", when: "Suspected ACL tear",
     items: ["Lachman positive", "Anterior drawer positive", "Pivot shift positive"],
     rule: "Lachman is the anchor (sensitive); pivot shift adds specificity. Composite exam accuracy rivals MRI in experienced hands.", tests: ["kn1", "kn2", "kn3"] },
-  { id: "cl_ankle", r: "ft", name: "Ottawa ankle & foot rules", when: "Acute ankle/foot trauma — do I need an X-ray?",
+  { id: "cl_ankle", r: "an", name: "Ottawa ankle & foot rules", when: "Acute ankle/foot trauma — do I need an X-ray?",
     items: ["Bony tenderness posterior edge/tip of lateral malleolus", "Bony tenderness posterior edge/tip of medial malleolus", "Tenderness at navicular", "Tenderness at 5th metatarsal base", "Unable to weight-bear 4 steps"],
     rule: "Any single criterion positive → radiograph. Sensitivity ≈ 99% for excluding fracture.", tests: ["ft5"] },
 ];
@@ -336,8 +354,17 @@ export const TEST_POSE_MAP: Record<string, string> = {
   cx10: "sitting", // Inverted supinator sign — seated, purely a tendon-tap reflex
   cx15: "supine", // Transverse ligament stress test — supine, subtle manual anterior lift
 
-  // Ankle / Achilles
+  // Ankle / Achilles — see SPECIAL_TEST_CUSTOM_POSES below for the
+  // position-built ones; these reuse an existing preset outright.
+  ft3: "supine", // Squeeze test — supine, ankle neutral, purely a mid-calf compression test
   ft6: "prone", // Thompson test (prone, foot off table edge)
+  ft5: "standing", // Ottawa ankle rules — weight-bear assessment, standing
+  an5: "standing", // Star Excursion Balance Test — single-leg standing starting point (dynamic reach not modeled)
+  an6: "standing", // Figure-of-eight swelling measurement — standing, purely a tape measurement
+
+  // Foot — position-only reuses.
+  ft11: "standing", // Feiss line test — relaxed weight-bearing observation, standing
+  ft12: "sitting", // Navicular drop test — non-weight-bearing starting reference (sitting)
 };
 
 /**
@@ -634,6 +661,66 @@ export const SPECIAL_TEST_CUSTOM_POSES: Record<string, PosePreset> = {
   // optional extension (source describes the position, not exact angles —
   // used typical end-range values for a ~10s sustained hold).
   cx13: fromBase("sitting", ["rotate the cervical spine right 60", "extend the cervical spine 20"]),
+
+  // ---- ANKLE ---- researched against Physiopedia's Ankle special-tests
+  // category (physio-pedia.com/Category:Ankle_-_Special_Tests).
+
+  // Anterior drawer (ankle) — supine, ankle relaxed into slight
+  // plantarflexion (source: "foot in slight plantarflexion") before the
+  // calcaneus/talus are drawn forward.
+  ft1: fromBase("supine", ["plantarflex the right ankle 15"]),
+
+  // Talar tilt — supine, ankle inverted as a unit (source doesn't give a
+  // number; used a typical near-end-range exam value, short of this rig's
+  // 35° inversion ROM ceiling).
+  ft2: fromBase("supine", ["invert the right ankle 25"]),
+
+  // External rotation stress — source: "knee 90°, ankle neutral; externally
+  // rotate the foot." This rig has no separate foot-rotation-under-fixed-
+  // tibia DOF, so ankle eversion (turning the sole outward) is used as the
+  // closest visual proxy for the foot externally rotating under load.
+  ft4: fromBase("sitting", ["evert the right ankle 15"]),
+
+  // Kleiger's test — seated, knee flexed 90° (source), foot externally
+  // rotated/everted with a touch of dorsiflexion (magnitude not specified,
+  // typical exam values used).
+  ft9: fromBase("sitting", ["evert the right ankle 15", "dorsiflex the right ankle 10"]),
+
+  // Impingement sign (ankle) — supine, passive dorsiflexion to end-range
+  // (magnitude not numerically specified by the source; used a typical
+  // near-end-range value within this rig's 20° dorsiflexion ceiling).
+  an1: fromBase("supine", ["dorsiflex the right ankle 15"]),
+
+  // Peroneus longus & brevis tests — supine, the resisted-eversion hold
+  // position (magnitude not specified; used a typical exam value).
+  an2: fromBase("supine", ["evert the right ankle 10"]),
+
+  // Prone anterior drawer test — prone, knee flexed ~90° (source), ankle in
+  // slight plantarflexion before the forward-draw.
+  an3: fromBase("prone", ["flex the right knee 90", "plantarflex the right ankle 10"]),
+
+  // Silfverskiöld test — dynamic maneuver, not a "get into position" pose:
+  // setup = supine, knee EXTENDED, ankle passively dorsiflexed to its
+  // gastroc-limited end-range (~5°); the exam action then flexes the knee
+  // to 90° (source), which — if the limiter was gastrocnemius, not soleus —
+  // lets dorsiflexion increase further (~15°). Play demonstrates exactly
+  // that comparison (setup -> knee-flexed), same dynamicEndAngles pattern
+  // as FABER's exam-pressure maneuver.
+  an4: {
+    ...fromBase("supine", ["dorsiflex the right ankle 5"]),
+    dynamicEndAngles: { knee_right: { flexExt: 90 }, ankle_right: { dorsiPlantar: 15 } },
+  },
+
+  // ---- FOOT ---- researched against Physiopedia's Foot special-tests
+  // category (physio-pedia.com/Category:Foot_-_Special_Tests). Windlass,
+  // Navicular Drop, and Toe Spread aren't given custom poses — this rig has
+  // no great-toe/MTP or navicular-arch DOF to represent them with; the
+  // reference info in their entries above is still accurate.
+
+  // Coleman block test — standing, hindfoot inverted into varus (the block
+  // itself isn't modeled — this approximates the varus alignment the block
+  // maneuver is checking, not the block setup itself).
+  ft10: fromBase("standing", ["invert the right ankle 15"]),
 };
 
 // si7 (FABER, SIJ lens) is the exact same figure-4 maneuver as hip2 — same
