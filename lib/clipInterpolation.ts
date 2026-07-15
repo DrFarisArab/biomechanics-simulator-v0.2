@@ -2,6 +2,7 @@ import * as THREE from "three";
 import { ARM_JOINT_DOFS, ARM_DOF_META } from "./armDofs";
 import { TRUNK_JOINT_DOFS, TRUNK_DOF_META } from "./trunkDofs";
 import { LEG_JOINT_DOFS, LEG_DOF_META } from "./legDofs";
+import { MANDIBLE_DOF_META } from "./mandibleDofs";
 import type { Clip, Easing, Keyframe } from "./clip";
 
 /**
@@ -53,9 +54,20 @@ const ALL_DOF_META: Record<string, Record<string, { min: number; max: number }>>
   ...ARM_DOF_META,
   ...TRUNK_DOF_META,
   ...LEG_DOF_META,
+  ...MANDIBLE_DOF_META,
 };
 
 function getSpec(jointId: string, dofId: string): FlatDofSpec | undefined {
+  // The mandible has no axis/sign spec at all — its DOFs are resolved
+  // procedurally (biphasic rotation+translation, asymmetric lateral pivot;
+  // see mandibleDofs.ts's applyMandiblePose), not a fixed-axis rotation.
+  // Forcing all three onto the SAME placeholder axis routes them through
+  // the "axis collision" scalar-lerp branch below instead of the
+  // quaternion-composable path — correct here, since applyMandiblePose
+  // re-derives the real bone transform from whatever raw mm value results
+  // at each frame, so plain eased interpolation of that raw value is all
+  // this module needs to do.
+  if (jointId === "mandible") return { axis: "x", sign: 1 };
   const raw = ALL_JOINT_DOFS[jointId]?.[dofId];
   return raw === undefined ? undefined : flattenSpec(raw);
 }

@@ -4,11 +4,12 @@ import { useArmSimStore } from "@/lib/store";
 import { ARM_JOINT_DOFS, ARM_DOF_META } from "@/lib/armDofs";
 import { TRUNK_JOINT_DOFS, TRUNK_DOF_META } from "@/lib/trunkDofs";
 import { LEG_JOINT_DOFS, LEG_DOF_META } from "@/lib/legDofs";
+import { MANDIBLE_JOINT_DOFS, MANDIBLE_DOF_META } from "@/lib/mandibleDofs";
 import { JOINT_LABELS } from "@/lib/jointLabels";
 import { DegreeSlider } from "./DegreeSlider";
 
-const ALL_JOINT_DOFS = { ...ARM_JOINT_DOFS, ...TRUNK_JOINT_DOFS, ...LEG_JOINT_DOFS };
-const ALL_DOF_META = { ...ARM_DOF_META, ...TRUNK_DOF_META, ...LEG_DOF_META };
+const ALL_JOINT_DOFS = { ...ARM_JOINT_DOFS, ...TRUNK_JOINT_DOFS, ...LEG_JOINT_DOFS, ...MANDIBLE_JOINT_DOFS };
+const ALL_DOF_META = { ...ARM_DOF_META, ...TRUNK_DOF_META, ...LEG_DOF_META, ...MANDIBLE_DOF_META };
 
 function movementLabel(meta: { positive: string; negative: string }, value: number) {
   if (Math.abs(value) < 0.5) return "Neutral";
@@ -46,6 +47,11 @@ export function Sidebar() {
   const dofs = ALL_JOINT_DOFS[selectedJoint];
   const meta = ALL_DOF_META[selectedJoint];
   const jointAngles = angles[selectedJoint] ?? {};
+  // The mandible's DOFs are measured in millimetres of translation/
+  // interincisal distance (see mandibleDofs.ts), not degrees like every
+  // other joint here — only the display unit differs, the slider/state
+  // plumbing is identical.
+  const unit = selectedJoint === "mandible" ? "mm" : "°";
 
   // Ground-contact stance mode locks the stance leg's hip/knee/ankle —
   // moving them manually would silently invalidate the pinned-hip geometry
@@ -113,7 +119,7 @@ export function Sidebar() {
                   <div className="text-[12px] font-medium text-neutral-300">{dofMeta.label}</div>
                   <div className="font-mono text-[12px] tabular-nums text-neutral-500">
                     {value > 0 ? "+" : ""}
-                    {Math.round(value)}°
+                    {Math.round(value)}{unit}
                   </div>
                 </div>
                 <div className="text-[10px] text-neutral-500">
@@ -129,7 +135,7 @@ export function Sidebar() {
                 <div className="text-[12px] font-medium text-neutral-200">{dofMeta.label}</div>
                 <div className="font-mono text-[12px] tabular-nums text-teal-400">
                   {value > 0 ? "+" : ""}
-                  {Math.round(value)}°
+                  {Math.round(value)}{unit}
                 </div>
               </div>
               <div className="mb-1.5 text-[10px] text-neutral-500">{movementLabel(dofMeta, value)}</div>

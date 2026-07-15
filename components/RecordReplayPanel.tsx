@@ -6,12 +6,13 @@ import { useRecordReplayStore } from "@/lib/recordReplayStore";
 import { ARM_JOINT_DOFS, ARM_DOF_META } from "@/lib/armDofs";
 import { TRUNK_JOINT_DOFS, TRUNK_DOF_META } from "@/lib/trunkDofs";
 import { LEG_JOINT_DOFS, LEG_DOF_META } from "@/lib/legDofs";
+import { MANDIBLE_JOINT_DOFS, MANDIBLE_DOF_META } from "@/lib/mandibleDofs";
 import { JOINT_LABELS, ALL_JOINT_IDS } from "@/lib/jointLabels";
 import { clipDuration } from "@/lib/clip";
 import { DegreeSlider } from "./DegreeSlider";
 
-const ALL_JOINT_DOFS = { ...ARM_JOINT_DOFS, ...TRUNK_JOINT_DOFS, ...LEG_JOINT_DOFS };
-const ALL_DOF_META = { ...ARM_DOF_META, ...TRUNK_DOF_META, ...LEG_DOF_META };
+const ALL_JOINT_DOFS = { ...ARM_JOINT_DOFS, ...TRUNK_JOINT_DOFS, ...LEG_JOINT_DOFS, ...MANDIBLE_JOINT_DOFS };
+const ALL_DOF_META = { ...ARM_DOF_META, ...TRUNK_DOF_META, ...LEG_DOF_META, ...MANDIBLE_DOF_META };
 
 const SPEED_OPTIONS = [0.25, 0.5, 0.75, 1, 1.25, 1.5, 2];
 
@@ -71,6 +72,8 @@ function TrackedJointEditor({ jointId }: { jointId: string }) {
   const dofs = ALL_JOINT_DOFS[jointId];
   const meta = ALL_DOF_META[jointId];
   const jointAngles = angles[jointId] ?? {};
+  // See Sidebar.tsx — the mandible's DOFs are millimetres, not degrees.
+  const unit = jointId === "mandible" ? "mm" : "°";
 
   return (
     <div className="flex flex-col gap-1.5">
@@ -84,7 +87,7 @@ function TrackedJointEditor({ jointId }: { jointId: string }) {
               <div className="text-[11px] font-medium text-neutral-200">{dofMeta.label}</div>
               <div className="font-mono text-[11px] tabular-nums text-teal-400">
                 {value > 0 ? "+" : ""}
-                {Math.round(value)}°
+                {Math.round(value)}{unit}
               </div>
             </div>
             <DegreeSlider value={value} min={dofMeta.min} max={dofMeta.max} onChange={(next) => setAngle(jointId, dofId, next)} />

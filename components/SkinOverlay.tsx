@@ -5,17 +5,18 @@ import * as THREE from "three";
 import { useLoader } from "@react-three/fiber";
 import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js";
 import { clone as cloneSkinned } from "three/examples/jsm/utils/SkeletonUtils.js";
-import { useArmSimStore, JOINT_IDS, TRUNK_IDS, LEG_IDS } from "@/lib/store";
+import { useArmSimStore, JOINT_IDS, TRUNK_IDS, LEG_IDS, MANDIBLE_IDS } from "@/lib/store";
 import { applyArmPose, ARM_BONE_NAMES } from "@/lib/armDofs";
 import { applyTrunkPose, TRUNK_BONE_NAMES } from "@/lib/trunkDofs";
 import { applyLegPose, LEG_BONE_NAMES } from "@/lib/legDofs";
+import { applyMandiblePose, MANDIBLE_BONE_NAMES } from "@/lib/mandibleDofs";
 import { applyScapularRhythm } from "@/lib/scapularRhythm";
 import { computePelvisPivotOffset, stanceLegRotationCorrection } from "@/lib/stanceMode";
 import { lumbopelvicTiltDeg } from "@/lib/lumbopelvicRhythm";
 import { prepareSkinOverlayMaterial } from "@/lib/materials";
 
 const ALL_BONE_NAMES = Array.from(
-  new Set([...ARM_BONE_NAMES, ...TRUNK_BONE_NAMES, ...LEG_BONE_NAMES, "head", "scapulaL", "scapulaR"])
+  new Set([...ARM_BONE_NAMES, ...TRUNK_BONE_NAMES, ...LEG_BONE_NAMES, ...MANDIBLE_BONE_NAMES, "head", "scapulaL", "scapulaR"])
 );
 
 const SKIN_MODEL_URL = "/models/v2-body-skin.glb";
@@ -44,6 +45,7 @@ export function SkinOverlay() {
   const restQuatsRef = useRef<Record<string, THREE.Quaternion | undefined>>({});
   const pelvisRestPosRef = useRef<THREE.Vector3 | null>(null);
   const hipLocalOffsetsRef = useRef<{ left?: THREE.Vector3; right?: THREE.Vector3 }>({});
+  const jawRestPosRef = useRef<THREE.Vector3 | null>(null);
 
   const angles = useArmSimStore((s) => s.angles);
   const rootPosition = useArmSimStore((s) => s.rootPosition);
@@ -67,6 +69,7 @@ export function SkinOverlay() {
       left: found.thighL?.position.clone(),
       right: found.thighR?.position.clone(),
     };
+    jawRestPosRef.current = found.jaw ? found.jaw.position.clone() : null;
   }, [scene]);
 
   useEffect(() => {
@@ -81,6 +84,10 @@ export function SkinOverlay() {
     const legSubset: Record<string, Record<string, number> | undefined> = {};
     for (const id of LEG_IDS) legSubset[id] = angles[id];
     applyLegPose(bonesRef.current, restQuatsRef.current, legSubset);
+
+    const mandibleSubset: Record<string, Record<string, number> | undefined> = {};
+    for (const id of MANDIBLE_IDS) mandibleSubset[id] = angles[id];
+    applyMandiblePose(bonesRef.current, restQuatsRef.current, { jaw: jawRestPosRef.current ?? undefined }, mandibleSubset);
 
     if (stanceLeg !== "none") {
       const effectiveTilt = (angles.pelvis?.tilt ?? 0) + lumbopelvicTiltDeg(angles.lumbar?.flexExt ?? 0);

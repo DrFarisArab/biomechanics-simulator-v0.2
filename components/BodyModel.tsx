@@ -5,15 +5,17 @@ import * as THREE from "three";
 import { useFrame, useLoader } from "@react-three/fiber";
 import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js";
 import { clone as cloneSkinned } from "three/examples/jsm/utils/SkeletonUtils.js";
-import { useArmSimStore, JOINT_IDS, TRUNK_IDS, LEG_IDS } from "@/lib/store";
+import { useArmSimStore, JOINT_IDS, TRUNK_IDS, LEG_IDS, MANDIBLE_IDS } from "@/lib/store";
 import { useRecordReplayStore } from "@/lib/recordReplayStore";
 import { applyArmPose, ARM_BONE_NAMES } from "@/lib/armDofs";
 import { applyTrunkPose, TRUNK_BONE_NAMES } from "@/lib/trunkDofs";
 import { applyLegPose, LEG_BONE_NAMES } from "@/lib/legDofs";
+import { applyMandiblePose, MANDIBLE_BONE_NAMES } from "@/lib/mandibleDofs";
 import { applyScapularRhythm } from "@/lib/scapularRhythm";
 import { computePelvisPivotOffset, stanceLegRotationCorrection } from "@/lib/stanceMode";
 import { lumbopelvicTiltDeg } from "@/lib/lumbopelvicRhythm";
 import { recolorMaterials, JOINT_MARKER_COLORS as COLORS } from "@/lib/materials";
+import { CONDYLE_OFFSET_LOCAL } from "@/lib/mandibleDofs";
 
 // Joint id -> the bone whose own local origin (head) IS that joint's pivot.
 // lumbar/thoracic/cervical are now per-vertebra CHAINS (see trunkDofs.ts) —
@@ -51,7 +53,7 @@ const JOINT_MARKER_MIDPOINT: Record<string, [string, string]> = {
 };
 
 const ALL_BONE_NAMES = Array.from(
-  new Set([...ARM_BONE_NAMES, ...TRUNK_BONE_NAMES, ...LEG_BONE_NAMES, "head", "scapulaL", "scapulaR"])
+  new Set([...ARM_BONE_NAMES, ...TRUNK_BONE_NAMES, ...LEG_BONE_NAMES, ...MANDIBLE_BONE_NAMES, "head", "scapulaL", "scapulaR"])
 );
 
 /**
@@ -83,7 +85,12 @@ export function BodyModel({ modelUrl }: { modelUrl: string }) {
   // computePelvisPivotOffset needs for the ground-contact stance pivot.
   const pelvisRestPosRef = useRef<THREE.Vector3 | null>(null);
   const hipLocalOffsetsRef = useRef<{ left?: THREE.Vector3; right?: THREE.Vector3 }>({});
+  // Jaw's own rest LOCAL position (relative to its parent, `head`) — needed
+  // because, unlike every other joint here, the TMJ's pivot itself
+  // translates (see mandibleDofs.ts's applyMandiblePose), not just rotates.
+  const jawRestPosRef = useRef<THREE.Vector3 | null>(null);
   const markerRefs = useRef<Record<string, THREE.Mesh | null>>({});
+  const condyleMarkerRefs = useRef<{ left: THREE.Mesh | null; right: THREE.Mesh | null }>({ left: null, right: null });
   const groupRef = useRef<THREE.Group>(null);
 
   const selectJoint = useArmSimStore((s) => s.selectJoint);
@@ -113,6 +120,7 @@ export function BodyModel({ modelUrl }: { modelUrl: string }) {
       left: found.thighL?.position.clone(),
       right: found.thighR?.position.clone(),
     };
+    jawRestPosRef.current = found.jaw ? found.jaw.position.clone() : null;
     if (typeof window !== "undefined") {
       (window as unknown as { __bodyScene: THREE.Object3D }).__bodyScene = scene;
     }
@@ -133,6 +141,11 @@ export function BodyModel({ modelUrl }: { modelUrl: string }) {
     );
   }, [scene]);
 
+  // Older/not-yet-re-exported GLBs may not have the `jaw` bone yet — guard
+  // the condyle markers on its presence so this degrades gracefully rather
+  // than rendering markers with nothing to follow.
+  const hasJawBone = useMemo(() => !!scene.getObjectByName("jaw"), [scene]);
+
   useEffect(() => {
     const armSubset: Record<string, Record<string, number> | undefined> = {};
     for (const id of JOINT_IDS) armSubset[id] = angles[id];
@@ -145,6 +158,10 @@ export function BodyModel({ modelUrl }: { modelUrl: string }) {
     const legSubset: Record<string, Record<string, number> | undefined> = {};
     for (const id of LEG_IDS) legSubset[id] = angles[id];
     applyLegPose(bonesRef.current, restQuatsRef.current, legSubset);
+
+    const mandibleSubset: Record<string, Record<string, number> | undefined> = {};
+    for (const id of MANDIBLE_IDS) mandibleSubset[id] = angles[id];
+    applyMandiblePose(bonesRef.current, restQuatsRef.current, { jaw: jawRestPosRef.current ?? undefined }, mandibleSubset);
 
     // Ground-contact stance leg rotation correction — must run AFTER
     // applyLegPose (needs the thigh bone's already-computed normal local
@@ -201,6 +218,25 @@ export function BodyModel({ modelUrl }: { modelUrl: string }) {
       group.worldToLocal(tmpWorld);
       marker.position.copy(tmpWorld);
     }
+
+    // TMJ condyle markers — brief §9 wants "one marker per side," but both
+    // sides drive the SAME single `mandible` control (§2), unlike every
+    // other joint here where one marker maps to one bone. That doesn't fit
+    // the generic jointId->single-marker map above, so these two are their
+    // own small bespoke block instead of forcing a shared-architecture
+    // refactor for one joint.
+    const jawBone = bonesRef.current.jaw;
+    if (jawBone) {
+      for (const side of ["left", "right"] as const) {
+        const marker = condyleMarkerRefs.current[side];
+        if (!marker) continue;
+        const offset = CONDYLE_OFFSET_LOCAL.clone();
+        if (side === "left") offset.negate();
+        jawBone.localToWorld(offset);
+        group.worldToLocal(offset);
+        marker.position.copy(offset);
+      }
+    }
   });
 
   const quaternion = useMemo(
@@ -232,6 +268,43 @@ export function BodyModel({ modelUrl }: { modelUrl: string }) {
                 // un-picks it. Read via getState() (not a hook) so this
                 // component doesn't re-render on every record/replay
                 // state change it has no other reason to care about.
+                const rr = useRecordReplayStore.getState();
+                if (rr.panelOpen && !rr.clip) rr.toggleJoint(jointId);
+              }}
+              onPointerOver={(e) => {
+                e.stopPropagation();
+                hoverJoint(jointId);
+                document.body.style.cursor = "pointer";
+              }}
+              onPointerOut={() => {
+                hoverJoint(null);
+                document.body.style.cursor = "default";
+              }}
+            >
+              <sphereGeometry args={[isSelected || isHovered ? 0.022 : 0.017, 16, 14]} />
+              <meshStandardMaterial
+                color={color}
+                emissive={color}
+                emissiveIntensity={isSelected ? 0.6 : isHovered ? 0.35 : 0.12}
+                roughness={0.4}
+              />
+            </mesh>
+          );
+        })}
+        {showJointMarkers && hasJawBone && (["left", "right"] as const).map((side) => {
+          const jointId = "mandible";
+          const isSelected = selectedJoint === jointId;
+          const isHovered = hoveredJoint === jointId;
+          const color = isSelected ? COLORS.jointSelected : isHovered ? COLORS.jointHover : COLORS.joint;
+          return (
+            <mesh
+              key={`mandible_${side}`}
+              ref={(el) => {
+                condyleMarkerRefs.current[side] = el;
+              }}
+              onClick={(e) => {
+                e.stopPropagation();
+                selectJoint(jointId);
                 const rr = useRecordReplayStore.getState();
                 if (rr.panelOpen && !rr.clip) rr.toggleJoint(jointId);
               }}

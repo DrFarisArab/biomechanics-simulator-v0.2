@@ -21,6 +21,7 @@ export const JOINT_LABELS: Record<string, string> = {
   knee_right: "Right Knee",
   ankle_left: "Left Ankle",
   ankle_right: "Right Ankle",
+  mandible: "Jaw (TMJ)",
 };
 
 export const ALL_JOINT_IDS = Object.keys(JOINT_LABELS);

@@ -2,13 +2,15 @@ import { create } from "zustand";
 import { ARM_JOINT_DOFS } from "./armDofs";
 import { TRUNK_JOINT_DOFS } from "./trunkDofs";
 import { LEG_JOINT_DOFS } from "./legDofs";
+import { MANDIBLE_JOINT_DOFS } from "./mandibleDofs";
 import type { StanceLeg } from "./stanceMode";
 
 export const JOINT_IDS = Object.keys(ARM_JOINT_DOFS);
 export const TRUNK_IDS = Object.keys(TRUNK_JOINT_DOFS);
 export const LEG_IDS = Object.keys(LEG_JOINT_DOFS);
+export const MANDIBLE_IDS = Object.keys(MANDIBLE_JOINT_DOFS);
 
-const ALL_DOF_TABLES = [ARM_JOINT_DOFS, TRUNK_JOINT_DOFS, LEG_JOINT_DOFS];
+const ALL_DOF_TABLES = [ARM_JOINT_DOFS, TRUNK_JOINT_DOFS, LEG_JOINT_DOFS, MANDIBLE_JOINT_DOFS];
 
 function neutralAngles(): Record<string, Record<string, number>> {
   const out: Record<string, Record<string, number>> = {};
