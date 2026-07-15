@@ -17,7 +17,7 @@ import { lumbopelvicTiltDeg } from "@/lib/lumbopelvicRhythm";
 import { recolorMaterials, JOINT_MARKER_COLORS as COLORS } from "@/lib/materials";
 import { CONDYLE_OFFSET_LEFT_LOCAL, CONDYLE_OFFSET_RIGHT_LOCAL } from "@/lib/mandibleDofs";
 import { getDracoLoader } from "@/lib/dracoLoader";
-import { unifyDuplicateSkeletons } from "@/lib/unifySkeletons";
+import { unifyDuplicateSkeletons, findBodyRigRoot, findBoneInRig } from "@/lib/unifySkeletons";
 
 // Joint id -> the bone whose own local origin (head) IS that joint's pivot.
 // lumbar/thoracic/cervical are now per-vertebra CHAINS (see trunkDofs.ts) —
@@ -109,9 +109,15 @@ export function BodyModel({ modelUrl }: { modelUrl: string }) {
   const showJointMarkers = useArmSimStore((s) => s.showJointMarkers);
 
   const markerJoints = useMemo(() => {
+    // Scoped to the real "v2_body_rig" subtree, not the whole scene — see
+    // unifySkeletons.ts's findBodyRigRoot doc comment: this export also
+    // contains an unused decoy armature ("v2_arm_rig") with same-named but
+    // differently-parented bones, which an unscoped getObjectByName can
+    // resolve to instead of the real one.
+    const bodyRigRoot = findBodyRigRoot(scene) ?? scene;
     const found: Record<string, THREE.Object3D | undefined> = {};
     for (const name of ALL_BONE_NAMES) {
-      found[name] = scene.getObjectByName(name) ?? undefined;
+      found[name] = findBoneInRig(bodyRigRoot, name) ?? undefined;
     }
     bonesRef.current = found;
     const restQuats: Record<string, THREE.Quaternion | undefined> = {};
@@ -149,7 +155,7 @@ export function BodyModel({ modelUrl }: { modelUrl: string }) {
   // Older/not-yet-re-exported GLBs may not have the `jaw` bone yet — guard
   // the condyle markers on its presence so this degrades gracefully rather
   // than rendering markers with nothing to follow.
-  const hasJawBone = useMemo(() => !!scene.getObjectByName("jaw"), [scene]);
+  const hasJawBone = useMemo(() => !!findBoneInRig(findBodyRigRoot(scene) ?? scene, "jaw"), [scene]);
 
   useEffect(() => {
     const armSubset: Record<string, Record<string, number> | undefined> = {};

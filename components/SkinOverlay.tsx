@@ -15,7 +15,7 @@ import { computePelvisPivotOffset, stanceLegRotationCorrection } from "@/lib/sta
 import { lumbopelvicTiltDeg } from "@/lib/lumbopelvicRhythm";
 import { prepareSkinOverlayMaterial } from "@/lib/materials";
 import { getDracoLoader } from "@/lib/dracoLoader";
-import { unifyDuplicateSkeletons } from "@/lib/unifySkeletons";
+import { unifyDuplicateSkeletons, findBodyRigRoot, findBoneInRig } from "@/lib/unifySkeletons";
 
 const ALL_BONE_NAMES = Array.from(
   new Set([...ARM_BONE_NAMES, ...TRUNK_BONE_NAMES, ...LEG_BONE_NAMES, ...MANDIBLE_BONE_NAMES, "head", "scapulaL", "scapulaR"])
@@ -58,9 +58,13 @@ export function SkinOverlay() {
   const stanceLeg = useArmSimStore((s) => s.stanceLeg);
 
   useMemo(() => {
+    // Scoped to the real "v2_body_rig" subtree — see unifySkeletons.ts's
+    // findBodyRigRoot doc comment (this export also contains an unused
+    // decoy armature with same-named but differently-parented bones).
+    const bodyRigRoot = findBodyRigRoot(scene) ?? scene;
     const found: Record<string, THREE.Object3D | undefined> = {};
     for (const name of ALL_BONE_NAMES) {
-      found[name] = scene.getObjectByName(name) ?? undefined;
+      found[name] = findBoneInRig(bodyRigRoot, name) ?? undefined;
     }
     bonesRef.current = found;
     const restQuats: Record<string, THREE.Quaternion | undefined> = {};
