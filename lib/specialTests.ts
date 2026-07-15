@@ -46,7 +46,8 @@ export const REGIONS: Region[] = [
   { id: "si", name: "SI Joint & Pelvis", family: "Spine & Axial", color: "#7A74E0", blurb: "SIJ provocation cluster & pelvic girdle pain" },
   { id: "sh", name: "Shoulder", family: "Upper Limb", color: "#0D7377", blurb: "Cuff, impingement, instability, labrum, AC, scapula" },
   { id: "el", name: "Elbow", family: "Upper Limb", color: "#0F8A80", blurb: "Epicondylalgia, UCL, PLRI, cubital tunnel" },
-  { id: "wr", name: "Wrist & Hand", family: "Upper Limb", color: "#177268", blurb: "CTS, De Quervain, TFCC, carpal instability, CMC" },
+  { id: "wr", name: "Wrist", family: "Upper Limb", color: "#177268", blurb: "CTS, De Quervain, TFCC, carpal instability, vascular" },
+  { id: "hn", name: "Hand", family: "Upper Limb", color: "#1E8A7E", blurb: "Thumb CMC, finger/tendon integrity, hypermobility, sensation" },
   { id: "hip", name: "Hip", family: "Lower Limb", color: "#9A552B", blurb: "FAI, labrum, GTPS, deep gluteal, red flags" },
   { id: "kn", name: "Knee", family: "Lower Limb", color: "#83481F", blurb: "Ligaments, meniscus, patellofemoral, PLC, ITB" },
   { id: "an", name: "Ankle", family: "Lower Limb", color: "#AA6432", blurb: "Lateral ligaments, syndesmosis, Achilles, impingement" },
@@ -161,16 +162,35 @@ export const TESTS: SpecialTest[] = [
   { id: "el8", r: "el", cat: "Instability", n: "Lateral pivot-shift / posterolateral rotatory", t: "Posterolateral rotatory instability", p: "Supine, arm overhead; supinate + valgus + axial load while flexing from extension.", pos: "Apprehension or a clunk of radiohumeral subluxation-reduction (often only under anaesthesia).", tier: 3 },
   { id: "el9", r: "el", cat: "Nerve", n: "Elbow flexion + Tinel (cubital tunnel)", t: "Ulnar nerve entrapment", p: "Hold full elbow flexion with wrist extension up to 60 s; tap over the cubital tunnel.", pos: "Paraesthesia in the ulnar 1½ digits.", tier: 2 },
 
-  /* ---- WRIST & HAND ---- */
+  /* ---- WRIST ---- researched against Physiopedia's Wrist special-tests
+   * category (physio-pedia.com/Category:Wrist_-_Special_Tests). */
   { id: "wr1", r: "wr", cat: "Carpal tunnel", n: "Phalen test", t: "Carpal tunnel syndrome (median)", p: "Hold maximal wrist flexion for up to 60 s.", pos: "Paraesthesia in the median distribution (thumb, index, middle, radial ring).", sn: "51–68", sp: "73–76", tier: 2 },
   { id: "wr2", r: "wr", cat: "Carpal tunnel", n: "Tinel at the wrist", t: "Carpal tunnel syndrome", p: "Tap over the median nerve at the carpal tunnel.", pos: "Tingling radiating into the median fingers.", sn: "23–60", sp: "64–87", tier: 2 },
   { id: "wr3", r: "wr", cat: "Carpal tunnel", n: "Carpal compression (Durkan)", t: "Carpal tunnel syndrome", p: "Apply sustained thumb pressure over the carpal tunnel for ~30 s.", pos: "Median-nerve paraesthesia.", sn: "64–83", sp: "≈83", tier: 2, pearl: "Often the most accurate single CTS provocation test." },
   { id: "wr4", r: "wr", cat: "Tendon", n: "Finkelstein / Eichhoff", t: "De Quervain tenosynovitis", p: "Thumb held in the fist; ulnar-deviate the wrist (Eichhoff), or the examiner-guided Finkelstein.", pos: "Sharp pain over the first dorsal compartment (radial styloid).", tier: 2 },
   { id: "wr5", r: "wr", cat: "TFCC / DRUJ", n: "TFCC load (ulnar grind)", t: "Triangular fibrocartilage complex", p: "Ulnar-deviate and axially load the wrist with rotation.", pos: "Ulnar-sided wrist pain and/or click.", tier: 3 },
   { id: "wr6", r: "wr", cat: "TFCC / DRUJ", n: "Piano-key / DRUJ ballottement", t: "Distal radioulnar joint instability", p: "Stabilise the radius and translate the ulnar head dorsally-volarly.", pos: "Excess translation vs the other side ± pain.", tier: 3 },
-  { id: "wr7", r: "wr", cat: "Carpal instability", n: "Watson scaphoid shift", t: "Scapholunate instability", p: "Press the scaphoid tubercle while moving the wrist from ulnar to radial deviation.", pos: "A painful clunk as the scaphoid subluxes/relocates.", tier: 3 },
+  { id: "wr7", r: "wr", cat: "Carpal instability", n: "Watson scaphoid shift test", t: "Scapholunate instability", p: "Press the scaphoid tubercle while moving the wrist from ulnar to radial deviation.", pos: "A painful clunk as the scaphoid subluxes/relocates.", tier: 3 },
   { id: "wr8", r: "wr", cat: "Fracture screen", n: "Anatomical snuffbox tenderness", t: "Scaphoid fracture", p: "Palpate the anatomical snuffbox; add scaphoid tubercle tenderness and longitudinal thumb compression.", pos: "Focal tenderness — sensitive; image even with normal early X-ray if suspicious.", sn: "≈90", sp: "40", tier: 2, pearl: "Sensitive but not specific — a negative snuffbox largely rules OUT scaphoid fracture." },
-  { id: "wr9", r: "wr", cat: "Thumb CMC", n: "CMC grind test", t: "First CMC (thumb base) osteoarthritis", p: "Axially load and rotate the thumb metacarpal on the trapezium.", pos: "Pain ± crepitus at the thumb base.", sn: "53–66", sp: "74–93", tier: 2 },
+  { id: "wr10", r: "wr", cat: "TFCC / DRUJ", n: "Supination lift test", t: "TFCC injury", p: "Palm-up (fully supinated forearm), ask the patient to lift a table or push up from a chair against resistance.", pos: "Ulnar-sided wrist pain that reproduces the patient's symptoms; inability to lift.", tier: 2, pearl: "A load-bearing functional test, not just passive stress — often positive when passive TFCC tests are equivocal." },
+  { id: "wr11", r: "wr", cat: "Vascular", n: "Allen test", t: "Radial/ulnar artery patency", p: "Compress both radial and ulnar arteries, have the patient clench/open the fist to empty the hand, then release one artery at a time.", pos: "Delayed or absent flush on release indicates that artery (or the palmar arch) is inadequate.", tier: 1, pearl: "Essential before radial artery procedures (art-line, harvest) to confirm ulnar collateral flow." },
+  { id: "wr12", r: "wr", cat: "Tendon", n: "Wringing test", t: "Lateral epicondylalgia (provoked at the wrist)", p: "Passively or actively wring a towel/cloth — alternating forearm pronation and supination with the wrist gripping.", pos: "Reproduction of lateral elbow pain during the wringing motion.", tier: 3, pearl: "Provokes lateral epicondylalgia through a functional movement rather than isolated resisted extension — useful when Cozen/Mill's are equivocal." },
+  { id: "wr13", r: "wr", cat: "Tendon", n: "WHAT test (Wrist Hyperflexion and Abduction of the Thumb)", t: "De Quervain tenosynovitis", p: "Maximally flex the wrist while abducting the thumb.", pos: "Pain over the first dorsal compartment, comparable to Finkelstein's.", tier: 3, pearl: "An alternative to Finkelstein's for patients in whom the classic thumb-in-fist position is itself painful or hard to tolerate." },
+
+  /* ---- HAND ---- researched against Physiopedia's Hand special-tests
+   * category (physio-pedia.com/Category:Hand_-_Special_Tests). This rig has
+   * no finger/thumb DOFs, so most hand-specific tests below are reference-
+   * only (no 3D pose) — see the comments by SPECIAL_TEST_CUSTOM_POSES. */
+  { id: "hn1", r: "hn", cat: "Thumb CMC", n: "CMC grind test", t: "First CMC (thumb base) osteoarthritis", p: "Axially load and rotate the thumb metacarpal on the trapezium.", pos: "Pain ± crepitus at the thumb base.", sn: "53–66", sp: "74–93", tier: 2 },
+  { id: "hn2", r: "hn", cat: "Hypermobility", n: "Beighton score", t: "Generalised joint hypermobility", p: "9-point composite: passive little-finger MCP extension > 90° (×2), passive thumb-to-forearm apposition (×2), elbow hyperextension > 10° (×2), knee hyperextension > 10° (×2), and forward flexion with palms flat on the floor (×1).", pos: "≥ 4–6/9 (age-dependent) suggests generalised joint hypermobility.", tier: 2, pearl: "A whole-body screen scored at the hand/elbow/knee/spine — not a single-joint provocation test." },
+  { id: "hn3", r: "hn", cat: "Finger / PIP", n: "Bunnell-Littler test", t: "Intrinsic tightness vs capsular (joint) tightness at the PIP", p: "With the MCP held extended, passively flex the PIP; then repeat with the MCP held flexed.", pos: "PIP flexion limited only with the MCP extended → intrinsic tightness. Limited in both positions → capsular/joint tightness.", tier: 2 },
+  { id: "hn4", r: "hn", cat: "Tendon", n: "Elson test", t: "Central slip (extensor tendon) rupture at the PIP", p: "Flex the PIP to 90° over the edge of a table, then resist active PIP extension.", pos: "A rigid, extended DIP with weak PIP extension force indicates central slip rupture (the lateral bands sublux dorsally and stiffen the DIP).", sn: "≈100", tier: 1, pearl: "Detects an acute boutonnière deformity before it becomes visibly obvious — worth doing after any dorsal PIP trauma." },
+  { id: "hn5", r: "hn", cat: "Measurement", n: "Figure-of-eight hand measurement", t: "Hand/finger oedema quantification", p: "Wrap a tape in a figure-8 around the wrist and across the dorsum/palm, looping around the thumb and 5th digit.", pos: "Not a provocation test — larger figure-8 circumference vs the other side quantifies hand swelling.", tier: 2, pearl: "A measurement technique, not a provocative test — good for objective before/after comparison during rehab." },
+  { id: "hn6", r: "hn", cat: "Carpal tunnel", n: "Flick sign", t: "Carpal tunnel syndrome (screening question)", p: "Ask whether flicking/shaking the hand relieves the nocturnal numbness/tingling.", pos: "A reported flicking/shaking motion that relieves symptoms is suggestive of CTS.", sn: "≈93", sp: "≈96", tier: 2, pearl: "A history item phrased as a test — high reported accuracy, but relies on patient recall rather than direct provocation." },
+  { id: "hn7", r: "hn", cat: "Functional", n: "Sollerman hand function test", t: "Overall grip/hand-function capacity", p: "20-item standardised battery of functional grips (e.g. turning a key, picking up coins, writing) scored 0-4 each.", pos: "Lower composite score quantifies functional hand impairment — used for outcome tracking, not diagnosis.", tier: 2, pearl: "An outcome-measure battery, not a single provocation test — most useful for tracking change over time (e.g. after tendon repair or nerve injury)." },
+  { id: "hn8", r: "hn", cat: "Sensation", n: "Weber two-point discrimination", t: "Peripheral nerve sensory function/recovery", p: "Apply two blunt points simultaneously at progressively smaller distances on the fingertip pulp; find the minimum distance still perceived as two points.", pos: "> 6 mm static (or > 5 mm moving) 2-point discrimination suggests impaired sensory nerve function.", tier: 2, pearl: "Tracks nerve regeneration after repair — normal static 2PD is roughly 2-5 mm depending on digit." },
+  { id: "hn9", r: "hn", cat: "Vascular / autonomic", n: "Trousseau's sign", t: "Latent hypocalcaemia (neuromuscular irritability)", p: "Inflate a BP cuff above systolic pressure on the upper arm and hold for up to 3 minutes.", pos: "Carpal spasm — wrist flexion with MCP flexion, finger extension, and thumb opposition (main d'accoucheur / 'obstetrician's hand').", sn: "66", sp: "≈98", tier: 2, pearl: "More specific than Chvostek's sign for hypocalcaemia, at the cost of being slower and mildly uncomfortable for the patient." },
+  { id: "hn10", r: "hn", cat: "Sensation", n: "Wrinkling test (O'Riain)", t: "Digital nerve integrity (denervation screening)", p: "Immerse the fingertips in warm water for ~5-30 minutes.", pos: "Absence of the normal skin-wrinkling response suggests sympathetic/digital nerve denervation.", tier: 3, pearl: "Useful in young children or uncooperative patients where sensory testing by report isn't reliable." },
 
   /* ---- HIP ---- */
   { id: "hip1", r: "hip", cat: "FAI / labrum", n: "FADIR (anterior impingement)", t: "FAI / anterosuperior labral tear", p: "Supine; passively flex the hip to 90°, then adduct and internally rotate.", pos: "Reproduction of the familiar deep groin pain.", sn: "94–99", sp: "5–25", tier: 1, pearl: "Very sensitive — a negative FADIR makes intra-articular FAI/labral pathology unlikely." },
@@ -365,6 +385,17 @@ export const TEST_POSE_MAP: Record<string, string> = {
   // Foot — position-only reuses.
   ft11: "standing", // Feiss line test — relaxed weight-bearing observation, standing
   ft12: "sitting", // Navicular drop test — non-weight-bearing starting reference (sitting)
+
+  // Wrist — see SPECIAL_TEST_CUSTOM_POSES below for the position-built
+  // ones; these reuse an existing preset outright (position-only: palpation
+  // tests with no distinctive wrist/forearm angle of their own).
+  wr2: "sitting", // Tinel at the wrist — seated, wrist relaxed, purely a nerve tap
+  wr3: "sitting", // Carpal compression (Durkan) — seated, wrist neutral, sustained thumb pressure
+  wr8: "sitting", // Anatomical snuffbox tenderness — seated, purely a palpation test
+  wr11: "sitting", // Allen test — seated, purely a vascular occlusion/release test
+
+  // Hand — position-only reuses.
+  hn1: "sitting", // CMC grind test — seated, purely an axial-load/rotation test at the thumb base
 };
 
 /**
@@ -721,6 +752,68 @@ export const SPECIAL_TEST_CUSTOM_POSES: Record<string, PosePreset> = {
   // itself isn't modeled — this approximates the varus alignment the block
   // maneuver is checking, not the block setup itself).
   ft10: fromBase("standing", ["invert the right ankle 15"]),
+
+  // ---- WRIST ---- researched against Physiopedia's Wrist special-tests
+  // category (physio-pedia.com/Category:Wrist_-_Special_Tests). This rig
+  // has wrist flexExt/radUlnar and forearm pronSup, but no thumb DOF — the
+  // thumb-in-fist / thumb-abduction components several of these tests
+  // describe aren't represented, only the wrist/forearm angle is.
+
+  // Phalen test — seated, maximal wrist flexion (source: held up to 60s).
+  wr1: fromBase("sitting", ["flex the right wrist 70"]),
+
+  // Finkelstein / Eichhoff — seated, wrist ulnar-deviated (thumb-in-fist
+  // not modeled — the ulnar deviation is the DOF this rig can show).
+  wr4: fromBase("sitting", ["ulnar deviate the right wrist 20"]),
+
+  // TFCC load (ulnar grind) — seated, ulnar deviation with forearm rotation
+  // (source: "with rotation") — distinguished from Finkelstein's pose by
+  // adding pronation, matching the "axial load + rotation" description.
+  wr5: fromBase("sitting", ["ulnar deviate the right wrist 20", "pronate the right forearm 30"]),
+
+  // Piano-key / DRUJ ballottement — seated, forearm pronated (source:
+  // stabilise the radius, translate the ulnar head — pronation is the
+  // setup position that best exposes the ulnar head dorsally).
+  wr6: fromBase("sitting", ["pronate the right forearm 60"]),
+
+  // Watson scaphoid shift — a genuine dynamic maneuver, not a "get into
+  // position" pose: the examiner presses the scaphoid tubercle WHILE moving
+  // the wrist from ulnar to radial deviation (source), so Play animates
+  // that shift directly (same dynamicEndAngles pattern as FABER/
+  // Silfverskiöld) rather than neutral -> a single static pose.
+  wr7: {
+    ...fromBase("sitting", ["ulnar deviate the right wrist 15"]),
+    dynamicEndAngles: { wrist_right: { radUlnar: -15 } },
+  },
+
+  // Supination lift test — seated, forearm fully supinated (source: "palm
+  // up") before lifting/pushing up against resistance.
+  wr10: fromBase("sitting", ["supinate the right forearm 80"]),
+
+  // Wringing test — the maneuver itself IS alternating pronation/supination
+  // (source: "wring a towel"), so this is another dynamicEndAngles case:
+  // setup = pronated, dynamic end = supinated, demonstrating one wring
+  // cycle rather than a single static grip position.
+  wr12: {
+    ...fromBase("sitting", ["pronate the right forearm 40"]),
+    dynamicEndAngles: { forearm_right: { pronSup: -40 } },
+  },
+
+  // WHAT test (Wrist Hyperflexion and Abduction of the Thumb) — same wrist
+  // flexion as Phalen (source gives no separate angle); the thumb-abduction
+  // component isn't modeled (no thumb DOF).
+  wr13: fromBase("sitting", ["flex the right wrist 70"]),
+
+  // ---- HAND ---- researched against Physiopedia's Hand special-tests
+  // category (physio-pedia.com/Category:Hand_-_Special_Tests). This rig has
+  // no finger/thumb DOFs at all, so none of the finger-level tests here
+  // (Beighton, Bunnell-Littler, Elson, figure-8 hand measurement, Flick
+  // sign, Sollerman, two-point discrimination, Trousseau's, Wrinkling) get
+  // a custom pose — a wrist-only approximation of a finger/thumb-driven
+  // sign (e.g. Trousseau's carpal spasm) would be more misleading than
+  // showing none at all. The reference info in their entries above is
+  // still accurate. hn1 (CMC grind) reuses "sitting" outright via
+  // TEST_POSE_MAP — no distinctive pose beyond that.
 };
 
 // si7 (FABER, SIJ lens) is the exact same figure-4 maneuver as hip2 — same
