@@ -15,6 +15,15 @@ export interface PosePreset {
   // things like the Special Tests Play-preview animation, without having to
   // guess or re-derive it.
   baseId?: string;
+  // For tests whose Play preview isn't "get from neutral into this position"
+  // but rather "hold this position, then a manual maneuver moves it further"
+  // (e.g. FABER's examiner pressing the knee toward the table) — a sparse
+  // patch of the DOFs that move DURING that maneuver, applied on top of this
+  // preset's own `angles` as the animation's end pose. When present, this
+  // preset's own `angles` is used as the preview's START (not baseId's
+  // neutral), overriding the normal baseId-derived start/end entirely — see
+  // testPreviewClip.ts's buildTestPreviewClip().
+  dynamicEndAngles?: Record<string, Record<string, number>>;
 }
 
 const HALF_PI = Math.PI / 2;

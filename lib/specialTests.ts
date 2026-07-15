@@ -392,8 +392,29 @@ export const SPECIAL_TEST_CUSTOM_POSES: Record<string, PosePreset> = {
   hip1: fromBase("supine", ["flex the right hip 90", "adduct the right hip 20", "internally rotate the right hip 30"]),
 
   // FABER (Patrick) — classic "figure-4": hip flexed, abducted, and
-  // externally rotated so the ankle rests on the opposite knee.
-  hip2: fromBase("supine", ["flex the right hip 45", "abduct the right hip 45", "externally rotate the right hip 60"]),
+  // externally rotated with the knee bent to 90° so the lateral ankle rests
+  // on the opposite thigh just above the knee (the earlier version of this
+  // pose left the knee straight, which can't actually form a figure-4 —
+  // that was the visible bug). Held/setup values kept a few degrees under
+  // this rig's declared hip abduction/ER ROM ceiling (45°/45°) so the Play
+  // preview below has room to animate INTO that ceiling rather than being
+  // clamped flat.
+  //
+  // dynamicEndAngles models the exam maneuver itself — the examiner
+  // stabilizing the opposite ASIS and pressing the test knee toward the
+  // table, which further abducts/externally rotates the hip (a genuinely
+  // different action from "getting into the figure-4 setup," so Play
+  // animates setup -> pressed, not neutral -> setup, unlike every other hip
+  // test's preview).
+  hip2: {
+    ...fromBase("supine", [
+      "flex the right hip 42",
+      "abduct the right hip 40",
+      "externally rotate the right hip 40",
+      "flex the right knee 90",
+    ]),
+    dynamicEndAngles: { hip_right: { abdAdd: 45, rotation: 45 } },
+  },
 
   // Hip Quadrant / Scour — source gives a 70–140° flexion arc "scoured"
   // through adduction then abduction; snapshotting the flexion+adduction
@@ -614,3 +635,9 @@ export const SPECIAL_TEST_CUSTOM_POSES: Record<string, PosePreset> = {
   // used typical end-range values for a ~10s sustained hold).
   cx13: fromBase("sitting", ["rotate the cervical spine right 60", "extend the cervical spine 20"]),
 };
+
+// si7 (FABER, SIJ lens) is the exact same figure-4 maneuver as hip2 — same
+// physical position and action, just interpreted for SIJ vs hip pathology
+// by where the pain shows up — so it reuses hip2's pose/preview outright
+// rather than duplicating it.
+SPECIAL_TEST_CUSTOM_POSES.si7 = SPECIAL_TEST_CUSTOM_POSES.hip2;

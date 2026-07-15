@@ -31,6 +31,35 @@ function anglesEqual(a: Record<string, number> | undefined, b: Record<string, nu
  * "test" angles are identical, nothing would visibly move).
  */
 export function buildTestPreviewClip(preset: PosePreset): Clip | null {
+  // Dynamic-maneuver tests (e.g. FABER): the preset's OWN angles are the
+  // held starting position, and dynamicEndAngles is where a manual
+  // maneuver (examiner pressure, not "getting into position") takes it —
+  // baseId/neutral plays no part in this animation at all.
+  if (preset.dynamicEndAngles) {
+    const trackedJoints = Object.keys(preset.dynamicEndAngles).filter(
+      (jointId) => !anglesEqual(preset.angles[jointId], { ...preset.angles[jointId], ...preset.dynamicEndAngles![jointId] })
+    );
+    if (trackedJoints.length === 0) return null;
+
+    const startPoses: Record<string, Record<string, number>> = {};
+    const endPoses: Record<string, Record<string, number>> = {};
+    for (const jointId of trackedJoints) {
+      startPoses[jointId] = { ...preset.angles[jointId] };
+      endPoses[jointId] = { ...preset.angles[jointId], ...preset.dynamicEndAngles[jointId] };
+    }
+
+    return {
+      id: makeId("preview"),
+      name: `Preview: ${preset.label}`,
+      trackedJoints,
+      easing: "easeInOut",
+      keyframes: [
+        { id: makeId("kf"), time: 0, poses: startPoses },
+        { id: makeId("kf"), time: PREVIEW_LEG_SECONDS, poses: endPoses },
+      ],
+    };
+  }
+
   const base = preset.baseId ? PRESETS.find((p) => p.id === preset.baseId) : undefined;
   const baseAngles = base?.angles ?? {};
 
