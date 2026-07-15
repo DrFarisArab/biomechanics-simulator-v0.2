@@ -15,9 +15,9 @@ import { useRecordReplayStore } from "@/lib/recordReplayStore";
  */
 export function ClipPlaybackDriver() {
   useFrame((_, delta) => {
-    const { isPlaying, tick } = useRecordReplayStore.getState();
-    if (!isPlaying) return;
-    tick(delta);
+    const { isPlaying, tick, previewPlaying, tickPreview } = useRecordReplayStore.getState();
+    if (isPlaying) tick(delta);
+    if (previewPlaying) tickPreview(delta);
   });
   return null;
 }

@@ -1,8 +1,10 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useArmSimStore } from "@/lib/store";
 import { PRESETS } from "@/lib/presets";
+import { useRecordReplayStore } from "@/lib/recordReplayStore";
+import { buildTestPreviewClip } from "@/lib/testPreviewClip";
 import {
   REGIONS,
   TESTS,
@@ -35,6 +37,11 @@ function regionTestCount(regionId: string) {
 
 function ApplyPoseButton({ test }: { test: SpecialTest }) {
   const applyPose = useArmSimStore((s) => s.applyPose);
+  const patchAngles = useArmSimStore((s) => s.patchAngles);
+  const playPreview = useRecordReplayStore((s) => s.playPreview);
+  const stopPreview = useRecordReplayStore((s) => s.stopPreview);
+  const previewPlaying = useRecordReplayStore((s) => s.previewPlaying);
+  const previewClip = useRecordReplayStore((s) => s.previewClip);
   const presetId = TEST_POSE_MAP[test.id];
   const preset = presetId ? PRESETS.find((p) => p.id === presetId) : SPECIAL_TEST_CUSTOM_POSES[test.id];
 
@@ -46,22 +53,71 @@ function ApplyPoseButton({ test }: { test: SpecialTest }) {
     );
   }
 
+  // Memoized so the clip object (and its id) stays stable across re-renders
+  // for the same preset — playPreview() stores this exact object in the
+  // record/replay store, so a reference-stable clip is what lets the
+  // "is THIS test's preview the one playing" check below actually match.
+  // Rebuilding a fresh object (with a fresh random id) every render, as an
+  // unmemoized call would, meant the comparison could never succeed.
+  const previewClipForTest = useMemo(() => buildTestPreviewClip(preset), [preset]);
+  const isThisPreviewPlaying = previewPlaying && previewClip?.id === previewClipForTest?.id;
+
+  const applyStatic = () => {
+    stopPreview();
+    applyPose(preset.angles, {
+      presetId: preset.id,
+      rootPosition: preset.rootPosition,
+      rootRotation: preset.rootRotation,
+      furniture: preset.furniture,
+      furnitureRotation: preset.furnitureRotation,
+      stanceLeg: preset.stanceLeg,
+    });
+  };
+
+  const togglePreview = () => {
+    if (!previewClipForTest) return;
+    if (isThisPreviewPlaying) {
+      stopPreview();
+      return;
+    }
+    // Set up the full target pose (root/furniture/stance + every joint at
+    // its test-position angle) exactly like the static Apply button, then
+    // immediately pull the tracked joints back to their start-of-test
+    // angles before the first tick fires — otherwise there'd be a one-frame
+    // flash of the end pose before playback catches up to t=0.
+    applyPose(preset.angles, {
+      presetId: preset.id,
+      rootPosition: preset.rootPosition,
+      rootRotation: preset.rootRotation,
+      furniture: preset.furniture,
+      furnitureRotation: preset.furnitureRotation,
+      stanceLeg: preset.stanceLeg,
+    });
+    patchAngles(previewClipForTest.keyframes[0].poses);
+    playPreview(previewClipForTest);
+  };
+
   return (
-    <button
-      onClick={() =>
-        applyPose(preset.angles, {
-          presetId: preset.id,
-          rootPosition: preset.rootPosition,
-          rootRotation: preset.rootRotation,
-          furniture: preset.furniture,
-          furnitureRotation: preset.furnitureRotation,
-          stanceLeg: preset.stanceLeg,
-        })
-      }
-      className="w-full rounded-md border border-teal-700/50 bg-teal-900/20 px-3 py-2 text-[12px] font-semibold text-teal-400 transition hover:bg-teal-900/40"
-    >
-      Apply test position to model — {preset.label}
-    </button>
+    <div className="flex flex-col gap-2">
+      <button
+        onClick={applyStatic}
+        className="w-full rounded-md border border-teal-700/50 bg-teal-900/20 px-3 py-2 text-[12px] font-semibold text-teal-400 transition hover:bg-teal-900/40"
+      >
+        Apply test position to model — {preset.label}
+      </button>
+      {previewClipForTest && (
+        <button
+          onClick={togglePreview}
+          className={`flex w-full items-center justify-center gap-1.5 rounded-md border px-3 py-2 text-[12px] font-semibold transition ${
+            isThisPreviewPlaying
+              ? "border-teal-600/60 bg-teal-900/25 text-teal-400"
+              : "border-neutral-700 bg-neutral-800/40 text-neutral-300 hover:border-neutral-600"
+          }`}
+        >
+          {isThisPreviewPlaying ? "❚❚ Pause preview" : "▶ Play test movement"}
+        </button>
+      )}
+    </div>
   );
 }
 
@@ -217,6 +273,12 @@ function TestDetailView({
   onBack: () => void;
 }) {
   const tierMeta = TIER_META[test.tier];
+  const stopPreview = useRecordReplayStore((s) => s.stopPreview);
+
+  useEffect(() => {
+    return () => stopPreview();
+  }, [test.id, stopPreview]);
+
   return (
     <div className="flex flex-col gap-3 px-4 py-3">
       <button onClick={onBack} className="w-fit text-[11px] font-medium text-neutral-300 transition hover:text-neutral-200">

@@ -13,6 +13,19 @@ interface RecordReplayState {
   direction: 1 | -1;
   speed: number; // 0.25 - 2
 
+  // Special Tests' "Play" preview — a SEPARATE clip/time/direction slot from
+  // the one above, so previewing a test's animation never touches (or gets
+  // clobbered by) whatever clip the user is actually building in the
+  // Record & Replay panel. Reuses the exact same interpolation engine
+  // (applyClipAtTime) and store write (patchAngles) though — see
+  // tickPreview/applyToScene below — this is not a second animation system,
+  // just a second independently-playing clip slot. Always ping-pong, no
+  // speed control — it's a fixed demo loop, not an authoring timeline.
+  previewClip: Clip | null;
+  previewTime: number;
+  previewPlaying: boolean;
+  previewDirection: 1 | -1;
+
   setPanelOpen: (open: boolean) => void;
   toggleJoint: (jointId: string) => void;
   startClip: () => void;
@@ -26,6 +39,25 @@ interface RecordReplayState {
   setSpeed: (speed: number) => void;
   seek: (time: number) => void;
   tick: (deltaSeconds: number) => void;
+  playPreview: (clip: Clip) => void;
+  stopPreview: () => void;
+  tickPreview: (deltaSeconds: number) => void;
+}
+
+// Reflects an overshoot back in off whichever end it crossed — same
+// "bounce" used by both the main clip's loop and the Special Tests preview,
+// factored out once rather than duplicated.
+function bounce(next: number, duration: number, dir: 1 | -1): { time: number; dir: 1 | -1 } {
+  let t = next;
+  let d = dir;
+  if (t >= duration) {
+    t = duration - (t - duration);
+    d = -1;
+  } else if (t <= 0) {
+    t = -t;
+    d = 1;
+  }
+  return { time: Math.min(duration, Math.max(0, t)), dir: d };
 }
 
 // Pushes the clip's interpolated pose (only its tracked joints) into the
@@ -48,6 +80,11 @@ export const useRecordReplayStore = create<RecordReplayState>((set, get) => ({
   loop: false,
   direction: 1,
   speed: 1,
+
+  previewClip: null,
+  previewTime: 0,
+  previewPlaying: false,
+  previewDirection: 1,
 
   setPanelOpen: (open) => set({ panelOpen: open }),
 
@@ -146,17 +183,9 @@ export const useRecordReplayStore = create<RecordReplayState>((set, get) => ({
       let playing = true;
 
       if (s.loop) {
-        // Bounce off whichever end was overshot — reflect the overshoot
-        // back in, same as a ball bouncing, so a big delta/high speed
-        // doesn't visibly clip the very end of a leg.
-        if (next >= duration) {
-          next = duration - (next - duration);
-          dir = -1;
-        } else if (next <= 0) {
-          next = -next;
-          dir = 1;
-        }
-        next = Math.min(duration, Math.max(0, next));
+        const bounced = bounce(next, duration, dir);
+        next = bounced.time;
+        dir = bounced.dir;
       } else if (next >= duration) {
         next = duration;
         playing = false;
@@ -167,5 +196,30 @@ export const useRecordReplayStore = create<RecordReplayState>((set, get) => ({
 
       applyToScene(s.clip, next);
       return { currentTime: next, isPlaying: playing, direction: dir };
+    }),
+
+  // Starts (or restarts) a Special Test's Play preview from t=0, forward.
+  // Swapping previewClip mid-playback (e.g. user clicks Play on a different
+  // test) just resets time/direction cleanly — there's no scrub UI for
+  // previews, so no state needs preserving across the switch.
+  playPreview: (clip) => set({ previewClip: clip, previewTime: 0, previewDirection: 1, previewPlaying: true }),
+
+  stopPreview: () => set({ previewPlaying: false }),
+
+  // Same bounce logic as tick(), but always ping-pong (no loop toggle) and
+  // writes to previewTime/previewDirection instead of currentTime/direction
+  // — kept fully separate from the user's own clip/currentTime so a running
+  // preview never fights with (or gets reset by) Record & Replay authoring.
+  tickPreview: (deltaSeconds) =>
+    set((s) => {
+      if (!s.previewPlaying || !s.previewClip) return {};
+      const duration = clipDuration(s.previewClip);
+      if (duration <= 0) return { previewPlaying: false };
+
+      const next = s.previewTime + s.previewDirection * deltaSeconds;
+      const { time, dir } = bounce(next, duration, s.previewDirection);
+
+      applyToScene(s.previewClip, time);
+      return { previewTime: time, previewDirection: dir };
     }),
 }));

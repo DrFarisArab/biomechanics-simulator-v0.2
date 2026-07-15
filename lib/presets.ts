@@ -9,6 +9,12 @@ export interface PosePreset {
   furniture?: "none" | "chair" | "bed";
   furnitureRotation?: number;
   stanceLeg?: "none" | "left" | "right";
+  // Which OTHER preset this one was built from (only set on specialTests.ts's
+  // fromBase()-constructed poses) — lets a caller recover "the neutral setup
+  // position before this test's specific joint angles were dialed in" for
+  // things like the Special Tests Play-preview animation, without having to
+  // guess or re-derive it.
+  baseId?: string;
 }
 
 const HALF_PI = Math.PI / 2;

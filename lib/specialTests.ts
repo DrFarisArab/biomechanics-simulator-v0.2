@@ -375,6 +375,7 @@ function fromBase(baseId: string, commands: string[]): PosePreset {
     furniture: base.furniture,
     furnitureRotation: base.furnitureRotation,
     stanceLeg: base.stanceLeg,
+    baseId,
     angles,
   };
 }
