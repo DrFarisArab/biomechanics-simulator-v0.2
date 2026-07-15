@@ -17,7 +17,6 @@ import { lumbopelvicTiltDeg } from "@/lib/lumbopelvicRhythm";
 import { recolorMaterials, JOINT_MARKER_COLORS as COLORS } from "@/lib/materials";
 import { CONDYLE_OFFSET_LEFT_LOCAL, CONDYLE_OFFSET_RIGHT_LOCAL } from "@/lib/mandibleDofs";
 import { getDracoLoader } from "@/lib/dracoLoader";
-import { unifyDuplicateSkeletons, findBodyRigRoot, findBoneInRig } from "@/lib/unifySkeletons";
 
 // Joint id -> the bone whose own local origin (head) IS that joint's pivot.
 // lumbar/thoracic/cervical are now per-vertebra CHAINS (see trunkDofs.ts) —
@@ -78,7 +77,6 @@ export function BodyModel({ modelUrl }: { modelUrl: string }) {
   });
   const scene = useMemo(() => {
     const cloned = cloneSkinned(gltf.scene) as THREE.Object3D;
-    unifyDuplicateSkeletons(cloned, ALL_BONE_NAMES);
     recolorMaterials(cloned);
     return cloned;
   }, [gltf]);
@@ -109,15 +107,11 @@ export function BodyModel({ modelUrl }: { modelUrl: string }) {
   const showJointMarkers = useArmSimStore((s) => s.showJointMarkers);
 
   const markerJoints = useMemo(() => {
-    // Scoped to the real "v2_body_rig" subtree, not the whole scene — see
-    // unifySkeletons.ts's findBodyRigRoot doc comment: this export also
-    // contains an unused decoy armature ("v2_arm_rig") with same-named but
-    // differently-parented bones, which an unscoped getObjectByName can
-    // resolve to instead of the real one.
-    const bodyRigRoot = findBodyRigRoot(scene) ?? scene;
+    // Single clean skin (v2_body_rig, 41 joints, no name collisions) — every
+    // bone name is unique, so a plain scene-wide lookup resolves correctly.
     const found: Record<string, THREE.Object3D | undefined> = {};
     for (const name of ALL_BONE_NAMES) {
-      found[name] = findBoneInRig(bodyRigRoot, name) ?? undefined;
+      found[name] = scene.getObjectByName(name) ?? undefined;
     }
     bonesRef.current = found;
     const restQuats: Record<string, THREE.Quaternion | undefined> = {};
@@ -155,7 +149,7 @@ export function BodyModel({ modelUrl }: { modelUrl: string }) {
   // Older/not-yet-re-exported GLBs may not have the `jaw` bone yet — guard
   // the condyle markers on its presence so this degrades gracefully rather
   // than rendering markers with nothing to follow.
-  const hasJawBone = useMemo(() => !!findBoneInRig(findBodyRigRoot(scene) ?? scene, "jaw"), [scene]);
+  const hasJawBone = useMemo(() => !!scene.getObjectByName("jaw"), [scene]);
 
   useEffect(() => {
     const armSubset: Record<string, Record<string, number> | undefined> = {};
