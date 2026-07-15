@@ -15,7 +15,8 @@ import { applyScapularRhythm } from "@/lib/scapularRhythm";
 import { computePelvisPivotOffset, stanceLegRotationCorrection } from "@/lib/stanceMode";
 import { lumbopelvicTiltDeg } from "@/lib/lumbopelvicRhythm";
 import { recolorMaterials, JOINT_MARKER_COLORS as COLORS } from "@/lib/materials";
-import { CONDYLE_OFFSET_LOCAL } from "@/lib/mandibleDofs";
+import { CONDYLE_OFFSET_LEFT_LOCAL, CONDYLE_OFFSET_RIGHT_LOCAL } from "@/lib/mandibleDofs";
+import { getDracoLoader } from "@/lib/dracoLoader";
 
 // Joint id -> the bone whose own local origin (head) IS that joint's pivot.
 // lumbar/thoracic/cervical are now per-vertebra CHAINS (see trunkDofs.ts) —
@@ -71,7 +72,9 @@ const ALL_BONE_NAMES = Array.from(
  * for this rig (bones don't have identity rotation at rest).
  */
 export function BodyModel({ modelUrl }: { modelUrl: string }) {
-  const gltf = useLoader(GLTFLoader, modelUrl);
+  const gltf = useLoader(GLTFLoader, modelUrl, (loader) => {
+    loader.setDRACOLoader(getDracoLoader());
+  });
   const scene = useMemo(() => {
     const cloned = cloneSkinned(gltf.scene) as THREE.Object3D;
     recolorMaterials(cloned);
@@ -230,8 +233,7 @@ export function BodyModel({ modelUrl }: { modelUrl: string }) {
       for (const side of ["left", "right"] as const) {
         const marker = condyleMarkerRefs.current[side];
         if (!marker) continue;
-        const offset = CONDYLE_OFFSET_LOCAL.clone();
-        if (side === "left") offset.negate();
+        const offset = (side === "left" ? CONDYLE_OFFSET_LEFT_LOCAL : CONDYLE_OFFSET_RIGHT_LOCAL).clone();
         jawBone.localToWorld(offset);
         group.worldToLocal(offset);
         marker.position.copy(offset);

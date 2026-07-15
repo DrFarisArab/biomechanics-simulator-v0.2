@@ -93,19 +93,23 @@ const PHASE2_MAX_DOWN_M = 0.006;
 const MAX_LATERAL_MM = 12;
 const MAX_LATERAL_DEG = 11; // reached at full 12mm excursion
 
-// Condyle offset FROM the jaw bone's own rest origin, in the bone's own
-// local space — used only for the lateral-excursion pivot (brief §6):
-// rotating about a point offset toward the working (ipsilateral) side,
-// instead of the bone's own center, is what makes that side "rotate in
-// place" while the other side swings through an arc — same closed-form
-// trick as stanceMode.ts's pelvis pivot. Magnitude (~50mm) measured in
-// Blender from the actual condyle apex vertices; which local axis is
-// "left-right" is this rig's X-for-left-right convention, not yet
-// confirmed against the live bone (see file header).
+// Condyle offsets FROM the jaw bone's own rest origin, in the bone's own
+// local space — used for the lateral-excursion pivot (brief §6): rotating
+// about a point offset toward the working (ipsilateral) side, instead of
+// the bone's own center, is what makes that side "rotate in place" while
+// the other side swings through an arc — same closed-form trick as
+// stanceMode.ts's pelvis pivot. Measured directly in Blender from the two
+// condyle apex vertices (NOT a symmetric approximation — the jaw bone's
+// own rest orientation is tilted enough that a pure ±X offset put the two
+// condyle markers visibly off-level; these carry the real, slightly
+// asymmetric Y/Z components too). Sign convention (right = matches
+// positive X here) confirmed live: depression/protrusion/lateral
+// excursion all verified moving in the anatomically correct direction.
 // Exported so BodyModel.tsx's condyle markers sit at the exact same
-// offset the lateral-excursion pivot math above uses — one source of
-// truth for "where the condyle is relative to the jaw bone's origin."
-export const CONDYLE_OFFSET_LOCAL = new THREE.Vector3(0.05, 0, 0);
+// offsets the lateral-excursion pivot math above uses — one source of
+// truth for "where the condyles are relative to the jaw bone's origin."
+export const CONDYLE_OFFSET_RIGHT_LOCAL = new THREE.Vector3(0.046, -0.0048, -0.0111);
+export const CONDYLE_OFFSET_LEFT_LOCAL = new THREE.Vector3(-0.0542, 0.0052, 0.0122);
 
 /**
  * Resolves the single `angles.mandible` control into the jaw bone's rest+
@@ -150,7 +154,7 @@ export function applyMandiblePose(
 
   // --- Lateral excursion: asymmetric pivot rotation ---
   const lateralRad = D2R((lateralMm / MAX_LATERAL_MM) * MAX_LATERAL_DEG);
-  const pivot = lateralMm >= 0 ? CONDYLE_OFFSET_LOCAL : CONDYLE_OFFSET_LOCAL.clone().negate();
+  const pivot = lateralMm >= 0 ? CONDYLE_OFFSET_RIGHT_LOCAL.clone() : CONDYLE_OFFSET_LEFT_LOCAL.clone();
   const lateralDelta = new THREE.Quaternion().setFromEuler(new THREE.Euler(0, lateralRad, 0, "XYZ"));
   const rotatedPivot = pivot.clone().applyQuaternion(lateralDelta);
   const lateralPivotCorrection = pivot.clone().sub(rotatedPivot);

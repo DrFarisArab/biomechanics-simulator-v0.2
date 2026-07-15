@@ -14,6 +14,7 @@ import { applyScapularRhythm } from "@/lib/scapularRhythm";
 import { computePelvisPivotOffset, stanceLegRotationCorrection } from "@/lib/stanceMode";
 import { lumbopelvicTiltDeg } from "@/lib/lumbopelvicRhythm";
 import { prepareSkinOverlayMaterial } from "@/lib/materials";
+import { getDracoLoader } from "@/lib/dracoLoader";
 
 const ALL_BONE_NAMES = Array.from(
   new Set([...ARM_BONE_NAMES, ...TRUNK_BONE_NAMES, ...LEG_BONE_NAMES, ...MANDIBLE_BONE_NAMES, "head", "scapulaL", "scapulaR"])
@@ -34,7 +35,9 @@ const SKIN_MODEL_URL = "/models/v2-body-skin.glb";
  * store state and stay in sync without any prop wiring between them.
  */
 export function SkinOverlay() {
-  const gltf = useLoader(GLTFLoader, SKIN_MODEL_URL);
+  const gltf = useLoader(GLTFLoader, SKIN_MODEL_URL, (loader) => {
+    loader.setDRACOLoader(getDracoLoader());
+  });
   const scene = useMemo(() => {
     const cloned = cloneSkinned(gltf.scene) as THREE.Object3D;
     prepareSkinOverlayMaterial(cloned);
