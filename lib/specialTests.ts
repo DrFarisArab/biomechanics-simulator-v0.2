@@ -284,7 +284,12 @@ export const TEST_POSE_MAP: Record<string, string> = {
   // three reuse an existing preset outright (no custom pose needed).
   hip5: "single_leg_right", // Resisted external derotation / single-leg stance (position-only)
   hip7: "single_leg_right", // Trendelenburg
-  hip8: "thomas_test_left", // Thomas test
+  // hip8 (Thomas test) — see SPECIAL_TEST_CUSTOM_POSES below, NOT mapped to
+  // the standalone "thomas_test_left" sidebar preset here: that preset has
+  // no supine root transform (it was built before the recumbent presets'
+  // table-lying convention existed), so using it left the model standing
+  // upright instead of lying on the table. The custom pose below is built
+  // on the proper "supine" base like every other hip test.
   hip14: "sitting", // Fulcrum test (seated, legs dangling — palpation test, sitting matches the setup)
   hip15: "supine", // Patellar-pubic percussion (supine, legs neutral — auscultation test, no extra angles needed)
 
@@ -405,6 +410,14 @@ export const SPECIAL_TEST_CUSTOM_POSES: Record<string, PosePreset> = {
   // into adduction (that release isn't representable as a static pose —
   // this shows the held starting position).
   hip6: fromBase("sidelying_left", ["abduct the right hip 20", "extend the right hip 10"]),
+
+  // Thomas test — supine at the table edge; the LEFT hip/knee are flexed
+  // (hugged to the chest) while the RIGHT hip is the one being observed,
+  // extended flat on the table — matching every other hip test's "tested
+  // side is the right hip" convention. Source doesn't give a hugged-knee
+  // angle; 120°/130° are typical near-end-range exam values (matches the
+  // magnitude the old standalone "thomas_test_left" preset already used).
+  hip8: fromBase("supine", ["flex the left hip 120", "flex the left knee 130"]),
 
   // Ely's test — prone, knee passively flexed until the heel nears the
   // buttock (source: "heel should touch the buttocks") — near the joint's

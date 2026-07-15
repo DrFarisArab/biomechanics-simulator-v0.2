@@ -243,6 +243,12 @@ export const PRESETS: PosePreset[] = [
     label: "Thomas Test (L)",
     group: "Assessment",
     description: "One hip+knee flexed to chest, other leg extended flat — tests iliopsoas/rectus femoris tightness.",
+    // Supine at the table edge, same as slr_right above — this preset was
+    // originally built with no root transform at all, which left the model
+    // standing upright instead of lying on the table.
+    rootRotation: [-HALF_PI, 0, 0],
+    rootPosition: [0, 0.6, 0.82],
+    furniture: "bed",
     angles: { hip_left: { flexExt: 120 }, knee_left: { flexExt: 130 } },
   },
   {
