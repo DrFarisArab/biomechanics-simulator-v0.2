@@ -22,10 +22,27 @@ const ST_FRACTION = 1 / 3;
 const ST_SET_POINT = 25; // degrees of abduction/flexion before scapula starts moving
 const ST_FLEX_SHARE = 0.4; // flexion contributes less upward rotation than abduction
 
+// Scaption-specific scapulohumeral rhythm (clinical spec): below 30° of
+// elevation the motion is essentially all glenohumeral; above 30° a 2:1
+// GH:scapular ratio applies — for every 3° of total elevation, ~2° is GH
+// and ~1° is scapular upward rotation, i.e. the scapula takes 1/3 of the
+// elevation past the 30° set point. Kept as its own constants (not the
+// generic abduction ST_SET_POINT=25 above) so "Scaption outward" follows
+// the exact ratio the clinician specified without changing legacy abd/flex.
+const SCAPTION_ST_SET_POINT = 30;
+const SCAPTION_ST_FRACTION = 1 / 3;
+
 /** Scapular share of ONE elevation direction (abduction OR flexion), degrees. */
 export function scapUpwardDeg(elevationDeg: number): number {
   const past = Math.max(0, elevationDeg - ST_SET_POINT);
   return past * ST_FRACTION;
+}
+
+/** Scapular upward-rotation share of a scaption-outward elevation, degrees
+ * (2:1 GH:scapular above a 30° set point — see constants above). */
+export function scaptionScapularDeg(elevationDeg: number): number {
+  const past = Math.max(0, elevationDeg - SCAPTION_ST_SET_POINT);
+  return past * SCAPTION_ST_FRACTION;
 }
 
 /** Combined scapular upward-rotation contribution (unsigned magnitude) for
@@ -33,10 +50,10 @@ export function scapUpwardDeg(elevationDeg: number): number {
  * bone itself (both directions summed into one frontal-plane rotation,
  * same as real scapular upward rotation is a single DOF regardless of
  * which movement drove it). */
-export function scapularContributionDeg(abdAddDeg: number, flexExtDeg: number): number {
+export function scapularContributionDeg(abdAddDeg: number, flexExtDeg: number, scaptionOutDeg = 0): number {
   const abd = Math.max(0, abdAddDeg);
   const flex = Math.max(0, flexExtDeg);
-  return scapUpwardDeg(abd) + scapUpwardDeg(flex) * ST_FLEX_SHARE;
+  return scapUpwardDeg(abd) + scapUpwardDeg(flex) * ST_FLEX_SHARE + scaptionScapularDeg(scaptionOutDeg);
 }
 
 /** Per-DOF reduction (degrees) to subtract from the shoulder's OWN
@@ -63,7 +80,11 @@ export function applyScapularRhythm(
     if (!bone || !rest) continue;
 
     const shoulder = angles[`shoulder_${side}`];
-    const upwardDeg = scapularContributionDeg(shoulder?.abdAdd ?? 0, shoulder?.flexExt ?? 0);
+    const upwardDeg = scapularContributionDeg(
+      shoulder?.abdAdd ?? 0,
+      shoulder?.flexExt ?? 0,
+      shoulder?.scaption_out ?? 0
+    );
     // frontal-plane axis (z), sign mirrored L/R same as every other paired
     // frontal DOF in this rig (left=-1, right=+1) — same sign convention
     // as shoulder_*.abdAdd, since scapula and upper_arm share the same

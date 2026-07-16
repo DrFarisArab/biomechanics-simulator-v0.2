@@ -1,5 +1,5 @@
 import * as THREE from "three";
-import { scapularReductionDeg } from "./scapularRhythm";
+import { scapularReductionDeg, scaptionScapularDeg } from "./scapularRhythm";
 
 /**
  * v0.2 arm rig — a small, purpose-built armature (v2_arm_rig, 6 bones:
@@ -50,12 +50,14 @@ export type JointSpec = Record<string, DofSpec>;
 export const ARM_JOINT_DOFS: Record<string, JointSpec> = {
   shoulder_left: {
     flexExt: { bone: "upper_armL", axis: "x", sign: -1 },
+    scaption_out: { bone: "upper_armL", axis: "z", sign: -1 },
     sagittalFlexExt: { bone: "upper_armL", axis: "x", sign: -1 },
     abdAdd: { bone: "upper_armL", axis: "z", sign: -1 },
     rotation: { bone: "upper_armL", axis: "y", sign: -1 },
   },
   shoulder_right: {
     flexExt: { bone: "upper_armR", axis: "x", sign: -1 },
+    scaption_out: { bone: "upper_armR", axis: "z", sign: 1 },
     sagittalFlexExt: { bone: "upper_armR", axis: "x", sign: -1 },
     abdAdd: { bone: "upper_armR", axis: "z", sign: 1 },
     rotation: { bone: "upper_armR", axis: "y", sign: 1 },
@@ -102,7 +104,8 @@ export const ARM_DOF_META: Record<
   Record<string, { label: string; positive: string; negative: string; min: number; max: number }>
 > = {
   shoulder_left: {
-    flexExt: { label: "Scaption", positive: "Scaption (elevation)", negative: "Extension", min: -60, max: 180 },
+    flexExt: { label: "Scaption inward", positive: "Scaption inward (elevation)", negative: "Extension", min: -60, max: 180 },
+    scaption_out: { label: "Scaption outward", positive: "Elevation (scapular plane)", negative: "", min: 0, max: 180 },
     sagittalFlexExt: { label: "Extension · Flexion", positive: "Flexion", negative: "Extension", min: -60, max: 180 },
     abdAdd: { label: "Adduction · Abduction", positive: "Abduction", negative: "Adduction", min: -40, max: 180 },
     rotation: { label: "Internal · External rotation", positive: "External rotation", negative: "Internal rotation", min: -70, max: 90 },
@@ -127,6 +130,58 @@ ARM_DOF_META.forearm_right = ARM_DOF_META.forearm_left;
 ARM_DOF_META.wrist_right = ARM_DOF_META.wrist_left;
 
 const AXIS_INDEX = { x: 0, y: 1, z: 2 } as const;
+
+// --- "Scaption outward": true scapular-plane elevation --------------------
+// Unlike "Scaption inward" (flexExt, a single-axis local-X rotation kept
+// verbatim from v0.1), this models the clinical scaption movement as three
+// coupled layers:
+//   1. PLANE — the scapular plane is the frontal (coronal) plane rotated 35°
+//      anteriorly about the vertical (superior-inferior) axis. At rest the
+//      humerus long axis (local Y, head->tail) IS that vertical axis, and
+//      pure abduction elevates about local Z; so the scaption elevation axis
+//      is local Z tilted 35° about local Y. Elevation happens about THAT
+//      axis, not the pure coronal one.
+//   2. RHYTHM — above 30° the scapula upwardly rotates at a 2:1 GH:scapular
+//      ratio (scaptionScapularDeg); the humerus's own share is the remainder
+//      so the total humerothoracic angle still equals the dialled value
+//      (upper_arm is a real child of scapula — see applyScapularRhythm).
+//   3. CLEARANCE — past 90° a coupled external humeral rotation (about the
+//      long axis, local Y) increases ~1° per 2.5° of elevation, modelling
+//      greater-tuberosity clearance under the acromion.
+const SCAPTION_PLANE_DEG = 35;
+const SCAPTION_ER_SET_POINT = 90;
+const SCAPTION_ER_PER_ELEV = 1 / 2.5; // 1° external rotation per 2.5° elevation
+// Tilt the elevation axis anteriorly. Sign verified live via the raised
+// arm's world direction: at 90° elevation pure abduction lands the humerus
+// in the frontal plane (Z≈0), and this tilt must carry it ~35° ANTERIOR
+// (toward +Z, the facing direction). left=+1 / right=-1 produces that; the
+// opposite sign tilts it posteriorly (confirmed and rejected).
+const SCAPTION_TILT_SIGN = { left: 1, right: -1 } as const;
+
+function scaptionCoupledERDeg(elevationDeg: number): number {
+  return Math.max(0, elevationDeg - SCAPTION_ER_SET_POINT) * SCAPTION_ER_PER_ELEV;
+}
+
+/** Compound delta quaternion (bone-local) for a scaption-outward elevation
+ * of `elevationDeg` total humerothoracic degrees on the given side. */
+function scaptionDelta(elevationDeg: number, side: "left" | "right"): THREE.Quaternion {
+  const ghElev = elevationDeg - scaptionScapularDeg(elevationDeg); // humerus's own share
+  const erDeg = scaptionCoupledERDeg(elevationDeg);
+  const elevSign = side === "left" ? -1 : 1; // same as abdAdd (elevation lifts the arm)
+  const erSign = side === "left" ? -1 : 1; // same as `rotation` (positive = external)
+  const yAxis = new THREE.Vector3(0, 1, 0);
+  const zAxis = new THREE.Vector3(0, 0, 1);
+  // elevation axis = local Z tilted 35° anteriorly about local Y
+  const tilt = new THREE.Quaternion().setFromAxisAngle(
+    yAxis,
+    THREE.MathUtils.degToRad(SCAPTION_PLANE_DEG * SCAPTION_TILT_SIGN[side])
+  );
+  const elevAxis = zAxis.clone().applyQuaternion(tilt);
+  const elevQ = new THREE.Quaternion().setFromAxisAngle(elevAxis, THREE.MathUtils.degToRad(ghElev * elevSign));
+  const erQ = new THREE.Quaternion().setFromAxisAngle(yAxis, THREE.MathUtils.degToRad(erDeg * erSign));
+  // erQ first (axial rotation about the resting long axis), then elevate.
+  return elevQ.multiply(erQ);
+}
 
 /**
  * Applies every joint's current angle map onto the loaded bone objects,
@@ -163,12 +218,25 @@ export function applyArmPose(
   angles: Record<string, Record<string, number> | undefined>
 ) {
   const eulerByBone = new Map<string, [number, number, number]>();
+  // scaption_out isn't a single-axis rotation (tilted elevation axis +
+  // coupled external rotation), so it's composed as a whole quaternion and
+  // multiplied onto the bone's euler-derived delta rather than accumulated
+  // into the euler.
+  const scaptionByBone = new Map<string, THREE.Quaternion>();
 
   for (const [jointId, dofs] of Object.entries(ARM_JOINT_DOFS)) {
     const angleMap = angles[jointId];
     if (!angleMap) continue;
     const isShoulder = jointId.startsWith("shoulder_");
     for (const [dofId, spec] of Object.entries(dofs)) {
+      if (dofId === "scaption_out") {
+        const theta = angleMap.scaption_out ?? 0;
+        if (theta !== 0) {
+          const side = jointId === "shoulder_left" ? "left" : "right";
+          scaptionByBone.set(spec.bone, scaptionDelta(theta, side));
+        }
+        continue;
+      }
       let degrees = angleMap[dofId] ?? 0;
       if (isShoulder && (dofId === "abdAdd" || dofId === "flexExt")) {
         degrees -= scapularReductionDeg(dofId, degrees);
@@ -183,11 +251,15 @@ export function applyArmPose(
     }
   }
 
-  eulerByBone.forEach(([x, y, z], boneName) => {
+  const bonesToApply = new Set([...Array.from(eulerByBone.keys()), ...Array.from(scaptionByBone.keys())]);
+  bonesToApply.forEach((boneName) => {
     const bone = bones[boneName];
     const rest = restQuats[boneName];
     if (!bone || !rest) return;
+    const [x, y, z] = eulerByBone.get(boneName) ?? [0, 0, 0];
     const delta = new THREE.Quaternion().setFromEuler(new THREE.Euler(x, y, z, "XYZ"));
+    const scaption = scaptionByBone.get(boneName);
+    if (scaption) delta.multiply(scaption);
     bone.quaternion.copy(rest).multiply(delta);
   });
 }
