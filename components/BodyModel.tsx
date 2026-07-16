@@ -209,7 +209,8 @@ export function BodyModel({ modelUrl }: { modelUrl: string }) {
 
   const tmpWorld = useMemo(() => new THREE.Vector3(), []);
   const tmpWorld2 = useMemo(() => new THREE.Vector3(), []);
-  useFrame(() => {
+  useFrame((state) => {
+    if (typeof window !== "undefined") (window as unknown as { __three?: unknown }).__three = state;
     const group = groupRef.current;
     if (!group) return;
     for (const { jointId, bone, bone2 } of markerJoints) {
