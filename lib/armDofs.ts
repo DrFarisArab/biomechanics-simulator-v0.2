@@ -135,12 +135,14 @@ const AXIS_INDEX = { x: 0, y: 1, z: 2 } as const;
 // Unlike "Scaption inward" (flexExt, a single-axis local-X rotation kept
 // verbatim from v0.1), this models the clinical scaption movement as three
 // coupled layers:
-//   1. PLANE — the scapular plane is the frontal (coronal) plane rotated 35°
+//   1. PLANE — the scaption plane is the frontal (coronal) plane rotated
 //      anteriorly about the vertical (superior-inferior) axis. At rest the
 //      humerus long axis (local Y, head->tail) IS that vertical axis, and
 //      pure abduction elevates about local Z; so the scaption elevation axis
-//      is local Z tilted 35° about local Y. Elevation happens about THAT
-//      axis, not the pure coronal one.
+//      is local Z tilted SCAPTION_PLANE_DEG about local Y. Elevation happens
+//      about THAT axis, not the pure coronal one. Set to 66° at the
+//      clinician's request — more anterior than the textbook 30-45° scapular
+//      plane, deliberately so it reads as clearly distinct from abduction.
 //   2. RHYTHM — above 30° the scapula upwardly rotates at a 2:1 GH:scapular
 //      ratio (scaptionScapularDeg); the humerus's own share is the remainder
 //      so the total humerothoracic angle still equals the dialled value
@@ -148,7 +150,7 @@ const AXIS_INDEX = { x: 0, y: 1, z: 2 } as const;
 //   3. CLEARANCE — past 90° a coupled external humeral rotation (about the
 //      long axis, local Y) increases ~1° per 2.5° of elevation, modelling
 //      greater-tuberosity clearance under the acromion.
-const SCAPTION_PLANE_DEG = 35;
+const SCAPTION_PLANE_DEG = 66;
 const SCAPTION_ER_SET_POINT = 90;
 const SCAPTION_ER_PER_ELEV = 1 / 2.5; // 1° external rotation per 2.5° elevation
 // Tilt the elevation axis anteriorly. Sign verified live via the raised
