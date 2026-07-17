@@ -11,6 +11,7 @@ import { ErrorBoundary } from "./ErrorBoundary";
 import { Chair } from "./furniture/Chair";
 import { Bed } from "./furniture/Bed";
 import { useArmSimStore } from "@/lib/store";
+import { useRecordReplayStore } from "@/lib/recordReplayStore";
 
 const MODEL_URLS = {
   skeleton: "/models/v2-body-skeleton.glb",
@@ -44,6 +45,17 @@ export function Scene() {
   const rootPosition = useArmSimStore((s) => s.rootPosition);
   const rootRotation = useArmSimStore((s) => s.rootRotation);
 
+  // On-demand rendering: the scene is static the vast majority of the time
+  // (a posed model the user occasionally orbits), so re-rendering every frame
+  // pegged the GPU (~120fps of a 597-draw-call / 607k-triangle scene while
+  // idle). frameloop="demand" renders only when something changes —
+  // OrbitControls invalidates on its own 'change' event (drei, makeDefault),
+  // React-prop changes to the scene graph auto-invalidate, and BodyModel
+  // calls invalidate() after its imperative bone-rotation updates.
+  // Clip/preview playback is the one case that needs a continuous loop, so
+  // flip back to "always" only while a clip is actually playing.
+  const isAnimating = useRecordReplayStore((s) => s.isPlaying || s.previewPlaying);
+
   const target = useMemo<[number, number, number]>(() => {
     const quat = new THREE.Quaternion().setFromEuler(
       new THREE.Euler(rootRotation[0], rootRotation[1], rootRotation[2], "XYZ")
@@ -62,6 +74,7 @@ export function Scene() {
         // taller than the ~650px one this was originally tuned against.
         // ~4.0 covers y ≈ [-0.26, 2.66], fitting head-to-feet with margin.
         camera={{ position: [2.51, 1.34, 3.08], fov: 40, near: 0.01, far: 20 }}
+        frameloop={isAnimating ? "always" : "demand"}
         className="!bg-neutral-950"
       >
         <ambientLight intensity={0.6} />

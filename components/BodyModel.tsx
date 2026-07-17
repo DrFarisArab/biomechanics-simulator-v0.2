@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useRef } from "react";
 import * as THREE from "three";
-import { useFrame, useLoader } from "@react-three/fiber";
+import { useFrame, useLoader, useThree } from "@react-three/fiber";
 import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js";
 import { clone as cloneSkinned } from "three/examples/jsm/utils/SkeletonUtils.js";
 import { useArmSimStore, JOINT_IDS, TRUNK_IDS, LEG_IDS, MANDIBLE_IDS } from "@/lib/store";
@@ -151,6 +151,13 @@ export function BodyModel({ modelUrl }: { modelUrl: string }) {
   // than rendering markers with nothing to follow.
   const hasJawBone = useMemo(() => !!scene.getObjectByName("jaw"), [scene]);
 
+  // Under frameloop="demand" (see Scene.tsx) R3F only re-renders when it's
+  // told to. Prop changes to the scene graph auto-invalidate, but the pose
+  // below is applied by mutating bone quaternions IMPERATIVELY, which R3F
+  // can't detect — so we invalidate() a couple of frames after each pose
+  // change to actually paint it (and let the marker-tracking useFrame run).
+  const invalidate = useThree((s) => s.invalidate);
+
   useEffect(() => {
     const armSubset: Record<string, Record<string, number> | undefined> = {};
     for (const id of JOINT_IDS) armSubset[id] = angles[id];
@@ -204,6 +211,11 @@ export function BodyModel({ modelUrl }: { modelUrl: string }) {
       );
       pelvisBone.position.copy(offset);
     }
+
+    // Paint the freshly-applied pose. Two frames: one for the bone update
+    // above, and one so the marker-tracking useFrame (which reads the
+    // resulting world positions) repaints the markers on top of it.
+    invalidate(2);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [angles, stanceLeg]);
 
