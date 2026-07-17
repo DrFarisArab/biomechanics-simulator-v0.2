@@ -45,6 +45,17 @@ function ApplyPoseButton({ test }: { test: SpecialTest }) {
   const presetId = TEST_POSE_MAP[test.id];
   const preset = presetId ? PRESETS.find((p) => p.id === presetId) : SPECIAL_TEST_CUSTOM_POSES[test.id];
 
+  // Memoized so the clip object (and its id) stays stable across re-renders
+  // for the same preset — playPreview() stores this exact object in the
+  // record/replay store, so a reference-stable clip is what lets the
+  // "is THIS test's preview the one playing" check below actually match.
+  // Rebuilding a fresh object (with a fresh random id) every render, as an
+  // unmemoized call would, meant the comparison could never succeed.
+  // Hook must run unconditionally (before the `!preset` early return below)
+  // to satisfy React's rules of hooks — guarded internally instead of
+  // skipped, since a conditional useMemo call broke the production build.
+  const previewClipForTest = useMemo(() => (preset ? buildTestPreviewClip(preset) : null), [preset]);
+
   if (!preset) {
     return (
       <div className="rounded-md border border-dashed border-neutral-700 bg-neutral-800/20 px-3 py-2.5 text-[11px] leading-relaxed text-neutral-400">
@@ -53,13 +64,6 @@ function ApplyPoseButton({ test }: { test: SpecialTest }) {
     );
   }
 
-  // Memoized so the clip object (and its id) stays stable across re-renders
-  // for the same preset — playPreview() stores this exact object in the
-  // record/replay store, so a reference-stable clip is what lets the
-  // "is THIS test's preview the one playing" check below actually match.
-  // Rebuilding a fresh object (with a fresh random id) every render, as an
-  // unmemoized call would, meant the comparison could never succeed.
-  const previewClipForTest = useMemo(() => buildTestPreviewClip(preset), [preset]);
   const isThisPreviewPlaying = previewPlaying && previewClip?.id === previewClipForTest?.id;
 
   const applyStatic = () => {
