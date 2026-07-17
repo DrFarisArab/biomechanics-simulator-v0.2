@@ -30,6 +30,13 @@ export function CommandBox() {
   const [history, setHistory] = useState<HistoryEntry[]>([]);
   const [exampleIdx, setExampleIdx] = useState(0);
   const setAngle = useArmSimStore((s) => s.setAngle);
+  const showCommandBox = useArmSimStore((s) => s.showCommandBox);
+  const setShowCommandBox = useArmSimStore((s) => s.setShowCommandBox);
+
+  // Collapsed: toggled back on via the "Command box" switch in the header
+  // (app/page.tsx) — the maximum-viewport default this component was built
+  // for, so there's no floating affordance here to eat into that space.
+  if (!showCommandBox) return null;
 
   const run = () => {
     const text = value.trim();
@@ -49,8 +56,20 @@ export function CommandBox() {
 
   return (
     <div className="pointer-events-auto absolute bottom-3 right-3 w-80 rounded-lg border border-neutral-700 bg-neutral-900/90 p-2.5 backdrop-blur">
-      <div className="mb-1.5 text-[10px] font-semibold uppercase tracking-wider text-neutral-500">
-        Pose command <span className="text-neutral-600">(type it naturally)</span>
+      <div className="mb-1.5 flex items-center justify-between gap-2">
+        <div className="text-[10px] font-semibold uppercase tracking-wider text-neutral-500">
+          Pose command <span className="text-neutral-600">(type it naturally)</span>
+        </div>
+        <button
+          type="button"
+          onClick={() => setShowCommandBox(false)}
+          aria-label="Hide pose command box"
+          className="shrink-0 rounded p-0.5 text-neutral-500 transition hover:text-neutral-200"
+        >
+          <svg width="12" height="12" viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M2 2L10 10M10 2L2 10" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" />
+          </svg>
+        </button>
       </div>
 
       {history.length > 0 && (

@@ -41,6 +41,7 @@ interface ArmSimState {
   specialTestsOpen: boolean;
   showSkin: boolean;
   showJointMarkers: boolean;
+  showCommandBox: boolean;
   setAppearance: (a: Appearance) => void;
   setAngle: (jointId: string, dofId: string, value: number) => void;
   patchAngles: (partial: Record<string, Record<string, number>>) => void;
@@ -50,6 +51,7 @@ interface ArmSimState {
   setSpecialTestsOpen: (open: boolean) => void;
   setShowSkin: (show: boolean) => void;
   setShowJointMarkers: (show: boolean) => void;
+  setShowCommandBox: (show: boolean) => void;
   resetAll: () => void;
   applyPose: (
     angles: Record<string, Record<string, number>>,
@@ -78,10 +80,13 @@ export const useArmSimStore = create<ArmSimState>((set) => ({
   specialTestsOpen: false,
   showSkin: false,
   showJointMarkers: true,
+  // Collapsed by default on app start for maximum viewport — see app/page.tsx.
+  showCommandBox: false,
   setAppearance: (a) => set({ appearance: a }),
   setSpecialTestsOpen: (open) => set({ specialTestsOpen: open }),
   setShowSkin: (show) => set({ showSkin: show }),
   setShowJointMarkers: (show) => set({ showJointMarkers: show }),
+  setShowCommandBox: (show) => set({ showCommandBox: show }),
   setAngle: (jointId, dofId, value) =>
     set((s) => ({
       angles: {
