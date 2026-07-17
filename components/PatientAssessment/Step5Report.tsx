@@ -1,5 +1,6 @@
 "use client";
 
+import { useMemo } from "react";
 import { usePatientAssessmentStore } from "@/lib/patientAssessmentStore";
 import {
   DURATION_LABELS,
@@ -8,6 +9,7 @@ import {
   NOTABLE_RESULTS,
   ONSET_CHIP_LABELS,
   RED_FLAG_LABELS,
+  suggestImpressions,
   TEST_RESULT_LABELS,
   type RedFlags,
 } from "@/lib/assessment";
@@ -21,6 +23,11 @@ export function Step5Report() {
 
   const redFlagsTriggered = hasRedFlag(draft.redFlags);
   const checkedRedFlags = (Object.keys(draft.redFlags) as (keyof RedFlags)[]).filter((k) => draft.redFlags[k]);
+  const suggestions = useMemo(() => suggestImpressions(draft.testFindings), [draft.testFindings]);
+
+  const insertSuggestion = (text: string) => {
+    setClinicalImpression(draft.clinicalImpression ? `${draft.clinicalImpression}\n${text}` : text);
+  };
 
   return (
     <div className="flex flex-col gap-3 px-4 py-3">
@@ -169,6 +176,28 @@ export function Step5Report() {
 
         {/* Clinical impression — visible textarea on screen, static mirror at print time */}
         <div className="flex flex-col gap-1">
+          {suggestions.length > 0 && (
+            <div className="print:hidden mb-1 flex flex-col gap-1.5 rounded-md border border-teal-700/40 bg-teal-900/10 px-2.5 py-2">
+              <div className="text-[10px] font-semibold uppercase tracking-wider text-teal-500">
+                Suggested impression — from positive tests, insert &amp; edit as needed
+              </div>
+              <div className="flex flex-col gap-1">
+                {suggestions.map((s) => {
+                  const text = `${s.regionName} — ${s.cat} (positive: ${s.testNames.join(", ")})`;
+                  return (
+                    <button
+                      key={`${s.regionName}::${s.cat}`}
+                      type="button"
+                      onClick={() => insertSuggestion(text)}
+                      className="rounded border border-neutral-700 bg-neutral-800/40 px-2 py-1.5 text-left text-[11px] text-neutral-200 transition hover:border-teal-600/60 hover:bg-teal-900/20"
+                    >
+                      + {text}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          )}
           <div className="print:hidden">
             <TextAreaField
               label="Clinical Impression"

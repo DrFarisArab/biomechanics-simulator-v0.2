@@ -2,6 +2,8 @@
 // separation as lib/specialTests.ts / lib/presets.ts being plain data
 // modules that components/stores import from.
 
+import { TESTS, REGIONS } from "./specialTests";
+
 export type Sex = "M" | "F";
 export type DominantHand = "R" | "L" | "ambidextrous";
 export type PainDuration = "acute" | "subacute" | "chronic"; // <6wk / 6-12wk / >12wk
@@ -121,6 +123,37 @@ export interface TestFinding {
   testId: string;
   result: TestResult;
   notes: string;
+}
+
+// Groups notable findings (positive/weakness/pain+weakness) by the special
+// test's own `cat` field (e.g. "Rotator cuff — supraspinatus") — that field
+// already IS the clinical cluster a positive test within it points to, so
+// this reuses it directly rather than maintaining a separate test→diagnosis
+// map. Surfaced in Step 5 as clickable suggestions the clinician inserts
+// into Clinical Impression themselves — never auto-filled, since this tool
+// doesn't generate a diagnosis on its own.
+export interface ImpressionSuggestion {
+  regionName: string;
+  cat: string;
+  testNames: string[];
+}
+
+export function suggestImpressions(testFindings: Record<string, TestFinding>): ImpressionSuggestion[] {
+  const notable = Object.values(testFindings).filter((f) => NOTABLE_RESULTS.includes(f.result));
+  const byKey = new Map<string, ImpressionSuggestion>();
+  for (const f of notable) {
+    const test = TESTS.find((t) => t.id === f.testId);
+    if (!test) continue;
+    const region = REGIONS.find((r) => r.id === test.r);
+    const key = `${test.r}::${test.cat}`;
+    const existing = byKey.get(key);
+    if (existing) {
+      existing.testNames.push(test.n);
+    } else {
+      byKey.set(key, { regionName: region?.name ?? test.r, cat: test.cat, testNames: [test.n] });
+    }
+  }
+  return Array.from(byKey.values());
 }
 
 export interface Assessment {
