@@ -5,10 +5,12 @@ import { Sidebar } from "@/components/Sidebar";
 import { PresetMenu } from "@/components/PresetMenu";
 import { SpecialTests } from "@/components/SpecialTests";
 import { RecordReplayPanel } from "@/components/RecordReplayPanel";
+import { PatientAssessmentPanel } from "@/components/PatientAssessment/PatientAssessmentPanel";
 import { CommandBox } from "@/components/CommandBox";
 import { Footer } from "@/components/Footer";
 import { useArmSimStore } from "@/lib/store";
 import { useRecordReplayStore } from "@/lib/recordReplayStore";
+import { usePatientAssessmentStore } from "@/lib/patientAssessmentStore";
 
 const Scene = dynamic(() => import("@/components/Scene").then((m) => m.Scene), { ssr: false });
 
@@ -26,6 +28,9 @@ export default function Home() {
   const setSpecialTestsOpen = useArmSimStore((s) => s.setSpecialTestsOpen);
   const recordReplayOpen = useRecordReplayStore((s) => s.panelOpen);
   const setRecordReplayOpen = useRecordReplayStore((s) => s.setPanelOpen);
+  const patientAssessmentOpen = usePatientAssessmentStore((s) => s.panelOpen);
+  const setPatientAssessmentOpen = usePatientAssessmentStore((s) => s.setPanelOpen);
+  const openOrResumeAssessment = usePatientAssessmentStore((s) => s.openOrResumeAssessment);
 
   return (
     <div className="flex h-screen w-screen flex-col bg-neutral-950 text-neutral-100">
@@ -126,7 +131,10 @@ export default function Home() {
           <button
             onClick={() => {
               setSpecialTestsOpen(!specialTestsOpen);
-              if (!specialTestsOpen) setRecordReplayOpen(false);
+              if (!specialTestsOpen) {
+                setRecordReplayOpen(false);
+                setPatientAssessmentOpen(false);
+              }
             }}
             aria-pressed={specialTestsOpen}
             className={`rounded-md border px-2.5 py-1.5 text-[11px] font-medium transition ${
@@ -140,7 +148,10 @@ export default function Home() {
           <button
             onClick={() => {
               setRecordReplayOpen(!recordReplayOpen);
-              if (!recordReplayOpen) setSpecialTestsOpen(false);
+              if (!recordReplayOpen) {
+                setSpecialTestsOpen(false);
+                setPatientAssessmentOpen(false);
+              }
             }}
             aria-pressed={recordReplayOpen}
             className={`rounded-md border px-2.5 py-1.5 text-[11px] font-medium transition ${
@@ -150,6 +161,25 @@ export default function Home() {
             }`}
           >
             Record &amp; Replay
+          </button>
+          <button
+            onClick={() => {
+              if (patientAssessmentOpen) {
+                setPatientAssessmentOpen(false);
+                return;
+              }
+              setSpecialTestsOpen(false);
+              setRecordReplayOpen(false);
+              openOrResumeAssessment();
+            }}
+            aria-pressed={patientAssessmentOpen}
+            className={`rounded-md border px-2.5 py-1.5 text-[11px] font-medium transition ${
+              patientAssessmentOpen
+                ? "border-teal-600/60 bg-teal-900/30 text-teal-400"
+                : "border-neutral-700 bg-neutral-950/60 text-neutral-400 hover:text-neutral-200"
+            }`}
+          >
+            New Patient
           </button>
           <button
             onClick={resetAll}
@@ -165,7 +195,15 @@ export default function Home() {
           <Scene />
           <CommandBox />
         </main>
-        {specialTestsOpen ? <SpecialTests /> : recordReplayOpen ? <RecordReplayPanel /> : <Sidebar />}
+        {specialTestsOpen ? (
+          <SpecialTests />
+        ) : recordReplayOpen ? (
+          <RecordReplayPanel />
+        ) : patientAssessmentOpen ? (
+          <PatientAssessmentPanel />
+        ) : (
+          <Sidebar />
+        )}
       </div>
       <Footer />
     </div>

@@ -26,6 +26,30 @@ body {
   }
 }
 
+/* New Patient Assessment report — print-to-PDF isolation. Standard
+   visibility-swap technique: hide EVERYTHING by default, then re-reveal
+   only the .print-report subtree. Safer than print:hidden-ing every
+   sibling individually (header, 3D canvas, PresetMenu, Footer, panel
+   chrome) — one missed sibling would otherwise leak into the printout. */
+@media print {
+  body * {
+    visibility: hidden;
+  }
+  .print-report,
+  .print-report * {
+    visibility: visible;
+  }
+  .print-report {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+  }
+  @page {
+    margin: 1.5cm;
+  }
+}
+
 /* Degree slider — modern rectangular thumb, filled track, snaps to whole
    degrees (step=1 on the underlying input does the snapping; this is the
    visual language on top of that). Thumb/track pseudo-elements need real

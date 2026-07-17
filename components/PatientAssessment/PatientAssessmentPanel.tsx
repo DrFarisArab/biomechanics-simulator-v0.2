@@ -1,0 +1,120 @@
+"use client";
+
+import { usePatientAssessmentStore, type WizardStep } from "@/lib/patientAssessmentStore";
+import { Step1PatientInfo } from "./Step1PatientInfo";
+import { Step2ChiefComplaint } from "./Step2ChiefComplaint";
+import { Step3JointSelection } from "./Step3JointSelection";
+import { Step4SpecialTests } from "./Step4SpecialTests";
+import { Step5Report } from "./Step5Report";
+
+const STEP_LABELS: Record<WizardStep, string> = {
+  1: "Patient Info",
+  2: "Chief Complaint",
+  3: "Joints",
+  4: "Special Tests",
+  5: "Report",
+};
+
+function StepIndicator() {
+  const step = usePatientAssessmentStore((s) => s.step);
+  const goToStep = usePatientAssessmentStore((s) => s.goToStep);
+
+  return (
+    <div className="flex items-center gap-1 border-b border-neutral-800 px-4 py-2">
+      {([1, 2, 3, 4, 5] as WizardStep[]).map((n, i) => (
+        <div key={n} className="flex flex-1 items-center gap-1">
+          <button
+            type="button"
+            onClick={() => goToStep(n)}
+            title={STEP_LABELS[n]}
+            className={`grid h-5 w-5 shrink-0 place-items-center rounded-full border text-[10px] font-semibold transition ${
+              n === step
+                ? "border-teal-500 bg-teal-600 text-neutral-950"
+                : n < step
+                  ? "border-teal-700/60 bg-teal-900/30 text-teal-400"
+                  : "border-neutral-700 bg-neutral-800/50 text-neutral-500"
+            }`}
+          >
+            {n}
+          </button>
+          {i < 4 && <div className={`h-px flex-1 ${n < step ? "bg-teal-700/60" : "bg-neutral-800"}`} />}
+        </div>
+      ))}
+    </div>
+  );
+}
+
+function canAdvance(step: WizardStep, patientName: string, jointCount: number): boolean {
+  if (step === 1) return patientName.trim().length > 0;
+  if (step === 3) return jointCount > 0;
+  return true;
+}
+
+export function PatientAssessmentPanel() {
+  const step = usePatientAssessmentStore((s) => s.step);
+  const setPanelOpen = usePatientAssessmentStore((s) => s.setPanelOpen);
+  const nextStep = usePatientAssessmentStore((s) => s.nextStep);
+  const prevStep = usePatientAssessmentStore((s) => s.prevStep);
+  const patientName = usePatientAssessmentStore((s) => s.draft.patientName);
+  const jointCount = usePatientAssessmentStore((s) => s.draft.selectedJoints.length);
+
+  const nextEnabled = canAdvance(step, patientName, jointCount);
+
+  return (
+    <aside className="print:hidden scroll-slim flex w-80 shrink-0 flex-col overflow-y-auto border-l border-neutral-800 bg-neutral-900">
+      <div className="flex items-center justify-between border-b border-neutral-800 px-4 py-3">
+        <div>
+          <div className="text-[13px] font-semibold text-neutral-100">New Patient Assessment</div>
+          <div className="text-[10px] text-neutral-400">Step {step} of 5 — {STEP_LABELS[step]}</div>
+        </div>
+        <button
+          onClick={() => setPanelOpen(false)}
+          aria-label="Close new patient assessment panel"
+          className="grid h-6 w-6 shrink-0 place-items-center rounded text-neutral-400 transition hover:bg-neutral-800 hover:text-neutral-200"
+        >
+          ✕
+        </button>
+      </div>
+
+      <StepIndicator />
+
+      {step === 1 && <Step1PatientInfo />}
+      {step === 2 && <Step2ChiefComplaint />}
+      {step === 3 && <Step3JointSelection />}
+      {step === 4 && <Step4SpecialTests />}
+      {step === 5 && <Step5Report />}
+
+      {step < 5 && (
+        <div className="mt-auto flex items-center justify-between border-t border-neutral-800 px-4 py-3">
+          <button
+            type="button"
+            onClick={prevStep}
+            disabled={step === 1}
+            className="w-fit text-[11px] font-medium text-neutral-300 transition hover:text-neutral-200 disabled:cursor-not-allowed disabled:opacity-30"
+          >
+            ← Back
+          </button>
+          <button
+            type="button"
+            onClick={nextStep}
+            disabled={!nextEnabled}
+            className="rounded-md border border-teal-700/50 bg-teal-900/20 px-3 py-2 text-[12px] font-semibold text-teal-400 transition hover:bg-teal-900/40 disabled:cursor-not-allowed disabled:opacity-40"
+          >
+            {step === 4 ? "Generate Report" : "Next"}
+          </button>
+        </div>
+      )}
+      {step === 5 && (
+        <div className="flex items-center border-t border-neutral-800 px-4 py-3">
+          <button
+            type="button"
+            onClick={prevStep}
+            className="w-fit text-[11px] font-medium text-neutral-300 transition hover:text-neutral-200"
+          >
+            ← Back
+          </button>
+        </div>
+      )}
+    </aside>
+  );
+}
