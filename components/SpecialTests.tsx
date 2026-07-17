@@ -22,7 +22,7 @@ type View =
   | { kind: "region"; regionId: string }
   | { kind: "detail"; testId: string };
 
-function TierDot({ tier }: { tier: 1 | 2 | 3 }) {
+export function TierDot({ tier }: { tier: 1 | 2 | 3 }) {
   const m = TIER_META[tier];
   return (
     <span className="inline-flex items-center gap-1" title={m.label}>
@@ -35,7 +35,7 @@ function regionTestCount(regionId: string) {
   return TESTS.filter((t) => t.r === regionId).length;
 }
 
-function ApplyPoseButton({ test }: { test: SpecialTest }) {
+export function ApplyPoseButton({ test }: { test: SpecialTest }) {
   const applyPose = useArmSimStore((s) => s.applyPose);
   const patchAngles = useArmSimStore((s) => s.patchAngles);
   const playPreview = useRecordReplayStore((s) => s.playPreview);
@@ -258,7 +258,7 @@ function RegionView({
   );
 }
 
-function Stat({ label, value }: { label: string; value: string }) {
+export function Stat({ label, value }: { label: string; value: string }) {
   return (
     <div className="rounded-md border border-neutral-700 bg-neutral-800/50 px-2.5 py-1.5 text-center">
       <div className="text-[9px] uppercase tracking-wider text-neutral-400">{label}</div>
