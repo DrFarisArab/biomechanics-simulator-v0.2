@@ -44,6 +44,7 @@ export const REGIONS: Region[] = [
   { id: "tx", name: "Thoracic & Outlet", family: "Spine & Axial", color: "#6A64D8", blurb: "Thoracic outlet syndrome, first rib, rib mobility" },
   { id: "lx", name: "Lumbar Spine", family: "Spine & Axial", color: "#423CA6", blurb: "Radiculopathy, neural tension, instability, UMN" },
   { id: "si", name: "SI Joint & Pelvis", family: "Spine & Axial", color: "#7A74E0", blurb: "SIJ provocation cluster & pelvic girdle pain" },
+  { id: "pv", name: "Pelvis", family: "Spine & Axial", color: "#524CA8", blurb: "Long dorsal SIJ ligament, motion palpation (Gillet/flexion tests), Yeoman's test" },
   { id: "sh", name: "Shoulder", family: "Upper Limb", color: "#0D7377", blurb: "Cuff, impingement, instability, labrum, AC, scapula" },
   { id: "el", name: "Elbow", family: "Upper Limb", color: "#0F8A80", blurb: "Epicondylalgia, UCL (ulnar collateral ligament), PLRI (posterolateral rotatory instability), cubital tunnel" },
   { id: "wr", name: "Wrist", family: "Upper Limb", color: "#177268", blurb: "CTS, De Quervain, TFCC, carpal instability, vascular" },
@@ -109,6 +110,23 @@ export const TESTS: SpecialTest[] = [
   { id: "si5", r: "si", cat: "Provocation cluster", n: "Gaenslen test", t: "SIJ pain provocation", p: "Supine at the table edge; one hip in full flexion while the other drops into extension.", pos: "Reproduction of familiar SIJ pain on the extended side.", sn: "≈53", sp: "≈71", tier: 2 },
   { id: "si6", r: "si", cat: "Pelvic girdle (peripartum)", n: "Active straight leg raise (ASLR)", t: "Pelvic girdle pain / force-closure deficit", p: "Supine; raise the straight leg ~20 cm. Re-test with manual pelvic compression.", pos: "Heaviness/difficulty that improves with compression indicates a load-transfer problem.", sn: "≈87", sp: "≈94", tier: 2 },
   { id: "si7", r: "si", cat: "Other", n: "FABER (Patrick) — SIJ use", t: "SIJ or hip pathology", p: "Figure-4 position; apply gentle overpressure to knee and opposite ASIS.", pos: "Posterior/SIJ pain suggests SIJ; groin pain points to the hip.", tier: 2, pearl: "Non-specific — location of pain guides interpretation (also appears under Hip)." },
+
+  /* ---- PELVIS ---- researched against Physiopedia's Pelvis special-tests
+   * category (physio-pedia.com/Category:Pelvis_-_Special_Tests). That
+   * category's 11 pages include 5 tests this app already has under
+   * "SI Joint & Pelvis" (Gaenslen = si5, the Posterior Pelvic Pain
+   * Provocation/P4 test = si1 Thigh thrust, Sacral Thrust = si4, Sacroiliac
+   * Compression = si3, Sacroiliac Distraction = si2) — those are NOT
+   * duplicated here to avoid the same test appearing twice in the menu.
+   * Only the 6 genuinely missing tests are added below, as their own
+   * "Pelvis" region. None of the 11 overlap with the Hip region's own
+   * tests (checked directly, not assumed). */
+  { id: "pv1", r: "pv", cat: "Ligament", n: "Long dorsal SIJ ligament (LDL) palpation", t: "Long dorsal sacroiliac ligament pathology / SIJ-related pain", p: "Prone or side-lying; palpate directly over the long dorsal sacroiliac ligament, just inferomedial to the PSIS between the PSIS and the sacral sulcus.", pos: "Focal tenderness reproducing the patient's pain — often associated with SIJ-related or postpartum pelvic girdle pain.", tier: 3, pearl: "A purely palpatory sign, not a provocation maneuver — best interpreted alongside a provocation cluster (e.g. Laslett's, cl_si) rather than in isolation." },
+  { id: "pv2", r: "pv", cat: "Provocation", n: "Mennell's sign", t: "SIJ dysfunction", p: "Prone (or side-lying); stabilise the pelvis/sacrum with one hand and passively extend the straight leg at the hip with the other.", pos: "Reproduction of pain localised to the SIJ region.", tier: 3, pearl: "A historically-described test with limited modern evidence — most useful as part of a broader SIJ provocation picture rather than alone." },
+  { id: "pv3", r: "pv", cat: "Provocation", n: "Yeoman's test", t: "Anterior SIJ / sacroiliac ligament stress", p: "Prone; flex the knee to 90°, stabilise the sacrum, then passively extend (lift) the hip.", pos: "Reproduction of SIJ pain as the ilium rotates anteriorly on the sacrum.", tier: 3 },
+  { id: "pv4", r: "pv", cat: "Motion palpation", n: "Seated flexion test", t: "Intra-articular SIJ (sacral) motion asymmetry", p: "Seated with hips flexed ~90° (the SIJs relatively 'locked' by weight-bearing through the ischial tuberosities); place thumbs on both PSIS, then have the patient forward bend.", pos: "One PSIS moves further cephalad (superior) than the other — asymmetry suggests a sacral/intra-articular restriction on that side.", tier: 3, pearl: "Paired with the standing flexion test (pv5) to help distinguish a true intra-articular (sacroiliac) restriction from an iliosacral (innominate) one — poor inter-rater reliability is a well-known limitation of both." },
+  { id: "pv5", r: "pv", cat: "Motion palpation", n: "Standing flexion test", t: "Iliosacral (innominate) motion asymmetry", p: "Standing with thumbs on both PSIS, have the patient forward bend from the hips/lumbar spine.", pos: "One PSIS moves further cephalad than the other — asymmetry (positive on the side that moves first/furthest) suggests an iliosacral restriction on that side.", tier: 3, pearl: "Unlike the seated version (pv4), the SIJ isn't 'locked' by sitting — this reflects the whole kinetic chain (hip, leg, pelvis), not an isolated intra-articular restriction." },
+  { id: "pv6", r: "pv", cat: "Motion palpation", n: "Stork test (Gillet test)", t: "SIJ mobility (hypomobility screening)", p: "Standing; place one thumb on the PSIS of the tested side and the other on the sacral base at the midline, then have the patient flex that hip and knee up toward the chest (stork stance).", pos: "The PSIS normally moves posteriorly/inferiorly relative to the sacrum; little or no movement (or paradoxical motion) suggests SIJ hypomobility on that side.", tier: 3, pearl: "One of the most commonly taught SIJ mobility tests, but inter-rater reliability is famously poor in the literature — interpret cautiously and alongside provocation testing." },
 
   /* ---- SHOULDER ---- */
   { id: "sh1", r: "sh", cat: "Subacromial / impingement", n: "Neer impingement sign", t: "Subacromial pain (impingement)", p: "Stabilise the scapula and passively force the internally-rotated arm into full flexion.", pos: "Pain in the anterolateral shoulder near end-range.", sn: "72–79", sp: "31–60", tier: 2, pearl: "Sensitive but not specific — screens IN, does not localise the tissue." },
@@ -322,6 +340,11 @@ export const TEST_POSE_MAP: Record<string, string> = {
   lx10: "slr_right", // Bragard's sign — same SLR position, sensitised with ankle dorsiflexion
   si6: "slr_right", // Active SLR
 
+  // Pelvis — see SPECIAL_TEST_CUSTOM_POSES below for the position-built
+  // ones (pv2, pv3, pv4, pv6); these two reuse an existing preset outright.
+  pv1: "prone", // Long dorsal SIJ ligament palpation — prone, purely a palpation test
+  pv5: "forward_bow", // Standing flexion test — forward_bow's hip+lumbar+thoracic forward bend is exactly this test's setup
+
   // Hip — see HIP_CUSTOM_POSES below for the position-built ones; these
   // three reuse an existing preset outright (no custom pose needed).
   hip5: "single_leg_right", // Resisted external derotation / single-leg stance (position-only)
@@ -448,6 +471,36 @@ function fromBase(baseId: string, commands: string[]): PosePreset {
 }
 
 export const SPECIAL_TEST_CUSTOM_POSES: Record<string, PosePreset> = {
+  // ---- PELVIS ---- researched against Physiopedia's Pelvis special-tests
+  // category (physio-pedia.com/Category:Pelvis_-_Special_Tests). pv1
+  // (palpation-only) and pv5 (matches the existing "forward_bow" preset
+  // exactly) reuse an existing preset outright — see TEST_POSE_MAP above.
+
+  // Mennell's sign — prone, straight-leg passive hip extension (magnitude
+  // not numerically specified by the source; used a typical exam value,
+  // same as the hip region's own extension-stress convention).
+  pv2: fromBase("prone", ["extend the right hip 15"]),
+
+  // Yeoman's test — prone, knee flexed to 90° (source gives this angle
+  // explicitly) THEN the hip passively extended — the flexed knee is what
+  // visually distinguishes this from Mennell's straight-leg extension.
+  pv3: fromBase("prone", ["flex the right knee 90", "extend the right hip 15"]),
+
+  // Seated flexion test — built on "sitting" (hips already ~90° from that
+  // base, "locking" the SIJ per the source's own rationale), adding the
+  // forward-bend the test itself is named for (magnitude not specified,
+  // typical exam values for lumbar+thoracic flexion while seated).
+  pv4: fromBase("sitting", ["flex the lumbar spine 40", "flex the thoracic spine 15"]),
+
+  // Stork test (Gillet test) — standing on the CONTRALATERAL (left) leg
+  // while the tested (right) hip+knee flex up toward the chest, matching
+  // every other test's "tested side is the right" convention. Reuses the
+  // same stance-leg pivot mechanism as "single_leg_right" (which does the
+  // mirror-image: stance right, swing left) — stanceLeg is overridden to
+  // "left" on top of fromBase()'s own copied fields since no standalone
+  // "single leg left" preset exists to build from directly.
+  pv6: { ...fromBase("standing", ["flex the right hip 80", "flex the right knee 100"]), stanceLeg: "left" },
+
   // FADIR — supine, hip flexed 90°, then adducted + internally rotated.
   // Adduction/IR magnitude not numerically specified by the source; used
   // typical clinical exam values (~20°/~30°).
