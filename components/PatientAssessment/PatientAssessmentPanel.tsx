@@ -61,7 +61,7 @@ export function PatientAssessmentPanel() {
   const nextEnabled = canAdvance(step, patientName, jointCount);
 
   return (
-    <aside className="print:hidden scroll-slim flex w-80 shrink-0 flex-col overflow-y-auto border-l border-neutral-800 bg-neutral-900">
+    <aside className="scroll-slim flex w-80 shrink-0 flex-col overflow-y-auto border-l border-neutral-800 bg-neutral-900">
       <div className="flex items-center justify-between border-b border-neutral-800 px-4 py-3">
         <div>
           <div className="text-[13px] font-semibold text-neutral-100">New Patient Assessment</div>

@@ -30,7 +30,10 @@ body {
    visibility-swap technique: hide EVERYTHING by default, then re-reveal
    only the .print-report subtree. Safer than print:hidden-ing every
    sibling individually (header, 3D canvas, PresetMenu, Footer, panel
-   chrome) — one missed sibling would otherwise leak into the printout. */
+   chrome) — one missed sibling would otherwise leak into the printout.
+   IMPORTANT: no ancestor of .print-report may carry Tailwind's
+   `print:hidden` (display:none) — that can't be undone by a descendant's
+   `visibility:visible`, and produced a blank print/PDF once before. */
 @media print {
   body * {
     visibility: hidden;
@@ -38,6 +41,18 @@ body {
   .print-report,
   .print-report * {
     visibility: visible;
+  }
+  /* .print-report lives inside the app shell's h-screen/overflow-y-auto
+     chain (the toolbar aside, the flex-1 layout row). Those constraints
+     clip anything taller than one screen's worth of content — including
+     an absolutely-positioned descendant, since overflow clipping applies
+     at paint time regardless of positioning scheme. Reset every ancestor
+     so a multi-page report isn't truncated to whatever fit on screen. */
+  *:has(.print-report) {
+    height: auto !important;
+    max-height: none !important;
+    overflow: visible !important;
+    position: static !important;
   }
   .print-report {
     position: absolute;
