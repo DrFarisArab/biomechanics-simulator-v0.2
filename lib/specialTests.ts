@@ -202,18 +202,25 @@ export const TESTS: SpecialTest[] = [
   { id: "wr13", r: "wr", cat: "Tendon", n: "WHAT test (Wrist Hyperflexion and Abduction of the Thumb)", t: "De Quervain tenosynovitis", p: "Maximally flex the wrist while abducting the thumb.", pos: "Pain over the first dorsal compartment, comparable to Finkelstein's.", tier: 3, pearl: "An alternative to Finkelstein's for patients in whom the classic thumb-in-fist position is itself painful or hard to tolerate." },
 
   /* ---- HAND ---- researched against Physiopedia's Hand special-tests
-   * category (physio-pedia.com/Category:Hand_-_Special_Tests). This rig has
-   * no finger/thumb DOFs, so most hand-specific tests below are reference-
-   * only (no 3D pose) — see the comments by SPECIAL_TEST_CUSTOM_POSES. */
-  { id: "hn1", r: "hn", cat: "Thumb CMC", n: "CMC grind test", t: "First CMC (thumb base) osteoarthritis", p: "Axially load and rotate the thumb metacarpal on the trapezium.", pos: "Pain ± crepitus at the thumb base.", sn: "53–66", sp: "74–93", tier: 2 },
-  { id: "hn2", r: "hn", cat: "Hypermobility", n: "Beighton score", t: "Generalised joint hypermobility", p: "9-point composite: passive little-finger MCP extension > 90° (×2), passive thumb-to-forearm apposition (×2), elbow hyperextension > 10° (×2), knee hyperextension > 10° (×2), and forward flexion with palms flat on the floor (×1).", pos: "≥ 4–6/9 (age-dependent) suggests generalised joint hypermobility.", tier: 2, pearl: "A whole-body screen scored at the hand/elbow/knee/spine — not a single-joint provocation test." },
-  { id: "hn3", r: "hn", cat: "Finger / PIP", n: "Bunnell-Littler test", t: "Intrinsic tightness vs capsular (joint) tightness at the PIP", p: "With the MCP held extended, passively flex the PIP; then repeat with the MCP held flexed.", pos: "PIP flexion limited only with the MCP extended → intrinsic tightness. Limited in both positions → capsular/joint tightness.", tier: 2 },
-  { id: "hn4", r: "hn", cat: "Tendon", n: "Elson test", t: "Central slip (extensor tendon) rupture at the PIP", p: "Flex the PIP to 90° over the edge of a table, then resist active PIP extension.", pos: "A rigid, extended DIP with weak PIP extension force indicates central slip rupture (the lateral bands sublux dorsally and stiffen the DIP).", sn: "≈100", tier: 1, pearl: "Detects an acute boutonnière deformity before it becomes visibly obvious — worth doing after any dorsal PIP trauma." },
+   * category (physio-pedia.com/Category:Hand_-_Special_Tests, 14 pages) —
+   * re-checked directly, not assumed: all 10 of that category's genuinely
+   * hand-specific tests are already covered below (hn1-hn10). The other 4
+   * pages (De Quervain's Tenosynovitis, Finkelstein Test, The Allen Test,
+   * Tinel's Test) describe tests already covered under the Wrist region
+   * (wr4/wr13 Finkelstein-Eichhoff/WHAT test, wr11 Allen test, wr2 Tinel at
+   * the wrist) — not duplicated here, so the same test doesn't appear in
+   * two menus. This rig has no finger/thumb DOFs, so most hand-specific
+   * tests below are reference-only (no 3D pose) — see the comments by
+   * SPECIAL_TEST_CUSTOM_POSES. */
+  { id: "hn1", r: "hn", cat: "Thumb CMC", n: "CMC grind test", t: "First CMC (carpometacarpal, thumb base) osteoarthritis", p: "Axially load and rotate the thumb metacarpal on the trapezium.", pos: "Pain ± crepitus at the thumb base.", sn: "53–66", sp: "74–93", tier: 2 },
+  { id: "hn2", r: "hn", cat: "Hypermobility", n: "Beighton score", t: "Generalised joint hypermobility", p: "9-point composite: passive little-finger MCP (metacarpophalangeal) extension > 90° (×2), passive thumb-to-forearm apposition (×2), elbow hyperextension > 10° (×2), knee hyperextension > 10° (×2), and forward flexion with palms flat on the floor (×1).", pos: "≥ 4–6/9 (age-dependent) suggests generalised joint hypermobility.", tier: 2, pearl: "A whole-body screen scored at the hand/elbow/knee/spine — not a single-joint provocation test." },
+  { id: "hn3", r: "hn", cat: "Finger / PIP", n: "Bunnell-Littler test", t: "Intrinsic tightness vs capsular (joint) tightness at the PIP (proximal interphalangeal joint)", p: "With the MCP (metacarpophalangeal joint) held extended, passively flex the PIP; then repeat with the MCP held flexed.", pos: "PIP flexion limited only with the MCP extended → intrinsic tightness. Limited in both positions → capsular/joint tightness.", tier: 2 },
+  { id: "hn4", r: "hn", cat: "Tendon", n: "Elson test", t: "Central slip (extensor tendon) rupture at the PIP (proximal interphalangeal joint)", p: "Flex the PIP to 90° over the edge of a table, then resist active PIP extension.", pos: "A rigid, extended DIP (distal interphalangeal joint) with weak PIP extension force indicates central slip rupture (the lateral bands sublux dorsally and stiffen the DIP).", sn: "≈100", tier: 1, pearl: "Detects an acute boutonnière deformity before it becomes visibly obvious — worth doing after any dorsal PIP trauma." },
   { id: "hn5", r: "hn", cat: "Measurement", n: "Figure-of-eight hand measurement", t: "Hand/finger oedema quantification", p: "Wrap a tape in a figure-8 around the wrist and across the dorsum/palm, looping around the thumb and 5th digit.", pos: "Not a provocation test — larger figure-8 circumference vs the other side quantifies hand swelling.", tier: 2, pearl: "A measurement technique, not a provocative test — good for objective before/after comparison during rehab." },
-  { id: "hn6", r: "hn", cat: "Carpal tunnel", n: "Flick sign", t: "Carpal tunnel syndrome (screening question)", p: "Ask whether flicking/shaking the hand relieves the nocturnal numbness/tingling.", pos: "A reported flicking/shaking motion that relieves symptoms is suggestive of CTS.", sn: "≈93", sp: "≈96", tier: 2, pearl: "A history item phrased as a test — high reported accuracy, but relies on patient recall rather than direct provocation." },
+  { id: "hn6", r: "hn", cat: "Carpal tunnel", n: "Flick sign", t: "Carpal tunnel syndrome (screening question)", p: "Ask whether flicking/shaking the hand relieves the nocturnal numbness/tingling.", pos: "A reported flicking/shaking motion that relieves symptoms is suggestive of carpal tunnel syndrome (CTS).", sn: "≈93", sp: "≈96", tier: 2, pearl: "A history item phrased as a test — high reported accuracy, but relies on patient recall rather than direct provocation." },
   { id: "hn7", r: "hn", cat: "Functional", n: "Sollerman hand function test", t: "Overall grip/hand-function capacity", p: "20-item standardised battery of functional grips (e.g. turning a key, picking up coins, writing) scored 0-4 each.", pos: "Lower composite score quantifies functional hand impairment — used for outcome tracking, not diagnosis.", tier: 2, pearl: "An outcome-measure battery, not a single provocation test — most useful for tracking change over time (e.g. after tendon repair or nerve injury)." },
   { id: "hn8", r: "hn", cat: "Sensation", n: "Weber two-point discrimination", t: "Peripheral nerve sensory function/recovery", p: "Apply two blunt points simultaneously at progressively smaller distances on the fingertip pulp; find the minimum distance still perceived as two points.", pos: "> 6 mm static (or > 5 mm moving) 2-point discrimination suggests impaired sensory nerve function.", tier: 2, pearl: "Tracks nerve regeneration after repair — normal static 2PD is roughly 2-5 mm depending on digit." },
-  { id: "hn9", r: "hn", cat: "Vascular / autonomic", n: "Trousseau's sign", t: "Latent hypocalcaemia (neuromuscular irritability)", p: "Inflate a BP cuff above systolic pressure on the upper arm and hold for up to 3 minutes.", pos: "Carpal spasm — wrist flexion with MCP flexion, finger extension, and thumb opposition (main d'accoucheur / 'obstetrician's hand').", sn: "66", sp: "≈98", tier: 2, pearl: "More specific than Chvostek's sign for hypocalcaemia, at the cost of being slower and mildly uncomfortable for the patient." },
+  { id: "hn9", r: "hn", cat: "Vascular / autonomic", n: "Trousseau's sign", t: "Latent hypocalcaemia (neuromuscular irritability)", p: "Inflate a BP cuff above systolic pressure on the upper arm and hold for up to 3 minutes.", pos: "Carpal spasm — wrist flexion with MCP (metacarpophalangeal) flexion, finger extension, and thumb opposition (main d'accoucheur / 'obstetrician's hand').", sn: "66", sp: "≈98", tier: 2, pearl: "More specific than Chvostek's sign for hypocalcaemia, at the cost of being slower and mildly uncomfortable for the patient." },
   { id: "hn10", r: "hn", cat: "Sensation", n: "Wrinkling test (O'Riain)", t: "Digital nerve integrity (denervation screening)", p: "Immerse the fingertips in warm water for ~5-30 minutes.", pos: "Absence of the normal skin-wrinkling response suggests sympathetic/digital nerve denervation.", tier: 3, pearl: "Useful in young children or uncooperative patients where sensory testing by report isn't reliable." },
 
   /* ---- HIP ---- */
@@ -425,8 +432,11 @@ export const TEST_POSE_MAP: Record<string, string> = {
   wr8: "sitting", // Anatomical snuffbox tenderness — seated, purely a palpation test
   wr11: "sitting", // Allen test — seated, purely a vascular occlusion/release test
 
-  // Hand — position-only reuses.
+  // Hand — position-only reuses. See SPECIAL_TEST_CUSTOM_POSES's own HAND
+  // comment for why hn2-hn4/hn6-hn10 stay unposed.
   hn1: "sitting", // CMC grind test — seated, purely an axial-load/rotation test at the thumb base
+  hn5: "sitting", // Figure-of-eight hand measurement — seated, hand relaxed for the tape measurement, no distinctive angle
+  hn9: "sitting", // Trousseau's sign — seated, arm at rest for the BP cuff; the carpal-spasm sign itself needs finger DOFs this rig doesn't have
 };
 
 /**
@@ -962,14 +972,20 @@ export const SPECIAL_TEST_CUSTOM_POSES: Record<string, PosePreset> = {
 
   // ---- HAND ---- researched against Physiopedia's Hand special-tests
   // category (physio-pedia.com/Category:Hand_-_Special_Tests). This rig has
-  // no finger/thumb DOFs at all, so none of the finger-level tests here
-  // (Beighton, Bunnell-Littler, Elson, figure-8 hand measurement, Flick
-  // sign, Sollerman, two-point discrimination, Trousseau's, Wrinkling) get
-  // a custom pose — a wrist-only approximation of a finger/thumb-driven
-  // sign (e.g. Trousseau's carpal spasm) would be more misleading than
-  // showing none at all. The reference info in their entries above is
-  // still accurate. hn1 (CMC grind) reuses "sitting" outright via
-  // TEST_POSE_MAP — no distinctive pose beyond that.
+  // no finger/thumb DOFs at all, so the genuinely finger/thumb-driven tests
+  // here (Beighton, Bunnell-Littler, Elson, Flick sign, Sollerman, two-point
+  // discrimination, Wrinkling) get NO custom pose — a wrist-only
+  // approximation of a finger/thumb-driven sign (e.g. Trousseau's own
+  // carpal-spasm POSITIVE FINDING, which does need finger DOFs) would be
+  // more misleading than showing none at all. The reference info in their
+  // entries above is still accurate. Two tests DON'T need finger DOFs at
+  // all — they're pure body-position setups for a measurement/palpation
+  // step, not a finger-driven maneuver — so they reuse "sitting" outright
+  // via TEST_POSE_MAP same as hn1 (CMC grind): hn5 (figure-of-eight hand
+  // measurement — just needs the arm resting for the tape measurement) and
+  // hn9 (Trousseau's sign — just the arm-at-rest position while the BP cuff
+  // inflates; showing the cuff setup honestly, NOT claiming to show the
+  // carpal-spasm sign itself, which stays undepicted for the reason above).
 };
 
 // si7 (FABER, SIJ lens) is the exact same figure-4 maneuver as hip2 — same
