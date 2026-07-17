@@ -27,7 +27,9 @@ export function PresetMenu() {
   const activePreset = useArmSimStore((s) => s.activePreset);
   const applyPose = useArmSimStore((s) => s.applyPose);
   const [search, setSearch] = useState("");
-  const [collapsed, setCollapsed] = useState(false);
+  // Collapsed by default on app start for maximum viewport — matches
+  // showCommandBox's default in lib/store.ts.
+  const [collapsed, setCollapsed] = useState(true);
 
   const filtered = PRESETS.filter(
     (p) =>
