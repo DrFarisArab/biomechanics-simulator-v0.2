@@ -45,7 +45,7 @@ export const REGIONS: Region[] = [
   { id: "lx", name: "Lumbar Spine", family: "Spine & Axial", color: "#423CA6", blurb: "Radiculopathy, neural tension, instability, UMN" },
   { id: "si", name: "SI Joint & Pelvis", family: "Spine & Axial", color: "#7A74E0", blurb: "SIJ provocation cluster & pelvic girdle pain" },
   { id: "sh", name: "Shoulder", family: "Upper Limb", color: "#0D7377", blurb: "Cuff, impingement, instability, labrum, AC, scapula" },
-  { id: "el", name: "Elbow", family: "Upper Limb", color: "#0F8A80", blurb: "Epicondylalgia, UCL, PLRI, cubital tunnel" },
+  { id: "el", name: "Elbow", family: "Upper Limb", color: "#0F8A80", blurb: "Epicondylalgia, UCL (ulnar collateral ligament), PLRI (posterolateral rotatory instability), cubital tunnel" },
   { id: "wr", name: "Wrist", family: "Upper Limb", color: "#177268", blurb: "CTS, De Quervain, TFCC, carpal instability, vascular" },
   { id: "hn", name: "Hand", family: "Upper Limb", color: "#1E8A7E", blurb: "Thumb CMC, finger/tendon integrity, hypermobility, sensation" },
   { id: "hip", name: "Hip", family: "Lower Limb", color: "#9A552B", blurb: "FAI, labrum, GTPS, deep gluteal, red flags" },
@@ -152,15 +152,19 @@ export const TESTS: SpecialTest[] = [
   { id: "sh39", r: "sh", cat: "Subacromial / impingement", n: "Yocum's test", t: "Subacromial impingement", p: "Hand placed on the opposite shoulder (cross-body adduction with the elbow flexed); the patient raises the elbow without shrugging the shoulder.", pos: "Pain during elbow elevation.", sn: "79", sp: "40", tier: 3, pearl: "A self-administered alternative to Hawkins-Kennedy — doesn't need the examiner to move the arm." },
 
   /* ---- ELBOW ---- */
-  { id: "el1", r: "el", cat: "Epicondylalgia", n: "Cozen test (resisted wrist ext)", t: "Lateral epicondylalgia (tennis elbow)", p: "Elbow extended, forearm pronated; resist wrist extension while palpating the lateral epicondyle.", pos: "Pain at the lateral epicondyle.", sn: "84", sp: "≈50", tier: 2 },
+  { id: "el1", r: "el", cat: "Epicondylalgia", n: "Cozen test (resisted wrist extension)", t: "Lateral epicondylalgia (tennis elbow)", p: "Elbow extended, forearm pronated; resist wrist extension while palpating the lateral epicondyle.", pos: "Pain at the lateral epicondyle.", sn: "84", sp: "≈50", tier: 2 },
   { id: "el2", r: "el", cat: "Epicondylalgia", n: "Mill test", t: "Lateral epicondylalgia", p: "Palpate the lateral epicondyle and passively pronate the forearm, flex the wrist and extend the elbow.", pos: "Lateral epicondyle pain.", tier: 2 },
-  { id: "el3", r: "el", cat: "Epicondylalgia", n: "Maudsley (resisted middle finger)", t: "Lateral epicondylalgia (EDC bias)", p: "Resist extension of the middle finger with the elbow extended.", pos: "Lateral epicondyle pain.", tier: 2 },
-  { id: "el4", r: "el", cat: "Epicondylalgia", n: "Medial epicondyle provocation (golfer)", t: "Medial epicondylalgia", p: "Resist wrist flexion and forearm pronation while palpating the medial epicondyle.", pos: "Medial epicondyle pain.", tier: 2 },
-  { id: "el5", r: "el", cat: "Ligament", n: "Valgus stress (UCL)", t: "Ulnar collateral ligament (medial)", p: "Elbow ~20–30° flexion; apply a valgus force.", pos: "Medial pain and/or excess gapping vs the other side.", tier: 2 },
-  { id: "el6", r: "el", cat: "Ligament", n: "Moving valgus stress", t: "UCL (overhead athletes)", p: "Full flexion + valgus, then rapidly extend the elbow maintaining valgus.", pos: "Pain reproduced in the late-cocking arc (~120°→70°).", sn: "≈100", sp: "≈75", tier: 2 },
-  { id: "el7", r: "el", cat: "Ligament", n: "Varus stress (LCL)", t: "Lateral collateral ligament", p: "Elbow ~20–30° flexion; apply a varus force.", pos: "Lateral pain and/or excess gapping.", tier: 3 },
-  { id: "el8", r: "el", cat: "Instability", n: "Lateral pivot-shift / posterolateral rotatory", t: "Posterolateral rotatory instability", p: "Supine, arm overhead; supinate + valgus + axial load while flexing from extension.", pos: "Apprehension or a clunk of radiohumeral subluxation-reduction (often only under anaesthesia).", tier: 3 },
+  { id: "el3", r: "el", cat: "Epicondylalgia", n: "Maudsley (resisted middle finger)", t: "Lateral epicondylalgia (EDC, extensor digitorum communis, bias)", p: "Resist extension of the middle finger with the elbow extended.", pos: "Lateral epicondyle pain.", tier: 2 },
+  { id: "el4", r: "el", cat: "Epicondylalgia", n: "Medial epicondyle provocation (golfer's elbow)", t: "Medial epicondylalgia", p: "Resist wrist flexion and forearm pronation while palpating the medial epicondyle.", pos: "Medial epicondyle pain.", tier: 2 },
+  { id: "el5", r: "el", cat: "Ligament", n: "Valgus stress (UCL, ulnar collateral ligament)", t: "Ulnar collateral ligament (medial)", p: "Elbow ~20–30° flexion; apply a valgus force.", pos: "Medial pain and/or excess gapping vs the other side.", tier: 2 },
+  { id: "el6", r: "el", cat: "Ligament", n: "Moving valgus stress", t: "UCL, ulnar collateral ligament (overhead athletes)", p: "Full flexion + valgus, then rapidly extend the elbow maintaining valgus.", pos: "Pain reproduced in the late-cocking arc (~120°→70°).", sn: "≈100", sp: "≈75", tier: 2 },
+  { id: "el7", r: "el", cat: "Ligament", n: "Varus stress (LCL, lateral collateral ligament)", t: "Lateral collateral ligament", p: "Elbow ~20–30° flexion; apply a varus force.", pos: "Lateral pain and/or excess gapping.", tier: 3 },
+  { id: "el8", r: "el", cat: "Instability", n: "Lateral pivot-shift / posterolateral rotatory", t: "Posterolateral rotatory instability (PLRI)", p: "Supine, arm overhead; supinate + valgus + axial load while flexing from extension.", pos: "Apprehension or a clunk of radiohumeral subluxation-reduction (often only under anaesthesia).", tier: 3 },
   { id: "el9", r: "el", cat: "Nerve", n: "Elbow flexion + Tinel (cubital tunnel)", t: "Ulnar nerve entrapment", p: "Hold full elbow flexion with wrist extension up to 60 s; tap over the cubital tunnel.", pos: "Paraesthesia in the ulnar 1½ digits.", tier: 2 },
+  { id: "el10", r: "el", cat: "Ligament", n: "Milking maneuver", t: "UCL, ulnar collateral ligament (medial) insufficiency", p: "Shoulder abducted and externally rotated, elbow flexed beyond 90°, forearm supinated; grasp the patient's thumb and apply a repeated valgus (milking) pull.", pos: "Medial elbow pain and/or a sense of instability, reproducing the athlete's symptoms.", tier: 2, pearl: "A distinct maneuver from the static valgus stress and moving valgus stress tests above — pulls through the thumb with the arm in a throwing-like position, rather than a direct valgus push at a fixed flexion angle." },
+  { id: "el11", r: "el", cat: "Instability", n: "Table top relocation test", t: "Posterolateral rotatory instability (PLRI) — awake alternative to the lateral pivot-shift", p: "Patient pushes up to standing from a table or chair armrest with the forearm supinated and the elbow near 40° flexion, while the examiner presses a thumb over the radial head.", pos: "Apprehension or a palpable clunk WITHOUT the examiner's thumb pressure that resolves WITH it (a true relocation).", tier: 3, pearl: "A bedside, awake-patient alternative to the lateral pivot-shift test (el8), which classically only reproduces the clunk under anaesthesia — useful when el8 is equivocal or too guarded in clinic." },
+  { id: "el12", r: "el", cat: "Fracture screen", n: "Elbow extension test", t: "Elbow fracture screening (rule out)", p: "Ask the patient to fully actively extend the elbow, comparing to the other side.", pos: "Inability to fully extend the elbow suggests an intra-articular fracture or effusion; full extension makes fracture unlikely.", sn: "≈97", sp: "≈69", tier: 1, pearl: "A quick, validated screening test in acute elbow trauma, the elbow equivalent of the Ottawa ankle rules (ft5) — high sensitivity makes a negative test useful for avoiding unnecessary imaging." },
+  { id: "el13", r: "el", cat: "Nerve", n: "Scratch collapse test (cubital tunnel)", t: "Ulnar nerve entrapment at the elbow", p: "Resist bilateral shoulder external rotation, then lightly scratch the skin over the cubital tunnel and immediately retest external rotation strength.", pos: "Momentary give-way (collapse) of external rotation strength on the symptomatic side after the scratch.", tier: 3, pearl: "A modern complement to Tinel's/elbow flexion testing (el9) for cubital tunnel syndrome — evidence is still evolving but it's increasingly taught alongside the classic provocation tests." },
 
   /* ---- WRIST ---- researched against Physiopedia's Wrist special-tests
    * category (physio-pedia.com/Category:Wrist_-_Special_Tests). */
@@ -752,6 +756,100 @@ export const SPECIAL_TEST_CUSTOM_POSES: Record<string, PosePreset> = {
   // itself isn't modeled — this approximates the varus alignment the block
   // maneuver is checking, not the block setup itself).
   ft10: fromBase("standing", ["invert the right ankle 15"]),
+
+  // ---- ELBOW ---- researched against Physiopedia's Elbow special-tests
+  // category (physio-pedia.com/Category:Elbow_-_Special_Tests). This rig has
+  // elbow flexExt, forearm pronSup, and wrist flexExt/radUlnar — enough to
+  // represent every elbow test's SETUP position; the resisted-contraction/
+  // manual-force component every ligament/epicondylalgia test also involves
+  // isn't itself representable (same disclosed limitation as the knee's
+  // valgus/varus stress tests, kn7/kn8).
+
+  // Cozen test — source: "elbow extended, forearm pronated"; the resisted
+  // wrist-extension hold is shown as a moderate active extension angle
+  // (magnitude not specified, typical exam value).
+  el1: fromBase("sitting", ["extend the right elbow 5", "pronate the right forearm 70", "extend the right wrist 15"]),
+
+  // Mill test — source explicitly gives all three components: "passively
+  // pronate the forearm, flex the wrist and extend the elbow."
+  el2: fromBase("sitting", ["pronate the right forearm 70", "flex the right wrist 40", "extend the right elbow 5"]),
+
+  // Maudsley (resisted middle finger) — source: "elbow extended"; the
+  // resisted middle-finger extension itself isn't representable (no
+  // individual finger DOFs — see the Hand section's own disclosure below).
+  el3: fromBase("sitting", ["extend the right elbow 5"]),
+
+  // Medial epicondyle provocation (golfer's elbow) — source: "resist wrist
+  // flexion and forearm pronation," shown as the mid-range position being
+  // resisted (magnitude not specified, typical exam values).
+  el4: fromBase("sitting", ["extend the right elbow 5", "pronate the right forearm 40", "flex the right wrist 30"]),
+
+  // Valgus stress (UCL) — source gives the angle explicitly (~20-30°); used
+  // the midpoint, same convention as kn1 Lachman's 20-30° window.
+  el5: fromBase("sitting", ["flex the right elbow 25"]),
+
+  // Moving valgus stress — a genuine dynamic maneuver, not a "get into
+  // position" pose: source describes "full flexion + valgus, then rapidly
+  // extend... maintaining valgus," and the test's OWN positive-finding text
+  // (el6's "pos" field) gives the provocative arc as "~120°->70°" — reused
+  // directly here as the dynamicEndAngles range (same pattern as FABER/
+  // Watson/Silfverskiöld/wringing test's setup->maneuver Play preview).
+  el6: {
+    ...fromBase("sitting", ["flex the right elbow 120"]),
+    dynamicEndAngles: { elbow_right: { flexExt: 70 } },
+  },
+
+  // Varus stress (LCL) — same setup as valgus stress, opposite force
+  // direction (not representable — this shows the shared elbow position),
+  // same convention as the knee's kn7/kn8 pair.
+  el7: fromBase("sitting", ["flex the right elbow 25"]),
+
+  // Lateral pivot-shift / posterolateral rotatory instability — source:
+  // "supine, arm overhead; supinate + valgus + axial load while flexing
+  // from extension." Setup = arm overhead, forearm supinated, elbow near
+  // full extension; dynamicEndAngles models the flexion arc the maneuver
+  // moves through, ending around the ~30-40° flexion where the classic
+  // subluxation-reduction clunk is most often described (not numerically
+  // specified by this test's own source text, so disclosed as a typical
+  // literature value rather than an exact one).
+  el8: {
+    ...fromBase("supine", ["flex the right shoulder 170", "supinate the right forearm 70", "extend the right elbow 5"]),
+    dynamicEndAngles: { elbow_right: { flexExt: 40 } },
+  },
+
+  // Elbow flexion + Tinel (cubital tunnel) — source gives both components
+  // explicitly: "full elbow flexion with wrist extension."
+  el9: fromBase("sitting", ["flex the right elbow 140", "extend the right wrist 20"]),
+
+  // Milking maneuver — source: "shoulder abducted and externally rotated,
+  // elbow flexed beyond 90°, forearm supinated" (magnitudes not specified
+  // beyond "beyond 90°", typical throwing-position exam values used).
+  el10: fromBase("sitting", [
+    "abduct the right shoulder 60",
+    "externally rotate the right shoulder 60",
+    "flex the right elbow 110",
+    "supinate the right forearm 70",
+  ]),
+
+  // Table top relocation test — source gives the elbow angle explicitly
+  // (~40° flexion) and the forearm position (supinated); the push-up-to-
+  // standing action itself and the examiner's thumb pressure aren't
+  // representable — this shows the held setup position.
+  el11: fromBase("sitting", ["supinate the right forearm 70", "flex the right elbow 40"]),
+
+  // Elbow extension test — source: "fully actively extend the elbow."
+  el12: fromBase("sitting", ["extend the right elbow 5"]),
+
+  // Scratch collapse test — source describes BILATERAL resisted shoulder
+  // external rotation with the elbows tucked at the sides (magnitude not
+  // specified, typical exam values); the scratch-and-retest action itself
+  // isn't representable — this shows the held resistance setup.
+  el13: fromBase("standing", [
+    "flex the left elbow 90",
+    "flex the right elbow 90",
+    "externally rotate the left shoulder 20",
+    "externally rotate the right shoulder 20",
+  ]),
 
   // ---- WRIST ---- researched against Physiopedia's Wrist special-tests
   // category (physio-pedia.com/Category:Wrist_-_Special_Tests). This rig
