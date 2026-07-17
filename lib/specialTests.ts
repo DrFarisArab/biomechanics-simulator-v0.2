@@ -388,21 +388,17 @@ export const TEST_POSE_MAP: Record<string, string> = {
   kn23: "hooklying", // Muller's (Quadriceps Active) — posterior-drawer position
   kn26: "supine", // Moving Patellar Apprehension — starting position, extension
 
-  // Shoulder — position-only approximations (does not model IR/ER or resistance)
-  sh1: "overhead_reach", // Neer impingement sign (full flexion)
-  sh2: "shoulder_flexion", // Hawkins-Kennedy (90° flexion)
-  sh3: "shoulder_abduction", // Painful arc (60-120° abduction band)
-  sh11: "shoulder_abduction", // Apprehension test (90° abduction)
-  // Shoulder — remaining tests that reuse an existing preset outright
+  // Shoulder — position-only reuses (palpation/glide tests with no set arm
+  // position of their own). The single-arm ABDUCTION/FLEXION tests that used
+  // to live here (sh1/2/3/11/23/24/29/36) were moved to right-only custom
+  // poses in SPECIAL_TEST_CUSTOM_POSES below — they're unilateral tests, so
+  // posing BOTH arms (as the old bilateral presets did) was inaccurate and
+  // out of step with every other shoulder test's right-side convention.
   sh22: "standing", // Arm squeeze test — purely a palpation test, no set arm position
-  sh23: "shoulder_abduction", // Drop arm test (Codman's) — starting abduction position
-  sh24: "shoulder_flexion", // Crank test — sitting/standing, ~90° elevation
   sh25: "standing", // Hara test — an 11-item measurement battery, no single pose
-  sh29: "shoulder_abduction", // Kim test — 90° abduction
   sh30: "sitting", // Load and shift — seated, arm relaxed, purely a manual glide test
   sh33: "sitting", // Paxinos test — seated, arm at side, purely a palpation/compression test
   sh34: "sitting", // Rent test — seated, arm relaxed, purely a palpation test
-  sh36: "shoulder_flexion", // Serratus anterior strength (punch-out) — 90° forward flexion
 
   // Cervical — tests that reuse an existing preset outright (position-only:
   // manual traction/palpation/reflex tests with no dramatic pose of their own)
@@ -654,6 +650,45 @@ export const SPECIAL_TEST_CUSTOM_POSES: Record<string, PosePreset> = {
   // flexion/extension (see commandParser.ts's shoulder note) — plain
   // "flex"/"extend" on a shoulder joint already resolves to that DOF.
 
+  // The eight tests below (Neer, Hawkins, painful arc, apprehension, drop
+  // arm, crank, Kim, serratus punch-out) were previously mapped to BILATERAL
+  // presets (both arms moved). They're unilateral tests, so they're now
+  // right-only, matching every other shoulder test — and, built on "standing"
+  // via fromBase, they get a proper Play preview that raises just the right
+  // arm from the side into position.
+
+  // Neer impingement sign — near-full forward flexion with the arm
+  // internally rotated (the examiner internally rotates then forces flexion).
+  sh1: fromBase("standing", ["flex the right shoulder 170", "internally rotate the right shoulder 40"]),
+
+  // Hawkins-Kennedy — shoulder and elbow each at 90°, then internally rotated
+  // (source gives the 90°/90°; IR magnitude typical exam value).
+  sh2: fromBase("standing", ["flex the right shoulder 90", "flex the right elbow 90", "internally rotate the right shoulder 45"]),
+
+  // Painful arc — active abduction in the scapular plane; snapshotting the
+  // mid-arc (90°) where pain typically peaks.
+  sh3: fromBase("standing", ["abduct the right shoulder 90"]),
+
+  // Apprehension test — 90° abduction, elbow 90°, progressive external
+  // rotation (source: abducted-and-externally-rotated; ~60° ER shown).
+  sh11: fromBase("standing", ["abduct the right shoulder 90", "externally rotate the right shoulder 60", "flex the right elbow 90"]),
+
+  // Drop arm test (Codman's) — the abducted 90° starting position the patient
+  // then slowly lowers from.
+  sh23: fromBase("standing", ["abduct the right shoulder 90"]),
+
+  // Crank test — arm elevated to ~90° (forward flexion) before the axial
+  // load-and-rotate; the rotation itself isn't a modeled shoulder-load DOF.
+  sh24: fromBase("standing", ["flex the right shoulder 90"]),
+
+  // Kim test — 90° abduction starting position (the diagonal downward-backward
+  // load isn't representable as a static angle).
+  sh29: fromBase("standing", ["abduct the right shoulder 90"]),
+
+  // Serratus anterior punch-out — arm forward-flexed to 90° (the backward
+  // resistance/wall push that provokes winging isn't a modeled load).
+  sh36: fromBase("standing", ["flex the right shoulder 90"]),
+
   // Anterior drawer test — supine, mid-range abduction/flexion/ER (source
   // gives ranges; used the midpoint of each: 100°/10°/15°).
   sh21: fromBase("supine", ["abduct the right shoulder 100", "flex the right shoulder 10", "externally rotate the right shoulder 15"]),
@@ -695,6 +730,21 @@ export const SPECIAL_TEST_CUSTOM_POSES: Record<string, PosePreset> = {
   // position qualitatively, not numerically — approximated to bring the
   // hand near the opposite shoulder).
   sh39: fromBase("standing", ["adduct the right shoulder 90", "flex the right elbow 130"]),
+
+  // ---- THORACIC OUTLET ----
+  // Roos test / elevated arm stress test (EAST) — the "surrender" position:
+  // BOTH shoulders abducted 90° and externally rotated 90° (upper arms
+  // horizontal, forearms vertical), elbows flexed 90°. Genuinely a bilateral
+  // test (the patient opens/closes both fists for up to 3 minutes), so unlike
+  // the shoulder tests this one is correctly posed on both sides.
+  tx2: fromBase("standing", [
+    "abduct the right shoulder 90",
+    "externally rotate the right shoulder 90",
+    "flex the right elbow 90",
+    "abduct the left shoulder 90",
+    "externally rotate the left shoulder 90",
+    "flex the left elbow 90",
+  ]),
 
   // ---- LUMBAR SPINE ---- researched against Physiopedia's lumbar
   // special-tests pages (physio-pedia.com/Category:Lumbar_Spine_-_Special_Tests).
@@ -958,11 +1008,13 @@ export const SPECIAL_TEST_CUSTOM_POSES: Record<string, PosePreset> = {
 
   // Wringing test — the maneuver itself IS alternating pronation/supination
   // (source: "wring a towel"), so this is another dynamicEndAngles case:
-  // setup = pronated, dynamic end = supinated, demonstrating one wring
-  // cycle rather than a single static grip position.
+  // setup = pronated (pronSup -40), dynamic end = supinated (pronSup +40),
+  // demonstrating one wring cycle rather than a single static grip position.
+  // (The end value must DIFFER from the start's -40, or the Play preview has
+  // nothing to animate — it was previously also -40, so Play did nothing.)
   wr12: {
     ...fromBase("sitting", ["pronate the right forearm 40"]),
-    dynamicEndAngles: { forearm_right: { pronSup: -40 } },
+    dynamicEndAngles: { forearm_right: { pronSup: 40 } },
   },
 
   // WHAT test (Wrist Hyperflexion and Abduction of the Thumb) — same wrist
