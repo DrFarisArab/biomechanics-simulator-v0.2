@@ -64,8 +64,20 @@ body {
      footer service-icon bar sits in the bottom ~6% (~18mm) — 48mm/28mm
      leaves clearance from both without eating too much writable area.
      Side padding (18mm) clears the decorative wave graphics hugging the
-     left/right edges. */
+     left/right edges.
+
+     print-color-adjust is required — Chrome/most browsers strip
+     background-image and background-color from print/PDF output by
+     default (the "Background graphics" checkbox is off by default in the
+     print dialog) to save ink; without this the letterhead silently
+     vanishes even though every other rule below is correct. */
+  html {
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
   .print-report {
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
     position: absolute;
     left: 0;
     top: 0;
