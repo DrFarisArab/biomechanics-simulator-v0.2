@@ -54,14 +54,35 @@ body {
     overflow: visible !important;
     position: static !important;
   }
+  /* Clinic letterhead (public/letterhead.jpg, 1055×1491px ≈ A4) as the
+     printed page background. background-size height is pinned to one A4
+     page and repeat-y tiles it — the standard trick for giving every
+     printed page its own copy of a background image, since @page{background}
+     itself isn't reliably supported for browser print-to-PDF. Padding
+     keeps text out of the artwork: the header logo/QR block and its rule
+     line occupy roughly the top 14% of the page (~42mm of 297mm) and the
+     footer service-icon bar sits in the bottom ~6% (~18mm) — 48mm/28mm
+     leaves clearance from both without eating too much writable area.
+     Side padding (18mm) clears the decorative wave graphics hugging the
+     left/right edges. */
   .print-report {
     position: absolute;
     left: 0;
     top: 0;
     width: 100%;
+    background-image: url("/letterhead.jpg");
+    background-size: 100% 297mm;
+    background-repeat: repeat-y;
+    background-position: top left;
+    padding: 48mm 18mm 28mm !important;
+    box-sizing: border-box !important;
+    border: none !important;
+    border-radius: 0 !important;
+    background-color: transparent !important;
   }
   @page {
-    margin: 1.5cm;
+    size: A4;
+    margin: 0;
   }
 }
 
