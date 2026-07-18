@@ -1067,3 +1067,13 @@ export const SPECIAL_TEST_CUSTOM_POSES: Record<string, PosePreset> = {
 // by where the pain shows up — so it reuses hip2's pose/preview outright
 // rather than duplicating it.
 SPECIAL_TEST_CUSTOM_POSES.si7 = SPECIAL_TEST_CUSTOM_POSES.hip2;
+
+// The single source of truth for "which shipped pose belongs to a test" —
+// a TEST_POSE_MAP preset reuse, else a purpose-built custom pose, else none.
+// Both the Special Tests panel and the New Patient Step-4 accordion resolve a
+// test's pose through this (then layer a user correction on top, if any — see
+// lib/poseOverrideStore.ts), so they stay in lockstep.
+export function getBaseTestPose(testId: string): PosePreset | undefined {
+  const presetId = TEST_POSE_MAP[testId];
+  return presetId ? PRESETS.find((p) => p.id === presetId) : SPECIAL_TEST_CUSTOM_POSES[testId];
+}

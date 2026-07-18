@@ -1,0 +1,3 @@
+# Local, per-author pose corrections are staging artifacts — fold them into
+# lib/specialTests.ts, don't commit the raw JSON. (README.md stays tracked.)
+*.json
