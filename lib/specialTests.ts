@@ -5,6 +5,7 @@
 
 import { PRESETS, type PosePreset } from "./presets";
 import { buildAnglesFromCommands } from "./poseFromCommands";
+import { basePresetFromProcedure } from "./procedureBase";
 
 export interface Region {
   id: string;
@@ -70,7 +71,7 @@ export const TESTS: SpecialTest[] = [
   { id: "cx5", r: "cx", cat: "Headache", n: "Cervical flexion-rotation test (CFRT)", t: "Cervicogenic headache (C1–C2 dysfunction)", p: "Patient supine. Fully flex the cervical spine (chin toward chest) and hold it there — this locks the lower cervical segments so most remaining rotation comes from C1–C2. Then passively rotate the head fully to each side and compare the range.", pos: "Rotation less than about 32–34° toward the painful side, or a 10° or greater deficit versus the other side (normal ≈ 44°).", sn: "≈90", sp: "≈88", tier: 1 },
   { id: "cx6", r: "cx", cat: "Motor control", n: "Craniocervical flexion test (CCFT)", t: "Deep neck-flexor activation & endurance", p: "Patient supine with knees bent. Place an inflated pressure-biofeedback cuff behind the neck at a baseline of 20 mmHg. Ask the patient to perform a slow, gentle head-nod (as if nodding 'yes'), progressively targeting 22, 24, 26, 28, then 30 mmHg, holding each level about 10 seconds.", pos: "Inability to reach or hold the target pressure, or substitution by the superficial neck flexors (sternocleidomastoid, SCM) — a visible/palpable neck-tensing instead of a smooth nod.", tier: 2, pearl: "A performance measure rather than a diagnostic test — also doubles as the starting exercise." },
   { id: "cx7", r: "cx", cat: "Stability & red flags", n: "Sharp-Purser test", t: "Atlantoaxial instability (rheumatoid arthritis, Down syndrome)", p: "Patient sitting with the neck slightly flexed. Pinch and stabilise the C2 spinous process (back of the neck) with one hand, place the palm of the other hand on the forehead, and gently press the forehead backward (posteriorly).", pos: "Reduction of symptoms, or a palpable clunk as C1 slides back into place on C2.", sn: "≈69", sp: "≈96", tier: 2, pearl: "Perform BEFORE any provocative upper cervical testing in at-risk patients." },
-  { id: "cx8", r: "cx", cat: "Stability & red flags", n: "Alar ligament stress test", t: "Upper cervical ligament integrity", p: "Patient supine or sitting. Firmly stabilise the C2 spinous process between finger and thumb, then passively side-bend (or rotate) the head to one side. C2 should be felt to move almost immediately in the same direction.", pos: "Absent or delayed C2 movement and/or excessive laxity.", tier: 3, pearl: "Limited diagnostic accuracy — interpret only within a full craniocervical screen." },
+  { id: "cx8", r: "cx", cat: "Stability & red flags", n: "Alar ligament stress test", t: "Upper cervical ligament integrity", p: "Patient sitting or supine. Firmly stabilise the C2 spinous process between finger and thumb, then passively side-bend (or rotate) the head to one side. C2 should be felt to move almost immediately in the same direction.", pos: "Absent or delayed C2 movement and/or excessive laxity.", tier: 3, pearl: "Limited diagnostic accuracy — interpret only within a full craniocervical screen." },
   { id: "cx9", r: "cx", cat: "Myelopathy (upper motor neuron)", n: "Hoffmann sign", t: "Cervical myelopathy", p: "Patient sitting, hand relaxed. Hold the patient's middle finger and quickly flick the fingertip (distal phalanx) downward into flexion, then let it spring back.", pos: "A reflex flexion-and-drawing-in (adduction) of the thumb and/or index finger.", sn: "44–58", sp: "74–78", tier: 2, pearl: "Most useful inside the Cook cervical myelopathy cluster (see Clusters)." },
   { id: "cx10", r: "cx", cat: "Myelopathy (upper motor neuron)", n: "Inverted supinator sign", t: "Cervical myelopathy (around the C5–C6 level)", p: "Patient sitting, forearm relaxed and slightly pronated. Tap the brachioradialis tendon just above the wrist (near the lower end of the radius) with a reflex hammer.", pos: "Finger flexion or elbow extension appears instead of the normal elbow-flexion response.", tier: 2 },
   { id: "cx11", r: "cx", cat: "Myelopathy (upper motor neuron)", n: "Lhermitte sign", t: "Spinal cord / dorsal column irritation", p: "Patient sitting. Ask the patient to flex the neck, bringing the chin toward the chest (you can guide it passively).", pos: "An electric-shock sensation running down the spine and/or into the limbs.", tier: 3, pearl: "Low sensitivity but concerning when present — consider imaging referral." },
@@ -182,7 +183,7 @@ export const TESTS: SpecialTest[] = [
   { id: "el8", r: "el", cat: "Instability", n: "Lateral pivot-shift test (posterolateral rotatory)", t: "Posterolateral rotatory instability (PLRI)", p: "Patient supine with the arm raised overhead. Hold the forearm palm-up (supinated), apply an outward (valgus) force plus a push down the forearm into the joint (axial load), then slowly bend the elbow starting from full extension.", pos: "Apprehension, or a clunk as the radial head slips out and back in — often only felt with the patient under anaesthesia.", tier: 3 },
   { id: "el9", r: "el", cat: "Nerve", n: "Elbow flexion + Tinel test (cubital tunnel)", t: "Ulnar nerve entrapment", p: "Patient sitting. Ask the patient to fully bend the elbow with the wrist cocked back (extended) and hold up to 60 seconds; you may also gently tap over the cubital tunnel (the groove behind the inner elbow).", pos: "Pins-and-needles in the little finger and half the ring finger (the ulnar 1½ digits).", tier: 2 },
   { id: "el10", r: "el", cat: "Ligament", n: "Milking maneuver", t: "Ulnar collateral ligament (UCL, inner elbow) insufficiency", p: "Patient sitting, shoulder abducted and rotated outward, elbow bent past 90° with the forearm palm-up. Reach under the forearm, grasp the patient's thumb, and pull down on it repeatedly — this applies a valgus (milking) stress to the inner elbow.", pos: "Inner-elbow pain and/or a feeling of instability that reproduces the athlete's symptoms.", tier: 2, pearl: "Different from the static and moving valgus stress tests above — it stresses the ligament by pulling through the thumb with the arm in a throwing-like position, rather than a direct valgus push at a fixed angle." },
-  { id: "el11", r: "el", cat: "Instability", n: "Table top relocation test", t: "Posterolateral rotatory instability (PLRI) — awake alternative to the lateral pivot-shift", p: "Patient standing, leaning onto a tabletop or chair armrest with the forearm palm-up and the elbow near 40° flexion. Ask the patient to push up as if to stand. First let them do it freely, then repeat while you press a thumb over the radial head (outer elbow).", pos: "Apprehension or a palpable clunk on the free push-up that goes away WHEN your thumb supports the radial head — a true relocation.", tier: 3, pearl: "A bedside, awake-patient alternative to the lateral pivot-shift test, which classically only reproduces the clunk under anaesthesia — useful when that test is equivocal or too guarded in clinic." },
+  { id: "el11", r: "el", cat: "Instability", n: "Table top relocation test", t: "Posterolateral rotatory instability (PLRI) — awake alternative to the lateral pivot-shift", p: "Patient seated, leaning onto a tabletop or chair armrest with the forearm palm-up and the elbow near 40° flexion, then pushing up through that arm as if to rise to standing. First let them do it freely, then repeat while you press a thumb over the radial head (outer elbow).", pos: "Apprehension or a palpable clunk on the free push-up that goes away WHEN your thumb supports the radial head — a true relocation.", tier: 3, pearl: "A bedside, awake-patient alternative to the lateral pivot-shift test, which classically only reproduces the clunk under anaesthesia — useful when that test is equivocal or too guarded in clinic." },
   { id: "el12", r: "el", cat: "Fracture screen", n: "Elbow extension test", t: "Elbow fracture screening (rule out)", p: "Patient sitting. Ask the patient to fully straighten (extend) both elbows and compare the two sides.", pos: "Inability to fully straighten the injured elbow suggests a joint fracture or effusion; full extension makes a fracture unlikely.", sn: "≈97", sp: "≈69", tier: 1, pearl: "A quick, validated screen in acute elbow trauma — the elbow equivalent of the Ottawa ankle rules — where the high sensitivity makes a negative test useful for avoiding unnecessary X-rays." },
   { id: "el13", r: "el", cat: "Nerve", n: "Scratch collapse test (cubital tunnel)", t: "Ulnar nerve entrapment at the elbow", p: "Patient sitting, elbows tucked at the sides bent 90°. Ask the patient to resist as you push both forearms inward (testing shoulder external rotation). Then lightly scratch the skin over the cubital tunnel (behind the inner elbow) and immediately re-test that resistance.", pos: "A brief give-way (collapse) of the resistance on the affected side right after the scratch.", tier: 3, pearl: "A modern complement to Tinel's / elbow-flexion testing for cubital tunnel syndrome — evidence is still evolving but it's increasingly taught alongside the classic provocation tests." },
 
@@ -273,17 +274,17 @@ export const TESTS: SpecialTest[] = [
    * ids are kept as-is (they predate the Ankle/Foot split and are
    * referenced elsewhere) even though the region below is now "an", not
    * "ft" — only the region field changed for the ankle-side tests. */
-  { id: "ft1", r: "an", cat: "Lateral ligament", n: "Anterior drawer test (ankle)", t: "Anterior talofibular ligament (ATFL) integrity", p: "Patient sitting or supine with the foot in slight plantarflexion (toes pointed down a little). Steady the front of the lower shin (tibia) with one hand; cup the heel (calcaneus) in the other and draw the whole foot forward.", pos: "More forward glide than the other side, sometimes with a dimple of skin sucking in at the front-outer ankle.", sn: "74–96", sp: "≈84", tier: 2, pearl: "Most useful about 5 days after injury, once the acute guarding settles." },
-  { id: "ft2", r: "an", cat: "Lateral ligament", n: "Talar tilt (inversion) test", t: "Anterior talofibular ligament (ATFL) / calcaneofibular ligament (CFL) integrity", p: "Patient sitting, ankle in neutral. Steady the lower shin, cup the heel and talus, and tilt the heel/talus inward as one unit (inversion), comparing with the other side.", pos: "More inward tilt / gapping than the other side.", tier: 3 },
+  { id: "ft1", r: "an", cat: "Lateral ligament", n: "Anterior drawer test (ankle)", t: "Anterior talofibular ligament (ATFL) integrity", p: "Patient supine or seated, with the foot in slight plantarflexion (toes pointed down a little). Steady the front of the lower shin (tibia) with one hand; cup the heel (calcaneus) in the other and draw the whole foot forward.", pos: "More forward glide than the other side, sometimes with a dimple of skin sucking in at the front-outer ankle.", sn: "74–96", sp: "≈84", tier: 2, pearl: "Most useful about 5 days after injury, once the acute guarding settles." },
+  { id: "ft2", r: "an", cat: "Lateral ligament", n: "Talar tilt (inversion) test", t: "Anterior talofibular ligament (ATFL) / calcaneofibular ligament (CFL) integrity", p: "Patient supine (or seated), ankle in neutral. Steady the lower shin, cup the heel and talus, and tilt the heel/talus inward as one unit (inversion), comparing with the other side.", pos: "More inward tilt / gapping than the other side.", tier: 3 },
   { id: "ft3", r: "an", cat: "Syndesmosis", n: "Squeeze test", t: "High ankle sprain (syndesmosis)", p: "Patient sitting. Wrap both hands around the mid-calf and squeeze the two shin bones (tibia and fibula) together, then release.", pos: "Pain referred down to the front of the ankle (the syndesmosis), not just under your hands.", sn: "26–30", sp: "88–93", tier: 2 },
   { id: "ft4", r: "an", cat: "Syndesmosis", n: "External rotation stress test", t: "Syndesmosis injury", p: "Patient sitting with the knee bent 90° and the ankle in neutral. Steady the lower shin, then rotate the foot outward (external rotation).", pos: "Pain over the front-outer ankle (the syndesmosis).", sn: "≈20", sp: "≈85", tier: 2, pearl: "Also listed under Foot — same test, same position; syndesmosis symptoms can present at either level." },
   { id: "ft5", r: "an", cat: "Fracture rule", n: "Ottawa ankle rules", t: "Need for an ankle/foot X-ray", p: "A decision rule, not a maneuver. Check for bony tenderness at four sites — the back edge/tip of each ankle bone (malleolus), the navicular (inner midfoot), and the base of the 5th metatarsal (outer midfoot) — and whether the patient can take 4 steps.", pos: "Any tender site, or inability to walk 4 steps → X-ray. Nearly 100% sensitive for ruling out a fracture.", sn: "≈99", sp: "≈40", tier: 1, pearl: "A validated clinical decision rule — safely reduces unnecessary X-rays." },
   { id: "ft6", r: "an", cat: "Achilles", n: "Thompson test (calf squeeze)", t: "Achilles tendon rupture", p: "Patient prone with the foot hanging off the edge of the table. Squeeze the calf muscle (gastrocnemius) firmly and watch the foot.", pos: "The foot does NOT point down (plantarflex) when the calf is squeezed — indicating a complete rupture.", sn: "96–98", sp: "93–100", tier: 1 },
   { id: "ft9", r: "an", cat: "Midfoot", n: "Kleiger's test (external rotation) — deltoid bias", t: "Medial (deltoid ligament) / syndesmosis injury", p: "Patient sitting with the knee bent 90° and the leg hanging relaxed. Steady the lower shin, then rotate and turn the foot outward (external rotation and eversion).", pos: "Pain on the inner ankle (deltoid ligament) or the front-outer ankle (syndesmosis), or a sense of the outer shin bone (fibula) shifting.", tier: 3 },
-  { id: "an1", r: "an", cat: "Impingement", n: "Impingement sign (ankle)", t: "Anterior ankle (bony / soft-tissue) impingement", p: "Patient sitting or supine. Passively push the ankle up (dorsiflexion) to its end-range and add gentle overpressure. A weight-bearing version has the patient lunge forward over the fixed foot.", pos: "Pain at the front joint-line of the ankle reproduced at, or just before, end-range dorsiflexion.", tier: 3 },
-  { id: "an2", r: "an", cat: "Peroneal", n: "Peroneus longus & brevis tests", t: "Peroneal tendon pathology / instability", p: "Patient sitting. Palpate the peroneal tendons just behind the outer ankle bone (lateral malleolus). For brevis, resist the patient turning the sole outward (eversion); for longus, resist eversion combined with pointing the foot down (plantarflexion).", pos: "Pain, weakness, or a palpable/visible slip (subluxation) of the tendons over the outer ankle bone.", tier: 3 },
+  { id: "an1", r: "an", cat: "Impingement", n: "Impingement sign (ankle)", t: "Anterior ankle (bony / soft-tissue) impingement", p: "Patient supine or seated. Passively push the ankle up (dorsiflexion) to its end-range and add gentle overpressure. A weight-bearing version has the patient lunge forward over the fixed foot.", pos: "Pain at the front joint-line of the ankle reproduced at, or just before, end-range dorsiflexion.", tier: 3 },
+  { id: "an2", r: "an", cat: "Peroneal", n: "Peroneus longus & brevis tests", t: "Peroneal tendon pathology / instability", p: "Patient supine (or seated). Palpate the peroneal tendons just behind the outer ankle bone (lateral malleolus). For brevis, resist the patient turning the sole outward (eversion); for longus, resist eversion combined with pointing the foot down (plantarflexion).", pos: "Pain, weakness, or a palpable/visible slip (subluxation) of the tendons over the outer ankle bone.", tier: 3 },
   { id: "an3", r: "an", cat: "Lateral ligament", n: "Prone anterior drawer test", t: "Anterior talofibular ligament (ATFL) integrity (prone variant)", p: "Patient prone with the knee bent about 90° (sole toward the ceiling). Steady the lower shin and draw the heel (calcaneus/talus) forward, comparing with the other side.", pos: "More forward glide than the other side.", tier: 3, pearl: "Tests the same ligament as the supine anterior drawer — the prone, knee-bent setup relaxes the calf muscle and can make excess glide easier to feel." },
-  { id: "an4", r: "an", cat: "Achilles / gastroc-soleus", n: "Silfverskiöld test", t: "Isolated gastrocnemius tightness vs soleus/capsular tightness", p: "Patient sitting or supine. Measure how far the ankle passively bends up (dorsiflexion) first with the knee STRAIGHT, then with the knee BENT to 90°.", pos: "Clearly more dorsiflexion with the knee bent → isolated gastrocnemius (calf) tightness. Equally limited in both positions → soleus tightness or a bony/capsular block.", tier: 2, pearl: "Tells you WHICH structure to stretch — a gastrocnemius contracture responds to knee-straight calf stretching; a soleus/capsular limit won't." },
+  { id: "an4", r: "an", cat: "Achilles / gastroc-soleus", n: "Silfverskiöld test", t: "Isolated gastrocnemius tightness vs soleus/capsular tightness", p: "Patient supine (or seated), the leg out straight to start. Measure how far the ankle passively bends up (dorsiflexion) first with the knee STRAIGHT, then with the knee BENT to 90°.", pos: "Clearly more dorsiflexion with the knee bent → isolated gastrocnemius (calf) tightness. Equally limited in both positions → soleus tightness or a bony/capsular block.", tier: 2, pearl: "Tells you WHICH structure to stretch — a gastrocnemius contracture responds to knee-straight calf stretching; a soleus/capsular limit won't." },
   { id: "an5", r: "an", cat: "Balance / functional", n: "Star excursion balance test", t: "Dynamic postural control / chronic ankle instability screening", p: "Patient stands on one leg at the centre of an 8-spoke grid taped on the floor. Ask the patient to reach the free foot as far as possible along each direction, lightly touch down, and return to standing — without losing balance or shifting the stance foot.", pos: "Shorter reach on one side than the other, or an inability to complete a direction, suggests a postural-control deficit.", tier: 2, pearl: "A multi-directional dynamic reach — not shown as a single static pose here; the reference info above still applies." },
   { id: "an6", r: "an", cat: "Measurement", n: "Figure-of-eight ankle swelling measurement", t: "Ankle joint swelling quantification", p: "Patient sitting, ankle relaxed. Lay a tape measure in a figure-8 around the ankle — across the front tendon (tibialis anterior), around the inner side, over the Achilles at the back, then around the outer side — and record the distance.", pos: "Not a provocation test — a larger figure-8 measurement than the other side quantifies swelling, useful for tracking recovery.", tier: 2, pearl: "A measurement technique, not a provocation test — good for objective before/after comparison during rehab." },
 
@@ -480,6 +481,27 @@ function fromBase(baseId: string, commands: string[]): PosePreset {
   };
 }
 
+// A few tests where the procedure's opening position word isn't the base the
+// pose should use, so basePresetFromProcedure() can't get it right on its own:
+const POSE_BASE_OVERRIDES: Record<string, string> = {
+  // Thomas test — the procedure describes a sit-then-lie-back transition
+  // ("Patient sitting at the edge of the table, then guided to lie back…"),
+  // so the deriver grabs the opening "sitting"; the test is performed supine.
+  hip8: "supine",
+};
+
+// Like fromBase(), but the base position is DERIVED from the test's own
+// procedure text (basePresetFromProcedure) instead of hard-coded — so the 3D
+// setup position and the written procedure can never drift apart. An explicit
+// POSE_BASE_OVERRIDES entry wins where the prose can't be parsed to the right
+// base (e.g. a sit→supine transition); a null derivation falls back to
+// "standing".
+function fromProcedure(testId: string, commands: string[]): PosePreset {
+  const test = TESTS.find((t) => t.id === testId);
+  const base = POSE_BASE_OVERRIDES[testId] ?? (test ? basePresetFromProcedure(test.p) : null) ?? "standing";
+  return fromBase(base, commands);
+}
+
 export const SPECIAL_TEST_CUSTOM_POSES: Record<string, PosePreset> = {
   // ---- PELVIS (pv1-pv6, part of the SI Joint & Pelvis region) ----
   // researched against Physiopedia's Pelvis special-tests category
@@ -490,18 +512,18 @@ export const SPECIAL_TEST_CUSTOM_POSES: Record<string, PosePreset> = {
   // Mennell's sign — prone, straight-leg passive hip extension (magnitude
   // not numerically specified by the source; used a typical exam value,
   // same as the hip region's own extension-stress convention).
-  pv2: fromBase("prone", ["extend the right hip 15"]),
+  pv2: fromProcedure("pv2", ["extend the right hip 15"]),
 
   // Yeoman's test — prone, knee flexed to 90° (source gives this angle
   // explicitly) THEN the hip passively extended — the flexed knee is what
   // visually distinguishes this from Mennell's straight-leg extension.
-  pv3: fromBase("prone", ["flex the right knee 90", "extend the right hip 15"]),
+  pv3: fromProcedure("pv3", ["flex the right knee 90", "extend the right hip 15"]),
 
   // Seated flexion test — built on "sitting" (hips already ~90° from that
   // base, "locking" the SIJ per the source's own rationale), adding the
   // forward-bend the test itself is named for (magnitude not specified,
   // typical exam values for lumbar+thoracic flexion while seated).
-  pv4: fromBase("sitting", ["flex the lumbar spine 40", "flex the thoracic spine 15"]),
+  pv4: fromProcedure("pv4", ["flex the lumbar spine 40", "flex the thoracic spine 15"]),
 
   // Stork test (Gillet test) — standing on the CONTRALATERAL (left) leg
   // while the tested (right) hip+knee flex up toward the chest, matching
@@ -510,12 +532,12 @@ export const SPECIAL_TEST_CUSTOM_POSES: Record<string, PosePreset> = {
   // mirror-image: stance right, swing left) — stanceLeg is overridden to
   // "left" on top of fromBase()'s own copied fields since no standalone
   // "single leg left" preset exists to build from directly.
-  pv6: { ...fromBase("standing", ["flex the right hip 80", "flex the right knee 100"]), stanceLeg: "left" },
+  pv6: { ...fromProcedure("pv6", ["flex the right hip 80", "flex the right knee 100"]), stanceLeg: "left" },
 
   // FADIR — supine, hip flexed 90°, then adducted + internally rotated.
   // Adduction/IR magnitude not numerically specified by the source; used
   // typical clinical exam values (~20°/~30°).
-  hip1: fromBase("supine", ["flex the right hip 90", "adduct the right hip 20", "internally rotate the right hip 30"]),
+  hip1: fromProcedure("hip1", ["flex the right hip 90", "adduct the right hip 20", "internally rotate the right hip 30"]),
 
   // FABER (Patrick) — classic "figure-4": hip flexed, abducted, and
   // externally rotated with the knee bent to 90° so the lateral ankle rests
@@ -533,7 +555,7 @@ export const SPECIAL_TEST_CUSTOM_POSES: Record<string, PosePreset> = {
   // animates setup -> pressed, not neutral -> setup, unlike every other hip
   // test's preview).
   hip2: {
-    ...fromBase("supine", [
+    ...fromProcedure("hip2", [
       "flex the right hip 42",
       "abduct the right hip 40",
       "externally rotate the right hip 40",
@@ -545,18 +567,18 @@ export const SPECIAL_TEST_CUSTOM_POSES: Record<string, PosePreset> = {
   // Hip Quadrant / Scour — source gives a 70–140° flexion arc "scoured"
   // through adduction then abduction; snapshotting the flexion+adduction
   // phase at the arc's midpoint (110°) as the representative static pose.
-  hip3: fromBase("supine", ["flex the right hip 110", "adduct the right hip 15"]),
+  hip3: fromProcedure("hip3", ["flex the right hip 110", "adduct the right hip 15"]),
 
   // McCarthy — dynamic (flex to end-range, then extend while rotating);
   // snapshotting the flexed+externally-rotated starting position (the ER
   // variant; the source also describes an IR variant from the same start).
-  hip4: fromBase("supine", ["flex the right hip 100", "externally rotate the right hip 20"]),
+  hip4: fromProcedure("hip4", ["flex the right hip 100", "externally rotate the right hip 20"]),
 
   // Ober test — side-lying on the OPPOSITE side (so the tested right hip is
   // the top leg), abducted and slightly extended, then normally let drop
   // into adduction (that release isn't representable as a static pose —
   // this shows the held starting position).
-  hip6: fromBase("sidelying_left", ["abduct the right hip 20", "extend the right hip 10"]),
+  hip6: fromProcedure("hip6", ["abduct the right hip 20", "extend the right hip 10"]),
 
   // Thomas test — supine at the table edge; the LEFT hip/knee are flexed
   // (hugged to the chest) while the RIGHT hip is the one being observed,
@@ -564,28 +586,28 @@ export const SPECIAL_TEST_CUSTOM_POSES: Record<string, PosePreset> = {
   // side is the right hip" convention. Source doesn't give a hugged-knee
   // angle; 120°/130° are typical near-end-range exam values (matches the
   // magnitude the old standalone "thomas_test_left" preset already used).
-  hip8: fromBase("supine", ["flex the left hip 120", "flex the left knee 130"]),
+  hip8: fromProcedure("hip8", ["flex the left hip 120", "flex the left knee 130"]),
 
   // Ely's test — prone, knee passively flexed until the heel nears the
   // buttock (source: "heel should touch the buttocks") — near the joint's
   // full 140° flexion ROM.
-  hip9: fromBase("prone", ["flex the right knee 140"]),
+  hip9: fromProcedure("hip9", ["flex the right knee 140"]),
 
   // FAIR test — side-lying on the OPPOSITE side (tested right hip on top),
   // flexed 90°, adducted, and internally rotated (source gives 90° flexion
   // explicitly; adduction/IR magnitude not numerically specified, used
   // typical exam values).
-  hip10: fromBase("sidelying_left", ["flex the right hip 90", "adduct the right hip 20", "internally rotate the right hip 20"]),
+  hip10: fromProcedure("hip10", ["flex the right hip 90", "adduct the right hip 20", "internally rotate the right hip 20"]),
 
   // Stinchfield — resisted SLR held at ~30° hip flexion (source gives the
   // angle explicitly) — more accurate than reusing the full slr_right
   // preset (which poses ~70° flexion, appropriate for the Lasègue SLR but
   // not this test's much lower held angle).
-  hip12: fromBase("supine", ["flex the right hip 30"]),
+  hip12: fromProcedure("hip12", ["flex the right hip 30"]),
 
   // Log roll — supine, leg extended, passively rolled through IR/ER;
   // snapshotting one direction (external rotation) of the roll.
-  hip13: fromBase("supine", ["externally rotate the right hip 20"]),
+  hip13: fromProcedure("hip13", ["externally rotate the right hip 20"]),
 
   // ---- KNEE ---- researched against Physiopedia's knee special-tests
   // pages (physio-pedia.com/Category:Knee_-_Special_Tests). Where a source
@@ -595,54 +617,54 @@ export const SPECIAL_TEST_CUSTOM_POSES: Record<string, PosePreset> = {
   // Noble's), a typical clinical ~30° is used.
 
   // Lachman test — supine, knee flexed to the low end of the 20–30° window.
-  kn1: fromBase("supine", ["flex the right knee 25"]),
+  kn1: fromProcedure("kn1", ["flex the right knee 25"]),
 
   // Valgus stress at 30° — source gives the angle explicitly.
-  kn7: fromBase("supine", ["flex the right knee 30"]),
+  kn7: fromProcedure("kn7", ["flex the right knee 30"]),
 
   // Varus stress at 30° — same setup as valgus stress, opposite force
   // direction (not representable — this shows the shared knee position).
-  kn8: fromBase("supine", ["flex the right knee 30"]),
+  kn8: fromProcedure("kn8", ["flex the right knee 30"]),
 
   // McMurray test — snapshotting the test's full-flexion starting point
   // (rotation-while-extending isn't representable as a static pose).
-  kn10: fromBase("supine", ["flex the right knee 130"]),
+  kn10: fromProcedure("kn10", ["flex the right knee 130"]),
 
   // Thessaly test — single-leg stance at 20° flexion (source gives the
   // angle explicitly); built on "standing" since the sim's single-leg-stance
   // preset doesn't expose a custom knee-flexion angle for the stance leg —
   // position-only, doesn't model the unweighted/rotating contralateral leg.
-  kn11: fromBase("standing", ["flex the right hip 15", "flex the right knee 20"]),
+  kn11: fromProcedure("kn11", ["flex the right hip 15", "flex the right knee 20"]),
 
   // Apley grind — prone, knee at 90° (source gives the angle explicitly).
-  kn12: fromBase("prone", ["flex the right knee 90"]),
+  kn12: fromProcedure("kn12", ["flex the right knee 90"]),
 
   // Patellar apprehension — knee "slightly flexed"; ~30° is the typical
   // clinical value (matches the companion Patellar Apprehension Sign page).
-  kn15: fromBase("supine", ["flex the right knee 30"]),
+  kn15: fromProcedure("kn15", ["flex the right knee 30"]),
 
   // Noble compression — most provocative near 30° flexion (source gives
   // the angle explicitly); shown supine with the knee at that angle.
-  kn17: fromBase("supine", ["flex the right knee 30"]),
+  kn17: fromProcedure("kn17", ["flex the right knee 30"]),
 
   // Dial test — prone, comparing ER at 30° vs 90°; snapshotting the 30°
   // position (axial tibial rotation itself isn't a modeled DOF).
-  kn18: fromBase("prone", ["flex the right knee 30"]),
+  kn18: fromProcedure("kn18", ["flex the right knee 30"]),
 
   // Wilson's test — sitting (hip+knee 90° from the base preset), extending
   // the knee to the diagnostic ~30°-from-full-extension pain point (source
   // gives the angle explicitly).
-  kn22: fromBase("sitting", ["flex the right knee 30"]),
+  kn22: fromProcedure("kn22", ["flex the right knee 30"]),
 
   // Passive Knee Extension Test — supine, hip flexed 90°, knee extended to
   // the normative mean popliteal angle (~75°, i.e. 180° − 74.6° per Davis
   // et al., the value cited on the source page).
-  kn24: fromBase("supine", ["flex the right hip 90", "flex the right knee 75"]),
+  kn24: fromProcedure("kn24", ["flex the right hip 90", "flex the right knee 75"]),
 
   // Renne test — single-leg squat to 60–90° (source range); built on
   // "standing" for the same reason as Thessaly above — position-only,
   // doesn't model true single-leg weight-bearing/unweighting.
-  kn25: fromBase("standing", ["flex the right hip 70", "flex the right knee 70"]),
+  kn25: fromProcedure("kn25", ["flex the right hip 70", "flex the right knee 70"]),
 
   // ---- SHOULDER ---- researched against Physiopedia's shoulder
   // special-tests pages (physio-pedia.com/Category:Shoulder_-_Special_Tests).
@@ -659,77 +681,77 @@ export const SPECIAL_TEST_CUSTOM_POSES: Record<string, PosePreset> = {
 
   // Neer impingement sign — near-full forward flexion with the arm
   // internally rotated (the examiner internally rotates then forces flexion).
-  sh1: fromBase("standing", ["flex the right shoulder 170", "internally rotate the right shoulder 40"]),
+  sh1: fromProcedure("sh1", ["flex the right shoulder 170", "internally rotate the right shoulder 40"]),
 
   // Hawkins-Kennedy — shoulder and elbow each at 90°, then internally rotated
   // (source gives the 90°/90°; IR magnitude typical exam value).
-  sh2: fromBase("standing", ["flex the right shoulder 90", "flex the right elbow 90", "internally rotate the right shoulder 45"]),
+  sh2: fromProcedure("sh2", ["flex the right shoulder 90", "flex the right elbow 90", "internally rotate the right shoulder 45"]),
 
   // Painful arc — active abduction in the scapular plane; snapshotting the
   // mid-arc (90°) where pain typically peaks.
-  sh3: fromBase("standing", ["abduct the right shoulder 90"]),
+  sh3: fromProcedure("sh3", ["abduct the right shoulder 90"]),
 
   // Apprehension test — 90° abduction, elbow 90°, progressive external
   // rotation (source: abducted-and-externally-rotated; ~60° ER shown).
-  sh11: fromBase("standing", ["abduct the right shoulder 90", "externally rotate the right shoulder 60", "flex the right elbow 90"]),
+  sh11: fromProcedure("sh11", ["abduct the right shoulder 90", "externally rotate the right shoulder 60", "flex the right elbow 90"]),
 
   // Drop arm test (Codman's) — the abducted 90° starting position the patient
   // then slowly lowers from.
-  sh23: fromBase("standing", ["abduct the right shoulder 90"]),
+  sh23: fromProcedure("sh23", ["abduct the right shoulder 90"]),
 
   // Crank test — arm elevated to ~90° (forward flexion) before the axial
   // load-and-rotate; the rotation itself isn't a modeled shoulder-load DOF.
-  sh24: fromBase("standing", ["flex the right shoulder 90"]),
+  sh24: fromProcedure("sh24", ["flex the right shoulder 90"]),
 
   // Kim test — 90° abduction starting position (the diagonal downward-backward
   // load isn't representable as a static angle).
-  sh29: fromBase("standing", ["abduct the right shoulder 90"]),
+  sh29: fromProcedure("sh29", ["abduct the right shoulder 90"]),
 
   // Serratus anterior punch-out — arm forward-flexed to 90° (the backward
   // resistance/wall push that provokes winging isn't a modeled load).
-  sh36: fromBase("standing", ["flex the right shoulder 90"]),
+  sh36: fromProcedure("sh36", ["flex the right shoulder 90"]),
 
   // Anterior drawer test — supine, mid-range abduction/flexion/ER (source
   // gives ranges; used the midpoint of each: 100°/10°/15°).
-  sh21: fromBase("supine", ["abduct the right shoulder 100", "flex the right shoulder 10", "externally rotate the right shoulder 15"]),
+  sh21: fromProcedure("sh21", ["abduct the right shoulder 100", "flex the right shoulder 10", "externally rotate the right shoulder 15"]),
 
   // Hornblower's sign (Patte's test) — standing, 90° abduction in the
   // scapular plane, elbow flexed 90° (source gives both angles explicitly).
-  sh26: fromBase("standing", ["abduct the right shoulder 90", "flex the right elbow 90"]),
+  sh26: fromProcedure("sh26", ["abduct the right shoulder 90", "flex the right elbow 90"]),
 
   // Jerk test — 90° abduction + internal rotation (source gives both
   // explicitly); magnitude of IR not specified, used a typical ~30°.
-  sh28: fromBase("standing", ["abduct the right shoulder 90", "internally rotate the right shoulder 30"]),
+  sh28: fromProcedure("sh28", ["abduct the right shoulder 90", "internally rotate the right shoulder 30"]),
 
   // Norwood stress test — supine, 90° abduction with external rotation
   // (forearm vertical), elbow 90° (source gives all three explicitly; ER
   // magnitude itself not numbered, used a typical ~30°).
-  sh31: fromBase("supine", ["abduct the right shoulder 90", "externally rotate the right shoulder 30", "flex the right elbow 90"]),
+  sh31: fromProcedure("sh31", ["abduct the right shoulder 90", "externally rotate the right shoulder 30", "flex the right elbow 90"]),
 
   // Passive compression test — side-lying on the OPPOSITE side (tested
   // right shoulder on top), 30° abduction with external rotation + slight
   // extension (source gives the abduction angle explicitly; ER/extension
   // magnitude not numbered, used typical exam values).
-  sh32: fromBase("sidelying_left", ["abduct the right shoulder 30", "externally rotate the right shoulder 30", "extend the right shoulder 15"]),
+  sh32: fromProcedure("sh32", ["abduct the right shoulder 30", "externally rotate the right shoulder 30", "extend the right shoulder 15"]),
 
   // Resisted AC joint extension test — sitting, shoulder + elbow flexed
   // 90° with the shoulder internally rotated (source gives all explicitly).
-  sh35: fromBase("sitting", ["flex the right shoulder 90", "internally rotate the right shoulder 30", "flex the right elbow 90"]),
+  sh35: fromProcedure("sh35", ["flex the right shoulder 90", "internally rotate the right shoulder 30", "flex the right elbow 90"]),
 
   // Whipple test — arm flexed 90° and adducted across the body toward the
   // opposite shoulder (source gives the flexion angle explicitly; adduction
   // magnitude not numbered, used a typical cross-body value).
-  sh37: fromBase("standing", ["flex the right shoulder 90", "adduct the right shoulder 45"]),
+  sh37: fromProcedure("sh37", ["flex the right shoulder 90", "adduct the right shoulder 45"]),
 
   // Yergason's test — elbow flexed 90°, forearm pronated (source gives the
   // elbow angle explicitly; near-full pronation for the starting position).
-  sh38: fromBase("standing", ["flex the right elbow 90", "pronate the right forearm 80"]),
+  sh38: fromProcedure("sh38", ["flex the right elbow 90", "pronate the right forearm 80"]),
 
   // Yocum's test — hand on the opposite shoulder: heavy cross-body
   // adduction with the elbow substantially flexed (source describes the
   // position qualitatively, not numerically — approximated to bring the
   // hand near the opposite shoulder).
-  sh39: fromBase("standing", ["adduct the right shoulder 90", "flex the right elbow 130"]),
+  sh39: fromProcedure("sh39", ["adduct the right shoulder 90", "flex the right elbow 130"]),
 
   // ---- THORACIC OUTLET ----
   // Roos test / elevated arm stress test (EAST) — the "surrender" position:
@@ -737,7 +759,7 @@ export const SPECIAL_TEST_CUSTOM_POSES: Record<string, PosePreset> = {
   // horizontal, forearms vertical), elbows flexed 90°. Genuinely a bilateral
   // test (the patient opens/closes both fists for up to 3 minutes), so unlike
   // the shoulder tests this one is correctly posed on both sides.
-  tx2: fromBase("standing", [
+  tx2: fromProcedure("tx2", [
     "abduct the right shoulder 90",
     "externally rotate the right shoulder 90",
     "flex the right elbow 90",
@@ -753,13 +775,13 @@ export const SPECIAL_TEST_CUSTOM_POSES: Record<string, PosePreset> = {
   // the angle explicitly), knees extended, the vertical-legs starting/test
   // position (the diagnostic angle itself is patient-specific, found as the
   // legs lower — not a fixed pose to snapshot).
-  lx11: fromBase("supine", ["flex the left hip 90", "flex the right hip 90"]),
+  lx11: fromProcedure("lx11", ["flex the left hip 90", "flex the right hip 90"]),
 
   // McKenzie side glide test — standing; the sim has no lateral-translation
   // DOF for a pure hip shift, so this is approximated with lumbar lateral
   // flexion (side bend) toward one side (magnitude not numerically
   // specified by the source — used a typical exam value).
-  lx12: fromBase("standing", ["side bend the lumbar spine right 20"]),
+  lx12: fromProcedure("lx12", ["side bend the lumbar spine right 20"]),
 
   // ---- CERVICAL SPINE ---- researched against Physiopedia's cervical
   // special-tests pages (physio-pedia.com/Category:Cervical_Spine_-_Special_Tests).
@@ -767,13 +789,13 @@ export const SPECIAL_TEST_CUSTOM_POSES: Record<string, PosePreset> = {
   // Spurling test — sitting; extend, side-bend, and rotate toward the
   // symptomatic side (source describes the combined motion; magnitudes not
   // numerically specified, used typical exam values within the joint's ROM).
-  cx1: fromBase("sitting", ["extend the cervical spine 20", "side bend the cervical spine right 20", "rotate the cervical spine right 30"]),
+  cx1: fromProcedure("cx1", ["extend the cervical spine 20", "side bend the cervical spine right 20", "rotate the cervical spine right 30"]),
 
   // ULNT1 (median nerve bias) — supine; shoulder depression/abduction,
   // forearm supination, wrist/finger extension, external rotation (source
   // gives ~110° abduction explicitly, rest are typical exam positions),
   // plus contralateral cervical side-bend for structural differentiation.
-  cx3: fromBase("supine", [
+  cx3: fromProcedure("cx3", [
     "abduct the right shoulder 100",
     "externally rotate the right shoulder 60",
     "supinate the right forearm 45",
@@ -784,36 +806,36 @@ export const SPECIAL_TEST_CUSTOM_POSES: Record<string, PosePreset> = {
   // Shoulder abduction relief (Bakody) — sitting, symptomatic hand resting
   // on top of the head (source describes the position qualitatively —
   // approximated with abduction + substantial elbow flexion).
-  cx4: fromBase("sitting", ["abduct the right shoulder 100", "flex the right elbow 140"]),
+  cx4: fromProcedure("cx4", ["abduct the right shoulder 100", "flex the right elbow 140"]),
 
   // Cervical flexion-rotation test — supine, full cervical flexion then
   // rotate (source gives the flexion end-range and normal ~44° rotation;
   // snapshotting one rotated direction).
-  cx5: fromBase("supine", ["flex the cervical spine 40", "rotate the cervical spine right 30"]),
+  cx5: fromProcedure("cx5", ["flex the cervical spine 40", "rotate the cervical spine right 30"]),
 
   // Sharp-Purser test — sitting, SLIGHT cervical flexion (source specifies
   // "slightly flexes" — a small angle, well short of end-range).
-  cx7: fromBase("sitting", ["flex the cervical spine 15"]),
+  cx7: fromProcedure("cx7", ["flex the cervical spine 15"]),
 
   // Alar ligament stress test — sitting; passive side-bend (the source also
   // offers a rotation variant) while C2 is palpated/stabilised — magnitude
   // not numerically specified, used a typical exam value.
-  cx8: fromBase("sitting", ["side bend the cervical spine right 15"]),
+  cx8: fromProcedure("cx8", ["side bend the cervical spine right 15"]),
 
   // Lhermitte sign — sitting, cervical flexion (source: "passive or active
   // cervical flexion, often in sitting"; magnitude not specified, used a
   // substantial flexion value since symptoms are typically end-range).
-  cx11: fromBase("sitting", ["flex the cervical spine 40"]),
+  cx11: fromProcedure("cx11", ["flex the cervical spine 40"]),
 
   // Cervical rotation lateral flexion (CRLF) — sitting; rotate away from
   // the tested side, then attempt lateral flexion toward the chest (source
   // describes the sequence; magnitudes not specified, used typical values).
-  cx12: fromBase("sitting", ["rotate the cervical spine right 60", "side bend the cervical spine right 15"]),
+  cx12: fromProcedure("cx12", ["rotate the cervical spine right 60", "side bend the cervical spine right 15"]),
 
   // Vascular screening hold — sitting; sustained end-range rotation with
   // optional extension (source describes the position, not exact angles —
   // used typical end-range values for a ~10s sustained hold).
-  cx13: fromBase("sitting", ["rotate the cervical spine right 60", "extend the cervical spine 20"]),
+  cx13: fromProcedure("cx13", ["rotate the cervical spine right 60", "extend the cervical spine 20"]),
 
   // ---- ANKLE ---- researched against Physiopedia's Ankle special-tests
   // category (physio-pedia.com/Category:Ankle_-_Special_Tests).
@@ -821,36 +843,36 @@ export const SPECIAL_TEST_CUSTOM_POSES: Record<string, PosePreset> = {
   // Anterior drawer (ankle) — supine, ankle relaxed into slight
   // plantarflexion (source: "foot in slight plantarflexion") before the
   // calcaneus/talus are drawn forward.
-  ft1: fromBase("supine", ["plantarflex the right ankle 15"]),
+  ft1: fromProcedure("ft1", ["plantarflex the right ankle 15"]),
 
   // Talar tilt — supine, ankle inverted as a unit (source doesn't give a
   // number; used a typical near-end-range exam value, short of this rig's
   // 35° inversion ROM ceiling).
-  ft2: fromBase("supine", ["invert the right ankle 25"]),
+  ft2: fromProcedure("ft2", ["invert the right ankle 25"]),
 
   // External rotation stress — source: "knee 90°, ankle neutral; externally
   // rotate the foot." This rig has no separate foot-rotation-under-fixed-
   // tibia DOF, so ankle eversion (turning the sole outward) is used as the
   // closest visual proxy for the foot externally rotating under load.
-  ft4: fromBase("sitting", ["evert the right ankle 15"]),
+  ft4: fromProcedure("ft4", ["evert the right ankle 15"]),
 
   // Kleiger's test — seated, knee flexed 90° (source), foot externally
   // rotated/everted with a touch of dorsiflexion (magnitude not specified,
   // typical exam values used).
-  ft9: fromBase("sitting", ["evert the right ankle 15", "dorsiflex the right ankle 10"]),
+  ft9: fromProcedure("ft9", ["evert the right ankle 15", "dorsiflex the right ankle 10"]),
 
   // Impingement sign (ankle) — supine, passive dorsiflexion to end-range
   // (magnitude not numerically specified by the source; used a typical
   // near-end-range value within this rig's 20° dorsiflexion ceiling).
-  an1: fromBase("supine", ["dorsiflex the right ankle 15"]),
+  an1: fromProcedure("an1", ["dorsiflex the right ankle 15"]),
 
   // Peroneus longus & brevis tests — supine, the resisted-eversion hold
   // position (magnitude not specified; used a typical exam value).
-  an2: fromBase("supine", ["evert the right ankle 10"]),
+  an2: fromProcedure("an2", ["evert the right ankle 10"]),
 
   // Prone anterior drawer test — prone, knee flexed ~90° (source), ankle in
   // slight plantarflexion before the forward-draw.
-  an3: fromBase("prone", ["flex the right knee 90", "plantarflex the right ankle 10"]),
+  an3: fromProcedure("an3", ["flex the right knee 90", "plantarflex the right ankle 10"]),
 
   // Silfverskiöld test — dynamic maneuver, not a "get into position" pose:
   // setup = supine, knee EXTENDED, ankle passively dorsiflexed to its
@@ -860,7 +882,7 @@ export const SPECIAL_TEST_CUSTOM_POSES: Record<string, PosePreset> = {
   // that comparison (setup -> knee-flexed), same dynamicEndAngles pattern
   // as FABER's exam-pressure maneuver.
   an4: {
-    ...fromBase("supine", ["dorsiflex the right ankle 5"]),
+    ...fromProcedure("an4", ["dorsiflex the right ankle 5"]),
     dynamicEndAngles: { knee_right: { flexExt: 90 }, ankle_right: { dorsiPlantar: 15 } },
   },
 
@@ -873,7 +895,7 @@ export const SPECIAL_TEST_CUSTOM_POSES: Record<string, PosePreset> = {
   // Coleman block test — standing, hindfoot inverted into varus (the block
   // itself isn't modeled — this approximates the varus alignment the block
   // maneuver is checking, not the block setup itself).
-  ft10: fromBase("standing", ["invert the right ankle 15"]),
+  ft10: fromProcedure("ft10", ["invert the right ankle 15"]),
 
   // ---- ELBOW ---- researched against Physiopedia's Elbow special-tests
   // category (physio-pedia.com/Category:Elbow_-_Special_Tests). This rig has
@@ -886,25 +908,25 @@ export const SPECIAL_TEST_CUSTOM_POSES: Record<string, PosePreset> = {
   // Cozen test — source: "elbow extended, forearm pronated"; the resisted
   // wrist-extension hold is shown as a moderate active extension angle
   // (magnitude not specified, typical exam value).
-  el1: fromBase("sitting", ["extend the right elbow 5", "pronate the right forearm 70", "extend the right wrist 15"]),
+  el1: fromProcedure("el1", ["extend the right elbow 5", "pronate the right forearm 70", "extend the right wrist 15"]),
 
   // Mill test — source explicitly gives all three components: "passively
   // pronate the forearm, flex the wrist and extend the elbow."
-  el2: fromBase("sitting", ["pronate the right forearm 70", "flex the right wrist 40", "extend the right elbow 5"]),
+  el2: fromProcedure("el2", ["pronate the right forearm 70", "flex the right wrist 40", "extend the right elbow 5"]),
 
   // Maudsley (resisted middle finger) — source: "elbow extended"; the
   // resisted middle-finger extension itself isn't representable (no
   // individual finger DOFs — see the Hand section's own disclosure below).
-  el3: fromBase("sitting", ["extend the right elbow 5"]),
+  el3: fromProcedure("el3", ["extend the right elbow 5"]),
 
   // Medial epicondyle provocation (golfer's elbow) — source: "resist wrist
   // flexion and forearm pronation," shown as the mid-range position being
   // resisted (magnitude not specified, typical exam values).
-  el4: fromBase("sitting", ["extend the right elbow 5", "pronate the right forearm 40", "flex the right wrist 30"]),
+  el4: fromProcedure("el4", ["extend the right elbow 5", "pronate the right forearm 40", "flex the right wrist 30"]),
 
   // Valgus stress (UCL) — source gives the angle explicitly (~20-30°); used
   // the midpoint, same convention as kn1 Lachman's 20-30° window.
-  el5: fromBase("sitting", ["flex the right elbow 25"]),
+  el5: fromProcedure("el5", ["flex the right elbow 25"]),
 
   // Moving valgus stress — a genuine dynamic maneuver, not a "get into
   // position" pose: source describes "full flexion + valgus, then rapidly
@@ -913,14 +935,14 @@ export const SPECIAL_TEST_CUSTOM_POSES: Record<string, PosePreset> = {
   // directly here as the dynamicEndAngles range (same pattern as FABER/
   // Watson/Silfverskiöld/wringing test's setup->maneuver Play preview).
   el6: {
-    ...fromBase("sitting", ["flex the right elbow 120"]),
+    ...fromProcedure("el6", ["flex the right elbow 120"]),
     dynamicEndAngles: { elbow_right: { flexExt: 70 } },
   },
 
   // Varus stress (LCL) — same setup as valgus stress, opposite force
   // direction (not representable — this shows the shared elbow position),
   // same convention as the knee's kn7/kn8 pair.
-  el7: fromBase("sitting", ["flex the right elbow 25"]),
+  el7: fromProcedure("el7", ["flex the right elbow 25"]),
 
   // Lateral pivot-shift / posterolateral rotatory instability — source:
   // "supine, arm overhead; supinate + valgus + axial load while flexing
@@ -931,18 +953,18 @@ export const SPECIAL_TEST_CUSTOM_POSES: Record<string, PosePreset> = {
   // specified by this test's own source text, so disclosed as a typical
   // literature value rather than an exact one).
   el8: {
-    ...fromBase("supine", ["flex the right shoulder 170", "supinate the right forearm 70", "extend the right elbow 5"]),
+    ...fromProcedure("el8", ["flex the right shoulder 170", "supinate the right forearm 70", "extend the right elbow 5"]),
     dynamicEndAngles: { elbow_right: { flexExt: 40 } },
   },
 
   // Elbow flexion + Tinel (cubital tunnel) — source gives both components
   // explicitly: "full elbow flexion with wrist extension."
-  el9: fromBase("sitting", ["flex the right elbow 140", "extend the right wrist 20"]),
+  el9: fromProcedure("el9", ["flex the right elbow 140", "extend the right wrist 20"]),
 
   // Milking maneuver — source: "shoulder abducted and externally rotated,
   // elbow flexed beyond 90°, forearm supinated" (magnitudes not specified
   // beyond "beyond 90°", typical throwing-position exam values used).
-  el10: fromBase("sitting", [
+  el10: fromProcedure("el10", [
     "abduct the right shoulder 60",
     "externally rotate the right shoulder 60",
     "flex the right elbow 110",
@@ -953,16 +975,16 @@ export const SPECIAL_TEST_CUSTOM_POSES: Record<string, PosePreset> = {
   // (~40° flexion) and the forearm position (supinated); the push-up-to-
   // standing action itself and the examiner's thumb pressure aren't
   // representable — this shows the held setup position.
-  el11: fromBase("sitting", ["supinate the right forearm 70", "flex the right elbow 40"]),
+  el11: fromProcedure("el11", ["supinate the right forearm 70", "flex the right elbow 40"]),
 
   // Elbow extension test — source: "fully actively extend the elbow."
-  el12: fromBase("sitting", ["extend the right elbow 5"]),
+  el12: fromProcedure("el12", ["extend the right elbow 5"]),
 
   // Scratch collapse test — source describes BILATERAL resisted shoulder
   // external rotation with the elbows tucked at the sides (magnitude not
   // specified, typical exam values); the scratch-and-retest action itself
   // isn't representable — this shows the held resistance setup.
-  el13: fromBase("standing", [
+  el13: fromProcedure("el13", [
     "flex the left elbow 90",
     "flex the right elbow 90",
     "externally rotate the left shoulder 20",
@@ -976,21 +998,21 @@ export const SPECIAL_TEST_CUSTOM_POSES: Record<string, PosePreset> = {
   // describe aren't represented, only the wrist/forearm angle is.
 
   // Phalen test — seated, maximal wrist flexion (source: held up to 60s).
-  wr1: fromBase("sitting", ["flex the right wrist 70"]),
+  wr1: fromProcedure("wr1", ["flex the right wrist 70"]),
 
   // Finkelstein / Eichhoff — seated, wrist ulnar-deviated (thumb-in-fist
   // not modeled — the ulnar deviation is the DOF this rig can show).
-  wr4: fromBase("sitting", ["ulnar deviate the right wrist 20"]),
+  wr4: fromProcedure("wr4", ["ulnar deviate the right wrist 20"]),
 
   // TFCC load (ulnar grind) — seated, ulnar deviation with forearm rotation
   // (source: "with rotation") — distinguished from Finkelstein's pose by
   // adding pronation, matching the "axial load + rotation" description.
-  wr5: fromBase("sitting", ["ulnar deviate the right wrist 20", "pronate the right forearm 30"]),
+  wr5: fromProcedure("wr5", ["ulnar deviate the right wrist 20", "pronate the right forearm 30"]),
 
   // Piano-key / DRUJ ballottement — seated, forearm pronated (source:
   // stabilise the radius, translate the ulnar head — pronation is the
   // setup position that best exposes the ulnar head dorsally).
-  wr6: fromBase("sitting", ["pronate the right forearm 60"]),
+  wr6: fromProcedure("wr6", ["pronate the right forearm 60"]),
 
   // Watson scaphoid shift — a genuine dynamic maneuver, not a "get into
   // position" pose: the examiner presses the scaphoid tubercle WHILE moving
@@ -998,13 +1020,13 @@ export const SPECIAL_TEST_CUSTOM_POSES: Record<string, PosePreset> = {
   // that shift directly (same dynamicEndAngles pattern as FABER/
   // Silfverskiöld) rather than neutral -> a single static pose.
   wr7: {
-    ...fromBase("sitting", ["ulnar deviate the right wrist 15"]),
+    ...fromProcedure("wr7", ["ulnar deviate the right wrist 15"]),
     dynamicEndAngles: { wrist_right: { radUlnar: -15 } },
   },
 
   // Supination lift test — seated, forearm fully supinated (source: "palm
   // up") before lifting/pushing up against resistance.
-  wr10: fromBase("sitting", ["supinate the right forearm 80"]),
+  wr10: fromProcedure("wr10", ["supinate the right forearm 80"]),
 
   // Wringing test — the maneuver itself IS alternating pronation/supination
   // (source: "wring a towel"), so this is another dynamicEndAngles case:
@@ -1013,14 +1035,14 @@ export const SPECIAL_TEST_CUSTOM_POSES: Record<string, PosePreset> = {
   // (The end value must DIFFER from the start's -40, or the Play preview has
   // nothing to animate — it was previously also -40, so Play did nothing.)
   wr12: {
-    ...fromBase("sitting", ["pronate the right forearm 40"]),
+    ...fromProcedure("wr12", ["pronate the right forearm 40"]),
     dynamicEndAngles: { forearm_right: { pronSup: 40 } },
   },
 
   // WHAT test (Wrist Hyperflexion and Abduction of the Thumb) — same wrist
   // flexion as Phalen (source gives no separate angle); the thumb-abduction
   // component isn't modeled (no thumb DOF).
-  wr13: fromBase("sitting", ["flex the right wrist 70"]),
+  wr13: fromProcedure("wr13", ["flex the right wrist 70"]),
 
   // ---- HAND ---- researched against Physiopedia's Hand special-tests
   // category (physio-pedia.com/Category:Hand_-_Special_Tests). This rig has
