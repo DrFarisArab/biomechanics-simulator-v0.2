@@ -144,9 +144,26 @@ function redFlagBanner(redFlags: RedFlags): Paragraph[] {
   return lines;
 }
 
+// docx's Table defaults to a solid border on every side with color="auto"
+// (renders black) when no `borders` option is given — that unwanted black
+// grid, not any shading, is what showed up in the generated report. Every
+// side gets an explicit thin neutral-gray border instead, and result cells
+// no longer get a fill or colored text (bold alone marks a notable finding),
+// so the table reads as plain black-on-white with light gray rules.
+const NEUTRAL_TABLE_BORDER = { style: BorderStyle.SINGLE, size: 2, color: BORDER } as const;
+const NEUTRAL_TABLE_BORDERS = {
+  top: NEUTRAL_TABLE_BORDER,
+  bottom: NEUTRAL_TABLE_BORDER,
+  left: NEUTRAL_TABLE_BORDER,
+  right: NEUTRAL_TABLE_BORDER,
+  insideHorizontal: NEUTRAL_TABLE_BORDER,
+  insideVertical: NEUTRAL_TABLE_BORDER,
+};
+
 function testResultsTable(rows: { name: string; resultLabel: string; notable: boolean; notes: string }[]): Table {
   return new Table({
     width: { size: 100, type: WidthType.PERCENTAGE },
+    borders: NEUTRAL_TABLE_BORDERS,
     rows: rows.map(
       (r) =>
         new TableRow({
@@ -159,10 +176,9 @@ function testResultsTable(rows: { name: string; resultLabel: string; notable: bo
             new TableCell({
               width: { size: 22, type: WidthType.PERCENTAGE },
               margins: { top: 60, bottom: 60, left: 80, right: 80 },
-              shading: r.notable ? { type: ShadingType.SOLID, fill: RED_BG } : undefined,
               children: [
                 new Paragraph({
-                  children: [new TextRun({ text: r.resultLabel, bold: true, size: 16, color: r.notable ? RED : MUTED })],
+                  children: [new TextRun({ text: r.resultLabel, bold: r.notable, size: 16, color: INK })],
                 }),
               ],
             }),
