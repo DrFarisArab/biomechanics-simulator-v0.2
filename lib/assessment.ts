@@ -180,10 +180,23 @@ export interface Assessment {
   painWithMovement: number; // 0-10
   aggravatingFactors: string;
   relievingFactors: string;
+  pastMedicalHistory: string;
+  currentMedications: string;
+  socialOccupationalHistory: string;
   nightPain: boolean;
   redFlags: RedFlags;
 
-  // Step 3 — Joint/Region Selection
+  // Step 3 — Objective Assessment
+  observationGait: string; // Posture, Gait analysis, Transfers, Balance
+  observationSwelling: string; // Swelling / Muscle atrophy
+  vitalsBP: string;
+  vitalsHR: string;
+  vitalsRR: string;
+  romNotes: string; // Range of Motion (AROM/PROM)
+  mmtNotes: string; // Manual Muscle Testing
+  sensationNotes: string; // Deep/Superficial sensation
+  reflexNotes: string;
+  adlNotes: string; // Affected activities of daily living
   selectedJoints: SelectedJoint[];
 
   // Step 4 — Special Tests
@@ -229,9 +242,22 @@ export function blankAssessment(): Assessment {
     painWithMovement: 0,
     aggravatingFactors: "",
     relievingFactors: "",
+    pastMedicalHistory: "",
+    currentMedications: "",
+    socialOccupationalHistory: "",
     nightPain: false,
     redFlags: blankRedFlags(),
 
+    observationGait: "",
+    observationSwelling: "",
+    vitalsBP: "",
+    vitalsHR: "",
+    vitalsRR: "",
+    romNotes: "",
+    mmtNotes: "",
+    sensationNotes: "",
+    reflexNotes: "",
+    adlNotes: "",
     selectedJoints: [],
 
     testFindings: {},

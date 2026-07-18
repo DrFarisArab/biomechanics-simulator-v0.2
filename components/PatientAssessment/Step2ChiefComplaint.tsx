@@ -36,10 +36,10 @@ export function Step2ChiefComplaint() {
 
   return (
     <div className="flex flex-col gap-4 px-4 py-3">
-      <SectionLabel>Chief Complaint</SectionLabel>
+      <SectionLabel>Subjective Assessment</SectionLabel>
 
       <TextAreaField
-        label="Main Complaint"
+        label="Chief Complaint"
         value={draft.chiefComplaint}
         onChange={(v) => setPatientField("chiefComplaint", v)}
       />
@@ -97,6 +97,25 @@ export function Step2ChiefComplaint() {
         label="Relieving Factors"
         value={draft.relievingFactors}
         onChange={(v) => setPatientField("relievingFactors", v)}
+        rows={2}
+      />
+
+      <TextAreaField
+        label="Past Medical/Surgical History"
+        value={draft.pastMedicalHistory}
+        onChange={(v) => setPatientField("pastMedicalHistory", v)}
+        rows={2}
+      />
+      <TextAreaField
+        label="Current Medications"
+        value={draft.currentMedications}
+        onChange={(v) => setPatientField("currentMedications", v)}
+        rows={2}
+      />
+      <TextAreaField
+        label="Social/Occupational History"
+        value={draft.socialOccupationalHistory}
+        onChange={(v) => setPatientField("socialOccupationalHistory", v)}
         rows={2}
       />
 

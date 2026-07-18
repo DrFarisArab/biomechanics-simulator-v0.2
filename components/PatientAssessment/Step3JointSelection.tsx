@@ -2,7 +2,7 @@
 
 import { usePatientAssessmentStore } from "@/lib/patientAssessmentStore";
 import { JOINT_CATEGORIES, type Side } from "@/lib/assessment";
-import { ChipButton, SectionLabel } from "./shared";
+import { ChipButton, SectionLabel, TextAreaField, TextField } from "./shared";
 
 const SIDE_OPTIONS: { value: Side | "bilateral"; label: string }[] = [
   { value: "L", label: "Left" },
@@ -12,12 +12,86 @@ const SIDE_OPTIONS: { value: Side | "bilateral"; label: string }[] = [
 
 export function Step3JointSelection() {
   const draft = usePatientAssessmentStore((s) => s.draft);
+  const setPatientField = usePatientAssessmentStore((s) => s.setPatientField);
   const toggleJointCategory = usePatientAssessmentStore((s) => s.toggleJointCategory);
   const setJointSide = usePatientAssessmentStore((s) => s.setJointSide);
 
   return (
-    <div className="flex flex-col gap-3 px-4 py-3">
-      <SectionLabel>Joint / Region Selection</SectionLabel>
+    <div className="flex flex-col gap-4 px-4 py-3">
+      <div className="text-[13px] font-semibold text-neutral-100">Objective Assessment</div>
+
+      <SectionLabel>Observation</SectionLabel>
+
+      <TextAreaField
+        label="Posture, Gait Analysis, Transfers, Balance"
+        value={draft.observationGait}
+        onChange={(v) => setPatientField("observationGait", v)}
+        rows={2}
+      />
+      <TextAreaField
+        label="Swelling/Muscle Atrophy"
+        value={draft.observationSwelling}
+        onChange={(v) => setPatientField("observationSwelling", v)}
+        rows={2}
+      />
+
+      <div className="flex flex-col gap-1.5">
+        <span className="text-[11px] font-medium text-neutral-300">Vital Signs</span>
+        <div className="grid grid-cols-3 gap-2">
+          <TextField
+            label="Blood Pressure"
+            value={draft.vitalsBP}
+            onChange={(v) => setPatientField("vitalsBP", v)}
+            placeholder="120/80"
+          />
+          <TextField
+            label="Heart Rate"
+            value={draft.vitalsHR}
+            onChange={(v) => setPatientField("vitalsHR", v)}
+            placeholder="72 bpm"
+          />
+          <TextField
+            label="Respiratory Rate"
+            value={draft.vitalsRR}
+            onChange={(v) => setPatientField("vitalsRR", v)}
+            placeholder="16/min"
+          />
+        </div>
+      </div>
+
+      <TextAreaField
+        label="Range of Motion (ROM)"
+        value={draft.romNotes}
+        onChange={(v) => setPatientField("romNotes", v)}
+        placeholder="Active (AROM) and Passive (PROM)"
+        rows={3}
+      />
+      <TextAreaField
+        label="Manual Muscle Testing (MMT)"
+        value={draft.mmtNotes}
+        onChange={(v) => setPatientField("mmtNotes", v)}
+        rows={2}
+      />
+      <TextAreaField
+        label="Deep/Superficial Sensation"
+        value={draft.sensationNotes}
+        onChange={(v) => setPatientField("sensationNotes", v)}
+        rows={2}
+      />
+      <TextAreaField
+        label="Reflex Testing"
+        value={draft.reflexNotes}
+        onChange={(v) => setPatientField("reflexNotes", v)}
+        rows={2}
+      />
+      <TextAreaField
+        label="Affected Activities of Daily Living (ADLs)"
+        value={draft.adlNotes}
+        onChange={(v) => setPatientField("adlNotes", v)}
+        rows={2}
+      />
+
+      <SectionLabel>Special Tests</SectionLabel>
       <div className="text-[11px] leading-relaxed text-neutral-300">
         Select every joint/region relevant to this visit. Step 4 will only show special tests for what you pick here.
       </div>

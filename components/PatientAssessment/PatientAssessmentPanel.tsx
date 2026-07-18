@@ -9,8 +9,8 @@ import { Step5Report } from "./Step5Report";
 
 const STEP_LABELS: Record<WizardStep, string> = {
   1: "Patient Info",
-  2: "Chief Complaint",
-  3: "Joints",
+  2: "Subjective Assessment",
+  3: "Objective Assessment",
   4: "Special Tests",
   5: "Report",
 };
