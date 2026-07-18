@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import { usePatientAssessmentStore } from "@/lib/patientAssessmentStore";
 import {
   DURATION_LABELS,
@@ -20,6 +20,7 @@ export function Step5Report() {
   const draft = usePatientAssessmentStore((s) => s.draft);
   const setClinicalImpression = usePatientAssessmentStore((s) => s.setClinicalImpression);
   const startNewAssessment = usePatientAssessmentStore((s) => s.startNewAssessment);
+  const [docxState, setDocxState] = useState<"idle" | "generating" | "error">("idle");
 
   const redFlagsTriggered = hasRedFlag(draft.redFlags);
   const checkedRedFlags = (Object.keys(draft.redFlags) as (keyof RedFlags)[]).filter((k) => draft.redFlags[k]);
@@ -221,6 +222,35 @@ export function Step5Report() {
       >
         Print / Export PDF
       </button>
+
+      <button
+        type="button"
+        disabled={docxState === "generating"}
+        onClick={async () => {
+          setDocxState("generating");
+          try {
+            // Dynamically imported (not a top-level import) so the ~100KB
+            // `docx` library only downloads when someone actually clicks this
+            // — it would otherwise inflate the app's initial bundle for every
+            // visitor, most of whom never touch this button.
+            const { generateReportDocx, downloadDocxBlob } = await import("@/lib/generateReportDocx");
+            const blob = await generateReportDocx(draft);
+            const fileName = `${(draft.patientName || "assessment").replace(/[^a-z0-9]+/gi, "_")}_${draft.assessmentDate}.docx`;
+            downloadDocxBlob(blob, fileName);
+            setDocxState("idle");
+          } catch {
+            setDocxState("error");
+          }
+        }}
+        className="print:hidden w-full rounded-md border border-teal-700/50 bg-teal-900/20 px-3 py-2 text-[12px] font-semibold text-teal-400 transition hover:bg-teal-900/40 disabled:cursor-wait disabled:opacity-60"
+      >
+        {docxState === "generating" ? "Generating…" : "Generate DOCX (with letterhead)"}
+      </button>
+      {docxState === "error" && (
+        <div className="print:hidden -mt-1 text-[10px] text-red-400">
+          Couldn&apos;t generate the DOCX — check your connection and try again.
+        </div>
+      )}
 
       <button
         type="button"
