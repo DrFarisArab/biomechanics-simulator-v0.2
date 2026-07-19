@@ -18,9 +18,9 @@ function ResultChip({ value, active, onClick }: { value: TestResult; active: boo
       className={`rounded px-1.5 py-1 text-[10px] font-medium transition ${
         active
           ? notable
-            ? "border border-red-600/60 bg-red-900/30 text-red-400"
-            : "border border-teal-600/60 bg-teal-900/25 text-teal-400"
-          : "border border-neutral-700 bg-neutral-800/40 text-neutral-400 hover:border-neutral-600"
+            ? "border border-danger-600/60 bg-danger-900/30 text-danger-400"
+            : "border border-brand-600/60 bg-brand-900/25 text-brand-400"
+          : "border border-ink-700 bg-ink-800/40 text-ink-400 hover:border-ink-600"
       }`}
     >
       {TEST_RESULT_LABELS[value]}
@@ -36,12 +36,12 @@ function ResultChip({ value, active, onClick }: { value: TestResult; active: boo
 function TestReference({ test }: { test: SpecialTest }) {
   const tierMeta = TIER_META[test.tier];
   return (
-    <div className="flex flex-col gap-3 border-t border-neutral-800 px-3 pb-3 pt-3">
+    <div className="flex flex-col gap-3 border-t border-ink-800 px-3 pb-3 pt-3">
       <div>
-        <div className="flex items-center gap-1.5 text-[10px] font-medium uppercase tracking-wider text-neutral-400">
+        <div className="flex items-center gap-1.5 text-[10px] font-medium uppercase tracking-wider text-ink-400">
           <TierDot tier={test.tier} /> {test.cat} · {tierMeta.label}
         </div>
-        <div className="text-[11px] text-neutral-400">{test.t}</div>
+        <div className="text-[11px] text-ink-400">{test.t}</div>
       </div>
 
       {(test.sn || test.sp) && (
@@ -52,19 +52,19 @@ function TestReference({ test }: { test: SpecialTest }) {
       )}
 
       <div>
-        <div className="mb-1 text-[10px] font-semibold uppercase tracking-wider text-neutral-400">Procedure</div>
-        <div className="text-[12px] leading-relaxed text-neutral-200">{test.p}</div>
+        <div className="mb-1 text-[10px] font-semibold uppercase tracking-wider text-ink-400">Procedure</div>
+        <div className="text-[12px] leading-relaxed text-ink-200">{test.p}</div>
       </div>
 
       <div>
-        <div className="mb-1 text-[10px] font-semibold uppercase tracking-wider text-neutral-400">Positive finding</div>
-        <div className="text-[12px] leading-relaxed text-neutral-200">{test.pos}</div>
+        <div className="mb-1 text-[10px] font-semibold uppercase tracking-wider text-ink-400">Positive finding</div>
+        <div className="text-[12px] leading-relaxed text-ink-200">{test.pos}</div>
       </div>
 
       {test.pearl && (
-        <div className="rounded-md border border-neutral-700 bg-neutral-800/30 px-3 py-2">
-          <div className="mb-0.5 text-[10px] font-semibold uppercase tracking-wider text-neutral-400">Clinical pearl</div>
-          <div className="text-[11px] leading-relaxed text-neutral-300">{test.pearl}</div>
+        <div className="rounded-md border border-ink-700 bg-ink-800/30 px-3 py-2">
+          <div className="mb-0.5 text-[10px] font-semibold uppercase tracking-wider text-ink-400">Clinical pearl</div>
+          <div className="text-[11px] leading-relaxed text-ink-300">{test.pearl}</div>
         </div>
       )}
 
@@ -82,17 +82,17 @@ function TestRow({ test, expanded, onToggle }: { test: SpecialTest; expanded: bo
 
   return (
     <div
-      className={`overflow-hidden rounded-md border border-neutral-700 bg-neutral-800/40 ${
-        notable ? "border-l-2 border-l-red-500/70" : result !== "not_tested" ? "border-l-2 border-l-teal-500/60" : ""
+      className={`overflow-hidden rounded-md border border-ink-700 bg-ink-800/40 ${
+        notable ? "border-l-2 border-l-danger-500/70" : result !== "not_tested" ? "border-l-2 border-l-brand-500/60" : ""
       }`}
     >
       <button
         type="button"
         onClick={onToggle}
         aria-expanded={expanded}
-        className="flex w-full items-center justify-between gap-2 px-3 py-2.5 text-left transition hover:bg-neutral-800/70"
+        className="flex w-full items-center justify-between gap-2 px-3 py-2.5 text-left transition hover:bg-ink-800/70"
       >
-        <span className="flex items-center gap-1.5 text-[11px] font-medium text-neutral-200">
+        <span className="flex items-center gap-1.5 text-[11px] font-medium text-ink-200">
           <TierDot tier={test.tier} />
           {test.n}
         </span>
@@ -100,13 +100,13 @@ function TestRow({ test, expanded, onToggle }: { test: SpecialTest; expanded: bo
           {result !== "not_tested" && (
             <span
               className={`rounded px-1.5 py-0.5 text-[9px] font-semibold ${
-                notable ? "bg-red-900/50 text-red-300" : "bg-neutral-800 text-neutral-300"
+                notable ? "bg-danger-900/50 text-danger-300" : "bg-ink-800 text-ink-300"
               }`}
             >
               {TEST_RESULT_LABELS[result]}
             </span>
           )}
-          <span className={`text-neutral-500 transition-transform ${expanded ? "rotate-180" : ""}`}>▾</span>
+          <span className={`text-ink-500 transition-transform ${expanded ? "rotate-180" : ""}`}>▾</span>
         </span>
       </button>
 
@@ -115,8 +115,8 @@ function TestRow({ test, expanded, onToggle }: { test: SpecialTest; expanded: bo
       >
         <div className="min-h-0 overflow-hidden">
           <TestReference test={test} />
-          <div className="flex flex-col gap-1.5 border-t border-neutral-800 px-3 py-3">
-            <div className="text-[10px] font-semibold uppercase tracking-wider text-neutral-400">Result</div>
+          <div className="flex flex-col gap-1.5 border-t border-ink-800 px-3 py-3">
+            <div className="text-[10px] font-semibold uppercase tracking-wider text-ink-400">Result</div>
             <div className="flex flex-wrap gap-1">
               {RESULT_OPTIONS.map((opt) => (
                 <ResultChip key={opt} value={opt} active={result === opt} onClick={() => setTestResult(test.id, opt)} />
@@ -127,7 +127,7 @@ function TestRow({ test, expanded, onToggle }: { test: SpecialTest; expanded: bo
                 value={finding?.notes ?? ""}
                 onChange={(e) => setTestNotes(test.id, e.target.value)}
                 placeholder="Notes (optional) — e.g. positive at 120° abduction"
-                className="w-full rounded-md border border-neutral-700 bg-neutral-950 px-2 py-1 text-[11px] text-neutral-200 placeholder:text-neutral-500 focus:border-teal-600 focus:outline-none"
+                className="w-full rounded-md border border-ink-700 bg-ink-950 px-2 py-1 text-[11px] text-ink-200 placeholder:text-ink-500 focus:border-brand-600 focus:outline-none"
               />
             )}
           </div>
@@ -161,7 +161,7 @@ export function Step4SpecialTests() {
       <SectionLabel>Special Tests</SectionLabel>
 
       {!inScope ? (
-        <div className="rounded-md border border-dashed border-neutral-700 bg-neutral-800/20 px-3 py-2.5 text-[11px] leading-relaxed text-neutral-400">
+        <div className="rounded-md border border-dashed border-ink-700 bg-ink-800/20 px-3 py-2.5 text-[11px] leading-relaxed text-ink-400">
           Select at least one joint/region in Step 3 to see relevant special tests.
         </div>
       ) : (
@@ -172,7 +172,7 @@ export function Step4SpecialTests() {
             </div>
             {categories.map(({ cat, tests }) => (
               <div key={cat} className="flex flex-col gap-1.5">
-                <div className="text-[10px] font-semibold uppercase tracking-wider text-neutral-400">{cat}</div>
+                <div className="text-[10px] font-semibold uppercase tracking-wider text-ink-400">{cat}</div>
                 {tests.map((test) => (
                   <TestRow
                     key={test.id}

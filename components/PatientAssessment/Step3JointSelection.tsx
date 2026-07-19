@@ -18,7 +18,7 @@ export function Step3JointSelection() {
 
   return (
     <div className="flex flex-col gap-4 px-4 py-3">
-      <div className="text-[13px] font-semibold text-neutral-100">Objective Assessment</div>
+      <div className="text-[13px] font-semibold text-ink-100">Objective Assessment</div>
 
       <SectionLabel>Observation</SectionLabel>
 
@@ -38,7 +38,7 @@ export function Step3JointSelection() {
       />
 
       <div className="flex flex-col gap-1.5">
-        <span className="text-[11px] font-medium text-neutral-300">Vital Signs</span>
+        <span className="text-[11px] font-medium text-ink-300">Vital Signs</span>
         <div className="grid grid-cols-3 gap-2">
           <TextField
             label="Blood Pressure"
@@ -98,7 +98,7 @@ export function Step3JointSelection() {
       />
 
       <SectionLabel>Special Tests</SectionLabel>
-      <div className="text-[11px] leading-relaxed text-neutral-300">
+      <div className="text-[11px] leading-relaxed text-ink-300">
         Select every joint/region relevant to this visit. Step 4 will only show special tests for what you pick here.
       </div>
 

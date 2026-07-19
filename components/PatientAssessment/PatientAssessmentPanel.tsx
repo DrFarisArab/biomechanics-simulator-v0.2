@@ -20,7 +20,7 @@ function StepIndicator() {
   const goToStep = usePatientAssessmentStore((s) => s.goToStep);
 
   return (
-    <div className="flex items-center gap-1 border-b border-neutral-800 px-4 py-2">
+    <div className="flex items-center gap-1 border-b border-ink-800 px-4 py-2">
       {([1, 2, 3, 4, 5] as WizardStep[]).map((n, i) => (
         <div key={n} className="flex flex-1 items-center gap-1">
           <button
@@ -29,15 +29,15 @@ function StepIndicator() {
             title={STEP_LABELS[n]}
             className={`grid h-5 w-5 shrink-0 place-items-center rounded-full border text-[10px] font-semibold transition ${
               n === step
-                ? "border-teal-500 bg-teal-600 text-neutral-950"
+                ? "border-brand-500 bg-brand-600 text-ink-950"
                 : n < step
-                  ? "border-teal-700/60 bg-teal-900/30 text-teal-400"
-                  : "border-neutral-700 bg-neutral-800/50 text-neutral-500"
+                  ? "border-brand-700/60 bg-brand-900/30 text-brand-400"
+                  : "border-ink-700 bg-ink-800/50 text-ink-500"
             }`}
           >
             {n}
           </button>
-          {i < 4 && <div className={`h-px flex-1 ${n < step ? "bg-teal-700/60" : "bg-neutral-800"}`} />}
+          {i < 4 && <div className={`h-px flex-1 ${n < step ? "bg-brand-700/60" : "bg-ink-800"}`} />}
         </div>
       ))}
     </div>
@@ -61,16 +61,16 @@ export function PatientAssessmentPanel() {
   const nextEnabled = canAdvance(step, patientName, jointCount);
 
   return (
-    <aside className="scroll-slim flex w-80 shrink-0 flex-col overflow-y-auto border-l border-neutral-800 bg-neutral-900">
-      <div className="flex items-center justify-between border-b border-neutral-800 px-4 py-3">
+    <aside className="scroll-slim flex w-80 shrink-0 flex-col overflow-y-auto border-l border-ink-800 bg-ink-900">
+      <div className="flex items-center justify-between border-b border-ink-800 px-4 py-3">
         <div>
-          <div className="text-[13px] font-semibold text-neutral-100">New Patient Assessment</div>
-          <div className="text-[10px] text-neutral-400">Step {step} of 5 — {STEP_LABELS[step]}</div>
+          <div className="text-[13px] font-semibold text-ink-100">New Patient Assessment</div>
+          <div className="text-[10px] text-ink-400">Step {step} of 5 — {STEP_LABELS[step]}</div>
         </div>
         <button
           onClick={() => setPanelOpen(false)}
           aria-label="Close new patient assessment panel"
-          className="grid h-6 w-6 shrink-0 place-items-center rounded text-neutral-400 transition hover:bg-neutral-800 hover:text-neutral-200"
+          className="grid h-6 w-6 shrink-0 place-items-center rounded text-ink-400 transition hover:bg-ink-800 hover:text-ink-200"
         >
           ✕
         </button>
@@ -85,12 +85,12 @@ export function PatientAssessmentPanel() {
       {step === 5 && <Step5Report />}
 
       {step < 5 && (
-        <div className="mt-auto flex items-center justify-between border-t border-neutral-800 px-4 py-3">
+        <div className="mt-auto flex items-center justify-between border-t border-ink-800 px-4 py-3">
           <button
             type="button"
             onClick={prevStep}
             disabled={step === 1}
-            className="w-fit text-[11px] font-medium text-neutral-300 transition hover:text-neutral-200 disabled:cursor-not-allowed disabled:opacity-30"
+            className="w-fit text-[11px] font-medium text-ink-300 transition hover:text-ink-200 disabled:cursor-not-allowed disabled:opacity-30"
           >
             ← Back
           </button>
@@ -98,18 +98,18 @@ export function PatientAssessmentPanel() {
             type="button"
             onClick={nextStep}
             disabled={!nextEnabled}
-            className="rounded-md border border-teal-700/50 bg-teal-900/20 px-3 py-2 text-[12px] font-semibold text-teal-400 transition hover:bg-teal-900/40 disabled:cursor-not-allowed disabled:opacity-40"
+            className="rounded-md border border-brand-700/50 bg-brand-900/20 px-3 py-2 text-[12px] font-semibold text-brand-400 transition hover:bg-brand-900/40 disabled:cursor-not-allowed disabled:opacity-40"
           >
             {step === 4 ? "Generate Report" : "Next"}
           </button>
         </div>
       )}
       {step === 5 && (
-        <div className="flex items-center border-t border-neutral-800 px-4 py-3">
+        <div className="flex items-center border-t border-ink-800 px-4 py-3">
           <button
             type="button"
             onClick={prevStep}
-            className="w-fit text-[11px] font-medium text-neutral-300 transition hover:text-neutral-200"
+            className="w-fit text-[11px] font-medium text-ink-300 transition hover:text-ink-200"
           >
             ← Back
           </button>

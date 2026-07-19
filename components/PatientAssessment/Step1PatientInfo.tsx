@@ -41,7 +41,7 @@ export function Step1PatientInfo() {
       </div>
 
       <div className="flex flex-col gap-1.5">
-        <span className="text-[11px] font-medium text-neutral-300">Sex</span>
+        <span className="text-[11px] font-medium text-ink-300">Sex</span>
         <div className="grid grid-cols-2 gap-1">
           {SEX_OPTIONS.map((opt) => (
             <ChipButton
@@ -74,7 +74,7 @@ export function Step1PatientInfo() {
       </div>
 
       <div className="flex flex-col gap-1.5">
-        <span className="text-[11px] font-medium text-neutral-300">Dominant Hand</span>
+        <span className="text-[11px] font-medium text-ink-300">Dominant Hand</span>
         <div className="grid grid-cols-3 gap-1">
           {HAND_OPTIONS.map((opt) => (
             <ChipButton

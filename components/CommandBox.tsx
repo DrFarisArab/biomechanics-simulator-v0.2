@@ -55,16 +55,16 @@ export function CommandBox() {
   };
 
   return (
-    <div className="pointer-events-auto absolute bottom-3 right-3 w-80 rounded-lg border border-neutral-700 bg-neutral-900/90 p-2.5 backdrop-blur">
+    <div className="pointer-events-auto absolute bottom-3 right-3 w-80 rounded-lg border border-ink-700 bg-ink-900/90 p-2.5 backdrop-blur">
       <div className="mb-1.5 flex items-center justify-between gap-2">
-        <div className="text-[10px] font-semibold uppercase tracking-wider text-neutral-500">
-          Pose command <span className="text-neutral-600">(type it naturally)</span>
+        <div className="text-[10px] font-semibold uppercase tracking-wider text-ink-500">
+          Pose command <span className="text-ink-600">(type it naturally)</span>
         </div>
         <button
           type="button"
           onClick={() => setShowCommandBox(false)}
           aria-label="Hide pose command box"
-          className="shrink-0 rounded p-0.5 text-neutral-500 transition hover:text-neutral-200"
+          className="shrink-0 rounded p-0.5 text-ink-500 transition hover:text-ink-200"
         >
           <svg width="12" height="12" viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg">
             <path d="M2 2L10 10M10 2L2 10" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" />
@@ -75,7 +75,7 @@ export function CommandBox() {
       {history.length > 0 && (
         <div className="mb-2 flex flex-col gap-1">
           {history.map((h, i) => (
-            <div key={i} className={`text-[11px] leading-snug ${h.ok ? "text-teal-400" : "text-red-400"}`}>
+            <div key={i} className={`text-[11px] leading-snug ${h.ok ? "text-brand-400" : "text-danger-400"}`}>
               {h.ok ? "✓ " : "✗ "}
               {h.text}
             </div>
@@ -91,11 +91,11 @@ export function CommandBox() {
             if (e.key === "Enter") run();
           }}
           placeholder={`e.g. "${EXAMPLES[exampleIdx]}"`}
-          className="min-w-0 flex-1 rounded-md border border-neutral-700 bg-neutral-950 px-2 py-1.5 text-[12px] text-neutral-200 placeholder:text-neutral-600 focus:border-teal-600 focus:outline-none"
+          className="min-w-0 flex-1 rounded-md border border-ink-700 bg-ink-950 px-2 py-1.5 text-[12px] text-ink-200 placeholder:text-ink-600 focus:border-brand-600 focus:outline-none"
         />
         <button
           onClick={run}
-          className="shrink-0 rounded-md border border-teal-700/50 bg-teal-900/20 px-2.5 py-1.5 text-[11px] font-semibold text-teal-400 transition hover:bg-teal-900/40"
+          className="shrink-0 rounded-md border border-brand-700/50 bg-brand-900/20 px-2.5 py-1.5 text-[11px] font-semibold text-brand-400 transition hover:bg-brand-900/40"
         >
           Set
         </button>

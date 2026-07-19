@@ -79,7 +79,7 @@ export function ApplyPoseButton({ test }: { test: SpecialTest }) {
 
   if (!preset) {
     return (
-      <div className="rounded-md border border-dashed border-neutral-700 bg-neutral-800/20 px-3 py-2.5 text-[11px] leading-relaxed text-neutral-400">
+      <div className="rounded-md border border-dashed border-ink-700 bg-ink-800/20 px-3 py-2.5 text-[11px] leading-relaxed text-ink-400">
         3D pose preview not yet available for this test — the reference info above is still accurate. More positions are being added over time.
       </div>
     );
@@ -126,7 +126,7 @@ export function ApplyPoseButton({ test }: { test: SpecialTest }) {
     <div className="flex flex-col gap-2">
       <button
         onClick={applyStatic}
-        className="w-full rounded-md border border-teal-700/50 bg-teal-900/20 px-3 py-2 text-[12px] font-semibold text-teal-400 transition hover:bg-teal-900/40"
+        className="w-full rounded-md border border-brand-700/50 bg-brand-900/20 px-3 py-2 text-[12px] font-semibold text-brand-400 transition hover:bg-brand-900/40"
       >
         Apply test position to model — {preset.label}
       </button>
@@ -135,8 +135,8 @@ export function ApplyPoseButton({ test }: { test: SpecialTest }) {
           onClick={togglePreview}
           className={`flex w-full items-center justify-center gap-1.5 rounded-md border px-3 py-2 text-[12px] font-semibold transition ${
             isThisPreviewPlaying
-              ? "border-teal-600/60 bg-teal-900/25 text-teal-400"
-              : "border-neutral-700 bg-neutral-800/40 text-neutral-300 hover:border-neutral-600"
+              ? "border-brand-600/60 bg-brand-900/25 text-brand-400"
+              : "border-ink-700 bg-ink-800/40 text-ink-300 hover:border-ink-600"
           }`}
         >
           {isThisPreviewPlaying ? "❚❚ Pause preview" : "▶ Play test movement"}
@@ -150,12 +150,12 @@ function RegionCard({ region, onOpen }: { region: Region; onOpen: () => void }) 
   return (
     <button
       onClick={onOpen}
-      className="rounded-md border border-neutral-700 bg-neutral-800/40 p-3 text-left transition hover:border-neutral-600 hover:bg-neutral-800/70"
+      className="rounded-md border border-ink-700 bg-ink-800/40 p-3 text-left transition hover:border-ink-600 hover:bg-ink-800/70"
       style={{ borderLeftColor: region.color, borderLeftWidth: 3 }}
     >
-      <div className="text-[13px] font-semibold text-neutral-100">{region.name}</div>
-      <div className="mt-0.5 text-[11px] leading-relaxed text-neutral-400">{region.blurb}</div>
-      <div className="mt-1.5 text-[10px] font-medium text-neutral-300">{regionTestCount(region.id)} tests</div>
+      <div className="text-[13px] font-semibold text-ink-100">{region.name}</div>
+      <div className="mt-0.5 text-[11px] leading-relaxed text-ink-400">{region.blurb}</div>
+      <div className="mt-1.5 text-[10px] font-medium text-ink-300">{regionTestCount(region.id)} tests</div>
     </button>
   );
 }
@@ -189,16 +189,16 @@ function HomeView({
         placeholder="Search any test, structure or diagnosis…"
         value={query}
         onChange={(e) => setQuery(e.target.value)}
-        className="w-full rounded-md border border-neutral-700 bg-neutral-950 px-2.5 py-1.5 text-[12px] text-neutral-200 placeholder:text-neutral-500 focus:border-teal-600 focus:outline-none"
+        className="w-full rounded-md border border-ink-700 bg-ink-950 px-2.5 py-1.5 text-[12px] text-ink-200 placeholder:text-ink-500 focus:border-brand-600 focus:outline-none"
       />
 
       {!q && (
         <button
           onClick={onOpenClusters}
-          className="flex items-center justify-between rounded-md border border-neutral-700 bg-neutral-800/40 px-3 py-2 text-left transition hover:border-neutral-600"
+          className="flex items-center justify-between rounded-md border border-ink-700 bg-ink-800/40 px-3 py-2 text-left transition hover:border-ink-600"
         >
-          <span className="text-[12px] font-medium text-neutral-200">Clinical clusters</span>
-          <span className="text-[11px] font-mono text-neutral-400">{CLUSTERS.length}</span>
+          <span className="text-[12px] font-medium text-ink-200">Clinical clusters</span>
+          <span className="text-[11px] font-mono text-ink-400">{CLUSTERS.length}</span>
         </button>
       )}
 
@@ -214,25 +214,25 @@ function HomeView({
 
       {matches ? (
         <div className="flex flex-col gap-1">
-          <div className="px-0.5 text-[10px] font-semibold uppercase tracking-wider text-neutral-400">
+          <div className="px-0.5 text-[10px] font-semibold uppercase tracking-wider text-ink-400">
             Results ({matches.length})
           </div>
           {matches.map((t) => (
             <button
               key={t.id}
               onClick={() => onOpenTest(t.id)}
-              className="rounded px-2 py-1.5 text-left text-[12px] text-neutral-200 transition hover:bg-neutral-800"
+              className="rounded px-2 py-1.5 text-left text-[12px] text-ink-200 transition hover:bg-ink-800"
             >
               {t.n}
-              <span className="ml-1.5 text-neutral-400">— {t.t}</span>
+              <span className="ml-1.5 text-ink-400">— {t.t}</span>
             </button>
           ))}
-          {matches.length === 0 && <div className="px-2 py-1 text-[12px] text-neutral-400">No matches.</div>}
+          {matches.length === 0 && <div className="px-2 py-1 text-[12px] text-ink-400">No matches.</div>}
         </div>
       ) : (
         families.map((family) => (
           <div key={family} className="flex flex-col gap-1.5">
-            <div className="px-0.5 text-[10px] font-semibold uppercase tracking-wider text-neutral-400">{family}</div>
+            <div className="px-0.5 text-[10px] font-semibold uppercase tracking-wider text-ink-400">{family}</div>
             <div className="grid grid-cols-1 gap-1.5">
               {REGIONS.filter((r) => r.family === family).map((r) => (
                 <RegionCard key={r.id} region={r} onOpen={() => onOpenRegion(r.id)} />
@@ -259,30 +259,30 @@ function RegionView({
 
   return (
     <div className="flex flex-col gap-3 px-4 py-3">
-      <button onClick={onBack} className="w-fit text-[11px] font-medium text-neutral-300 transition hover:text-neutral-200">
+      <button onClick={onBack} className="w-fit text-[11px] font-medium text-ink-300 transition hover:text-ink-200">
         ← All regions
       </button>
       <div>
-        <div className="text-[15px] font-semibold text-neutral-100">{region.name}</div>
-        <div className="text-[11px] text-neutral-400">{region.blurb}</div>
+        <div className="text-[15px] font-semibold text-ink-100">{region.name}</div>
+        <div className="text-[11px] text-ink-400">{region.blurb}</div>
       </div>
       {categories.map((cat) => (
         <div key={cat} className="flex flex-col gap-1">
-          <div className="px-0.5 text-[10px] font-semibold uppercase tracking-wider text-neutral-400">{cat}</div>
+          <div className="px-0.5 text-[10px] font-semibold uppercase tracking-wider text-ink-400">{cat}</div>
           {tests
             .filter((t) => t.cat === cat)
             .map((t) => (
               <button
                 key={t.id}
                 onClick={() => onOpenTest(t.id)}
-                className="flex items-center justify-between gap-2 rounded px-2 py-1.5 text-left text-[12px] text-neutral-200 transition hover:bg-neutral-800"
+                className="flex items-center justify-between gap-2 rounded px-2 py-1.5 text-left text-[12px] text-ink-200 transition hover:bg-ink-800"
               >
                 <span className="flex items-center gap-1.5">
                   <TierDot tier={t.tier} />
                   {t.n}
                 </span>
                 {(TEST_POSE_MAP[t.id] || SPECIAL_TEST_CUSTOM_POSES[t.id]) && (
-                  <span className="shrink-0 text-[9px] font-medium text-teal-500">POSE</span>
+                  <span className="shrink-0 text-[9px] font-medium text-brand-500">POSE</span>
                 )}
               </button>
             ))}
@@ -294,9 +294,9 @@ function RegionView({
 
 export function Stat({ label, value }: { label: string; value: string }) {
   return (
-    <div className="rounded-md border border-neutral-700 bg-neutral-800/50 px-2.5 py-1.5 text-center">
-      <div className="text-[9px] uppercase tracking-wider text-neutral-400">{label}</div>
-      <div className="mt-0.5 text-[14px] font-semibold text-teal-400">{value}%</div>
+    <div className="rounded-md border border-ink-700 bg-ink-800/50 px-2.5 py-1.5 text-center">
+      <div className="text-[9px] uppercase tracking-wider text-ink-400">{label}</div>
+      <div className="mt-0.5 text-[14px] font-semibold text-brand-400">{value}%</div>
     </div>
   );
 }
@@ -411,17 +411,17 @@ function EditPoseView({ test, onDone }: { test: SpecialTest; onDone: () => void 
           applyResolved(resolvedAngles); // discard unsaved edits
           onDone();
         }}
-        className="w-fit text-[11px] font-medium text-neutral-300 transition hover:text-neutral-200"
+        className="w-fit text-[11px] font-medium text-ink-300 transition hover:text-ink-200"
       >
         ← Cancel
       </button>
 
       <div>
-        <div className="text-[10px] font-semibold uppercase tracking-wider text-teal-500">Correcting end pose</div>
-        <div className="mt-0.5 text-[15px] font-semibold text-neutral-100">{test.n}</div>
+        <div className="text-[10px] font-semibold uppercase tracking-wider text-brand-500">Correcting end pose</div>
+        <div className="mt-0.5 text-[15px] font-semibold text-ink-100">{test.n}</div>
       </div>
 
-      <div className="rounded-md border border-teal-700/40 bg-teal-900/10 px-3 py-2 text-[11px] leading-relaxed text-neutral-300">
+      <div className="rounded-md border border-brand-700/40 bg-brand-900/10 px-3 py-2 text-[11px] leading-relaxed text-ink-300">
         Adjust the joint angles of the final position — click a joint marker in the model, or a chip below, then drag its
         sliders. The setup position and furniture stay fixed; only the end-pose angles change.
       </div>
@@ -434,8 +434,8 @@ function EditPoseView({ test, onDone }: { test: SpecialTest; onDone: () => void 
               onClick={() => selectJoint(j)}
               className={`rounded border px-2 py-1 text-[11px] font-medium transition ${
                 selectedJoint === j
-                  ? "border-teal-600/60 bg-teal-900/25 text-teal-400"
-                  : "border-neutral-700 bg-neutral-800/40 text-neutral-300 hover:border-neutral-600"
+                  ? "border-brand-600/60 bg-brand-900/25 text-brand-400"
+                  : "border-ink-700 bg-ink-800/40 text-ink-300 hover:border-ink-600"
               }`}
             >
               {JOINT_LABELS[j] ?? j}
@@ -446,17 +446,17 @@ function EditPoseView({ test, onDone }: { test: SpecialTest; onDone: () => void 
 
       {selectedJoint && dofs && meta ? (
         <div className="flex flex-col gap-2">
-          <div className="text-[10px] font-semibold uppercase tracking-wider text-neutral-400">
+          <div className="text-[10px] font-semibold uppercase tracking-wider text-ink-400">
             {JOINT_LABELS[selectedJoint] ?? selectedJoint}
           </div>
           {Object.keys(dofs).map((dofId) => {
             const dm = meta[dofId];
             const value = jointAngles[dofId] ?? 0;
             return (
-              <div key={dofId} className="rounded-md border border-neutral-700 bg-neutral-800/50 p-2.5">
+              <div key={dofId} className="rounded-md border border-ink-700 bg-ink-800/50 p-2.5">
                 <div className="mb-1 flex items-baseline justify-between">
-                  <div className="text-[12px] font-medium text-neutral-200">{dm.label}</div>
-                  <div className="font-mono text-[12px] tabular-nums text-teal-400">
+                  <div className="text-[12px] font-medium text-ink-200">{dm.label}</div>
+                  <div className="font-mono text-[12px] tabular-nums text-brand-400">
                     {value > 0 ? "+" : ""}
                     {Math.round(value)}
                     {unit}
@@ -468,7 +468,7 @@ function EditPoseView({ test, onDone }: { test: SpecialTest; onDone: () => void 
           })}
         </div>
       ) : (
-        <div className="rounded-md border border-dashed border-neutral-700 bg-neutral-800/20 px-3 py-2.5 text-[11px] leading-relaxed text-neutral-400">
+        <div className="rounded-md border border-dashed border-ink-700 bg-ink-800/20 px-3 py-2.5 text-[11px] leading-relaxed text-ink-400">
           Select a joint — a chip above, or click its marker in the model — to adjust its angles.
         </div>
       )}
@@ -476,14 +476,14 @@ function EditPoseView({ test, onDone }: { test: SpecialTest; onDone: () => void 
       <div className="mt-2 flex flex-col gap-2">
         <button
           onClick={save}
-          className="w-full rounded-md border border-teal-700/50 bg-teal-900/20 px-3 py-2 text-[12px] font-semibold text-teal-400 transition hover:bg-teal-900/40"
+          className="w-full rounded-md border border-brand-700/50 bg-brand-900/20 px-3 py-2 text-[12px] font-semibold text-brand-400 transition hover:bg-brand-900/40"
         >
           Save correction &amp; play movement
         </button>
         {correction && (
           <button
             onClick={resetToOriginal}
-            className="w-full rounded-md border border-neutral-700 px-3 py-2 text-[11px] font-medium text-neutral-400 transition hover:border-red-700/60 hover:text-red-400"
+            className="w-full rounded-md border border-ink-700 px-3 py-2 text-[11px] font-medium text-ink-400 transition hover:border-danger-700/60 hover:text-danger-400"
           >
             Reset to original (remove correction)
           </button>
@@ -515,23 +515,23 @@ function TestDetailView({
 
   return (
     <div className="flex flex-col gap-3 px-4 py-3">
-      <button onClick={onBack} className="w-fit text-[11px] font-medium text-neutral-300 transition hover:text-neutral-200">
+      <button onClick={onBack} className="w-fit text-[11px] font-medium text-ink-300 transition hover:text-ink-200">
         ← {region?.name ?? "Back"}
       </button>
 
       <div>
-        <div className="flex items-center gap-1.5 text-[10px] font-medium uppercase tracking-wider text-neutral-400">
+        <div className="flex items-center gap-1.5 text-[10px] font-medium uppercase tracking-wider text-ink-400">
           <TierDot tier={test.tier} /> {test.cat} · {tierMeta.label}
         </div>
         <div className="mt-0.5 flex items-center gap-2">
-          <div className="text-[15px] font-semibold text-neutral-100">{test.n}</div>
+          <div className="text-[15px] font-semibold text-ink-100">{test.n}</div>
           {correction && (
             <span className="rounded bg-amber-900/40 px-1.5 py-0.5 text-[9px] font-semibold uppercase tracking-wider text-amber-400">
               Corrected
             </span>
           )}
         </div>
-        <div className="text-[11px] text-neutral-400">{test.t}</div>
+        <div className="text-[11px] text-ink-400">{test.t}</div>
       </div>
 
       {(test.sn || test.sp) && (
@@ -542,19 +542,19 @@ function TestDetailView({
       )}
 
       <div>
-        <div className="mb-1 text-[10px] font-semibold uppercase tracking-wider text-neutral-400">Procedure</div>
-        <div className="text-[12px] leading-relaxed text-neutral-200">{test.p}</div>
+        <div className="mb-1 text-[10px] font-semibold uppercase tracking-wider text-ink-400">Procedure</div>
+        <div className="text-[12px] leading-relaxed text-ink-200">{test.p}</div>
       </div>
 
       <div>
-        <div className="mb-1 text-[10px] font-semibold uppercase tracking-wider text-neutral-400">Positive finding</div>
-        <div className="text-[12px] leading-relaxed text-neutral-200">{test.pos}</div>
+        <div className="mb-1 text-[10px] font-semibold uppercase tracking-wider text-ink-400">Positive finding</div>
+        <div className="text-[12px] leading-relaxed text-ink-200">{test.pos}</div>
       </div>
 
       {test.pearl && (
-        <div className="rounded-md border border-neutral-700 bg-neutral-800/30 px-3 py-2">
-          <div className="mb-0.5 text-[10px] font-semibold uppercase tracking-wider text-neutral-400">Clinical pearl</div>
-          <div className="text-[11px] leading-relaxed text-neutral-300">{test.pearl}</div>
+        <div className="rounded-md border border-ink-700 bg-ink-800/30 px-3 py-2">
+          <div className="mb-0.5 text-[10px] font-semibold uppercase tracking-wider text-ink-400">Clinical pearl</div>
+          <div className="text-[11px] leading-relaxed text-ink-300">{test.pearl}</div>
         </div>
       )}
 
@@ -563,7 +563,7 @@ function TestDetailView({
       {hasPose && (
         <button
           onClick={onEdit}
-          className="w-fit text-[11px] font-medium text-neutral-400 transition hover:text-teal-400"
+          className="w-fit text-[11px] font-medium text-ink-400 transition hover:text-brand-400"
         >
           ✎ {correction ? "Edit correction" : "Edit end pose"}
         </button>
@@ -579,16 +579,16 @@ function CorrectionsListView({ onBack, onOpenTest }: { onBack: () => void; onOpe
 
   return (
     <div className="flex flex-col gap-3 px-4 py-3">
-      <button onClick={onBack} className="w-fit text-[11px] font-medium text-neutral-300 transition hover:text-neutral-200">
+      <button onClick={onBack} className="w-fit text-[11px] font-medium text-ink-300 transition hover:text-ink-200">
         ← All regions
       </button>
-      <div className="text-[15px] font-semibold text-neutral-100">Corrected special tests</div>
-      <div className="text-[11px] leading-relaxed text-neutral-400">
+      <div className="text-[15px] font-semibold text-ink-100">Corrected special tests</div>
+      <div className="text-[11px] leading-relaxed text-ink-400">
         Your saved end-pose corrections. Each overrides the shipped pose on this device and was written to the{" "}
-        <span className="font-mono text-neutral-300">corrected-special-tests/</span> folder to fold back into the source.
+        <span className="font-mono text-ink-300">corrected-special-tests/</span> folder to fold back into the source.
       </div>
       {entries.length === 0 ? (
-        <div className="rounded-md border border-dashed border-neutral-700 bg-neutral-800/20 px-3 py-2.5 text-[11px] text-neutral-400">
+        <div className="rounded-md border border-dashed border-ink-700 bg-ink-800/20 px-3 py-2.5 text-[11px] text-ink-400">
           No corrections yet.
         </div>
       ) : (
@@ -596,10 +596,10 @@ function CorrectionsListView({ onBack, onOpenTest }: { onBack: () => void; onOpe
           const test = TESTS.find((t) => t.id === c.testId);
           const region = test ? REGIONS.find((r) => r.id === test.r) : undefined;
           return (
-            <div key={c.testId} className="flex items-center justify-between gap-2 rounded-md border border-neutral-700 bg-neutral-800/40 px-3 py-2">
+            <div key={c.testId} className="flex items-center justify-between gap-2 rounded-md border border-ink-700 bg-ink-800/40 px-3 py-2">
               <button onClick={() => onOpenTest(c.testId)} className="min-w-0 flex-1 text-left">
-                <div className="truncate text-[12px] font-medium text-neutral-100">{test?.n ?? c.testId}</div>
-                <div className="text-[10px] text-neutral-400">
+                <div className="truncate text-[12px] font-medium text-ink-100">{test?.n ?? c.testId}</div>
+                <div className="text-[10px] text-ink-400">
                   {region?.name ?? ""} · {new Date(c.savedAt).toLocaleDateString()}
                 </div>
               </button>
@@ -609,7 +609,7 @@ function CorrectionsListView({ onBack, onOpenTest }: { onBack: () => void; onOpe
                   void deleteCorrectionFile(c.testId);
                 }}
                 title="Reset to original"
-                className="shrink-0 rounded border border-neutral-700 px-1.5 py-1 text-[10px] font-medium text-neutral-400 transition hover:border-red-700/60 hover:text-red-400"
+                className="shrink-0 rounded border border-ink-700 px-1.5 py-1 text-[10px] font-medium text-ink-400 transition hover:border-danger-700/60 hover:text-danger-400"
               >
                 Reset
               </button>
@@ -624,25 +624,25 @@ function CorrectionsListView({ onBack, onOpenTest }: { onBack: () => void; onOpe
 function ClustersView({ onBack, onOpenTest }: { onBack: () => void; onOpenTest: (id: string) => void }) {
   return (
     <div className="flex flex-col gap-3 px-4 py-3">
-      <button onClick={onBack} className="w-fit text-[11px] font-medium text-neutral-300 transition hover:text-neutral-200">
+      <button onClick={onBack} className="w-fit text-[11px] font-medium text-ink-300 transition hover:text-ink-200">
         ← All regions
       </button>
-      <div className="text-[15px] font-semibold text-neutral-100">Clinical clusters</div>
-      <div className="text-[11px] leading-relaxed text-neutral-400">
+      <div className="text-[15px] font-semibold text-ink-100">Clinical clusters</div>
+      <div className="text-[11px] leading-relaxed text-ink-400">
         Validated test combinations — more diagnostically useful than any single test alone.
       </div>
       {CLUSTERS.map((c) => (
-        <div key={c.id} className="rounded-md border border-neutral-700 bg-neutral-800/40 p-3">
-          <div className="text-[12px] font-semibold text-neutral-100">{c.name}</div>
-          <div className="mt-0.5 text-[11px] text-neutral-400">{c.when}</div>
+        <div key={c.id} className="rounded-md border border-ink-700 bg-ink-800/40 p-3">
+          <div className="text-[12px] font-semibold text-ink-100">{c.name}</div>
+          <div className="mt-0.5 text-[11px] text-ink-400">{c.when}</div>
           <ul className="mt-2 flex flex-col gap-0.5">
             {c.items.map((item) => (
-              <li key={item} className="text-[11px] text-neutral-300">
+              <li key={item} className="text-[11px] text-ink-300">
                 • {item}
               </li>
             ))}
           </ul>
-          <div className="mt-2 text-[11px] leading-relaxed text-neutral-300">{c.rule}</div>
+          <div className="mt-2 text-[11px] leading-relaxed text-ink-300">{c.rule}</div>
           <div className="mt-2 flex flex-wrap gap-1">
             {c.tests.map((tid) => {
               const t = TESTS.find((x) => x.id === tid);
@@ -651,7 +651,7 @@ function ClustersView({ onBack, onOpenTest }: { onBack: () => void; onOpenTest: 
                 <button
                   key={tid}
                   onClick={() => onOpenTest(tid)}
-                  className="rounded border border-neutral-700 px-1.5 py-0.5 text-[10px] text-neutral-300 transition hover:border-teal-600/60 hover:text-teal-400"
+                  className="rounded border border-ink-700 px-1.5 py-0.5 text-[10px] text-ink-300 transition hover:border-brand-600/60 hover:text-brand-400"
                 >
                   {t.n}
                 </button>
@@ -732,31 +732,31 @@ export function SpecialTests() {
   }, [view, query, currentRegion, currentTest]);
 
   return (
-    <aside className="scroll-slim flex w-80 shrink-0 flex-col overflow-y-auto border-l border-neutral-800 bg-neutral-900">
-      <div className="flex items-center justify-between border-b border-neutral-800 px-4 py-3">
+    <aside className="scroll-slim flex w-80 shrink-0 flex-col overflow-y-auto border-l border-ink-800 bg-ink-900">
+      <div className="flex items-center justify-between border-b border-ink-800 px-4 py-3">
         <div>
-          <div className="text-[13px] font-semibold text-neutral-100">Special Tests</div>
-          <div className="text-[10px] text-neutral-400">Orthopaedic special tests · bedside reference</div>
+          <div className="text-[13px] font-semibold text-ink-100">Special Tests</div>
+          <div className="text-[10px] text-ink-400">Orthopaedic special tests · bedside reference</div>
         </div>
         <button
           onClick={() => setSpecialTestsOpen(false)}
           aria-label="Close special tests panel"
-          className="grid h-6 w-6 shrink-0 place-items-center rounded text-neutral-400 transition hover:bg-neutral-800 hover:text-neutral-200"
+          className="grid h-6 w-6 shrink-0 place-items-center rounded text-ink-400 transition hover:bg-ink-800 hover:text-ink-200"
         >
           ✕
         </button>
       </div>
-      <div className="flex items-center justify-between border-b border-neutral-800 px-4 py-2">
-        <span className="text-[10px] font-medium uppercase tracking-wider text-neutral-400">Text size</span>
+      <div className="flex items-center justify-between border-b border-ink-800 px-4 py-2">
+        <span className="text-[10px] font-medium uppercase tracking-wider text-ink-400">Text size</span>
         <button
           onClick={() => setTextScaleIndex((i) => (i + 1) % TEXT_SCALE_STEPS.length)}
           title="Increase text size"
           aria-label="Increase text size"
-          className="flex items-center gap-1.5 rounded-md border border-neutral-700 bg-neutral-800/50 px-2 py-1 text-[11px] font-semibold text-neutral-200 transition hover:border-teal-600/60 hover:text-teal-400"
+          className="flex items-center gap-1.5 rounded-md border border-ink-700 bg-ink-800/50 px-2 py-1 text-[11px] font-semibold text-ink-200 transition hover:border-brand-600/60 hover:text-brand-400"
         >
           <span className="text-[10px] leading-none">A</span>
           <span className="text-[14px] leading-none">A</span>
-          <span className="ml-0.5 font-mono text-[10px] text-neutral-400">
+          <span className="ml-0.5 font-mono text-[10px] text-ink-400">
             {Math.round(TEXT_SCALE_STEPS[textScaleIndex] * 100)}%
           </span>
         </button>

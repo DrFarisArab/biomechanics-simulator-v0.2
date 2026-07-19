@@ -82,7 +82,11 @@ export const useArmSimStore = create<ArmSimState>((set) => ({
   showJointMarkers: true,
   // Collapsed by default on app start for maximum viewport — see app/page.tsx.
   showCommandBox: false,
-  setAppearance: (a) => set({ appearance: a }),
+  // Skin overlay is a translucent reference layer meant to sit over the bare
+  // skeleton — over the muscles model it just looks wrong (fights with the
+  // muscle geometry it's supposed to be layered outside of), so switching to
+  // muscles forces it off rather than leaving a stale, mismatched overlay on.
+  setAppearance: (a) => set((s) => ({ appearance: a, showSkin: a === "muscles" ? false : s.showSkin })),
   setSpecialTestsOpen: (open) => set({ specialTestsOpen: open }),
   setShowSkin: (show) => set({ showSkin: show }),
   setShowJointMarkers: (show) => set({ showJointMarkers: show }),

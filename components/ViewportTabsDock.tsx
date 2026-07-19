@@ -52,7 +52,7 @@ function DockButton({
       onClick={onClick}
       aria-pressed={active}
       className={`flex items-center gap-1.5 rounded-full px-3.5 py-2 text-[12px] font-medium transition ${
-        active ? "bg-teal-600 text-white shadow-sm" : "text-neutral-300 hover:bg-neutral-800 hover:text-neutral-100"
+        active ? "bg-brand-600 text-brand-50 shadow-sm" : "text-ink-300 hover:bg-ink-800 hover:text-ink-100"
       }`}
     >
       {icon}
@@ -77,7 +77,7 @@ export function ViewportTabsDock() {
 
   return (
     <div className="pointer-events-none absolute inset-x-0 bottom-4 flex justify-center">
-      <div className="pointer-events-auto flex items-center gap-1 rounded-full border border-neutral-700 bg-neutral-900/90 p-1 shadow-lg backdrop-blur">
+      <div className="pointer-events-auto flex items-center gap-1 rounded-full border border-ink-700 bg-ink-900/90 p-1 shadow-lg shadow-black/20 backdrop-blur">
         <DockButton
           active={patientAssessmentOpen}
           icon={<PatientIcon />}

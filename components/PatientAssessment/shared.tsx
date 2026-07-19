@@ -9,7 +9,7 @@ import type { ReactNode } from "react";
 // RecordReplayPanel), not a new design system.
 
 export function SectionLabel({ children }: { children: ReactNode }) {
-  return <div className="text-[10px] font-semibold uppercase tracking-wider text-neutral-400">{children}</div>;
+  return <div className="text-[10px] font-semibold uppercase tracking-wider text-ink-400">{children}</div>;
 }
 
 // The toggle-chip / pseudo-checkbox pattern from RecordReplayPanel's
@@ -35,17 +35,17 @@ export function ChipButton({
       onClick={onClick}
       className={`flex items-center gap-1.5 rounded-md border px-2 py-1.5 text-left text-[11px] font-medium transition ${
         checked
-          ? "border-teal-600/60 bg-teal-900/25 text-teal-400"
-          : "border-neutral-700 bg-neutral-800/40 text-neutral-300 hover:border-neutral-600"
+          ? "border-brand-600/60 bg-brand-900/25 text-brand-400"
+          : "border-ink-700 bg-ink-800/40 text-ink-300 hover:border-ink-600"
       }`}
     >
       {showCheckbox && (
         <span
           className={`grid h-3.5 w-3.5 shrink-0 place-items-center rounded-sm border ${
-            checked ? "border-teal-500 bg-teal-500" : "border-neutral-600"
+            checked ? "border-brand-500 bg-brand-500" : "border-ink-600"
           }`}
         >
-          {checked && <span className="text-[9px] leading-none text-neutral-950">✓</span>}
+          {checked && <span className="text-[9px] leading-none text-ink-950">✓</span>}
         </span>
       )}
       {children}
@@ -68,13 +68,13 @@ export function TextField({
 }) {
   return (
     <label className="flex flex-col gap-1">
-      <span className="text-[11px] font-medium text-neutral-300">{label}</span>
+      <span className="text-[11px] font-medium text-ink-300">{label}</span>
       <input
         type={type}
         value={value}
         onChange={(e) => onChange(e.target.value)}
         placeholder={placeholder}
-        className="w-full rounded-md border border-neutral-700 bg-neutral-950 px-2.5 py-1.5 text-[12px] text-neutral-200 placeholder:text-neutral-500 focus:border-teal-600 focus:outline-none"
+        className="w-full rounded-md border border-ink-700 bg-ink-950 px-2.5 py-1.5 text-[12px] text-ink-200 placeholder:text-ink-500 focus:border-brand-600 focus:outline-none"
       />
     </label>
   );
@@ -95,7 +95,7 @@ export function NumberField({
 }) {
   return (
     <label className="flex flex-col gap-1">
-      <span className="text-[11px] font-medium text-neutral-300">
+      <span className="text-[11px] font-medium text-ink-300">
         {label}
         {suffix ? ` (${suffix})` : ""}
       </span>
@@ -104,7 +104,7 @@ export function NumberField({
         value={value ?? ""}
         onChange={(e) => onChange(e.target.value === "" ? null : Number(e.target.value))}
         placeholder={placeholder}
-        className="w-full rounded-md border border-neutral-700 bg-neutral-950 px-2.5 py-1.5 text-[12px] text-neutral-200 placeholder:text-neutral-500 focus:border-teal-600 focus:outline-none"
+        className="w-full rounded-md border border-ink-700 bg-ink-950 px-2.5 py-1.5 text-[12px] text-ink-200 placeholder:text-ink-500 focus:border-brand-600 focus:outline-none"
       />
     </label>
   );
@@ -125,13 +125,13 @@ export function TextAreaField({
 }) {
   return (
     <label className="flex flex-col gap-1">
-      <span className="text-[11px] font-medium text-neutral-300">{label}</span>
+      <span className="text-[11px] font-medium text-ink-300">{label}</span>
       <textarea
         value={value}
         onChange={(e) => onChange(e.target.value)}
         placeholder={placeholder}
         rows={rows}
-        className="w-full resize-none rounded-md border border-neutral-700 bg-neutral-950 px-2.5 py-1.5 text-[12px] text-neutral-200 placeholder:text-neutral-500 focus:border-teal-600 focus:outline-none"
+        className="w-full resize-none rounded-md border border-ink-700 bg-ink-950 px-2.5 py-1.5 text-[12px] text-ink-200 placeholder:text-ink-500 focus:border-brand-600 focus:outline-none"
       />
     </label>
   );

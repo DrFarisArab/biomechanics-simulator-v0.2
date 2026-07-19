@@ -12,6 +12,8 @@ import { Chair } from "./furniture/Chair";
 import { Bed } from "./furniture/Bed";
 import { useArmSimStore } from "@/lib/store";
 import { useRecordReplayStore } from "@/lib/recordReplayStore";
+import { useThemeStore } from "@/lib/themeStore";
+import { getBrand500, getGridColors } from "@/lib/themeColors";
 
 const MODEL_URLS = {
   skeleton: "/models/v2-body-skeleton.glb",
@@ -67,6 +69,9 @@ interface MainCameraRef {
 // hub is the one control that also zeroes out the skeleton's angles.
 function ViewCubeHome({ mainCameraRef }: { mainCameraRef: React.MutableRefObject<MainCameraRef> }) {
   const resetAll = useArmSimStore((s) => s.resetAll);
+  const theme = useThemeStore((s) => s.theme);
+  const mode = useThemeStore((s) => s.mode);
+  const hubColor = getBrand500(theme, mode);
 
   const handleReset = (e: ThreeEvent<PointerEvent>) => {
     e.stopPropagation();
@@ -82,7 +87,7 @@ function ViewCubeHome({ mainCameraRef }: { mainCameraRef: React.MutableRefObject
   return (
     <mesh onPointerDown={handleReset}>
       <sphereGeometry args={[9, 20, 20]} />
-      <meshBasicMaterial color="#0d9488" toneMapped={false} />
+      <meshBasicMaterial color={hubColor} toneMapped={false} />
     </mesh>
   );
 }
@@ -106,6 +111,10 @@ export function Scene() {
   // flip back to "always" only while a clip is actually playing.
   const isAnimating = useRecordReplayStore((s) => s.isPlaying || s.previewPlaying);
 
+  const theme = useThemeStore((s) => s.theme);
+  const mode = useThemeStore((s) => s.mode);
+  const grid = useMemo(() => getGridColors(theme, mode), [theme, mode]);
+
   const mainCameraRef = useRef<MainCameraRef>({ camera: null, invalidate: null });
 
   const target = useMemo<[number, number, number]>(() => {
@@ -127,7 +136,7 @@ export function Scene() {
         // ~4.0 covers y ≈ [-0.26, 2.66], fitting head-to-feet with margin.
         camera={{ position: DEFAULT_CAMERA_POSITION.toArray(), fov: 40, near: 0.01, far: 20 }}
         frameloop={isAnimating ? "always" : "demand"}
-        className="!bg-neutral-950"
+        className="!bg-ink-950"
       >
         <ambientLight intensity={0.6} />
         <directionalLight position={[1, 2, 1]} intensity={1.3} />
@@ -138,12 +147,12 @@ export function Scene() {
           {furniture === "chair" && <Chair />}
           {furniture === "bed" && <Bed rotationY={furnitureRotation} />}
         </Suspense>
-        <Grid args={[4, 4]} position={[0, 0, 0]} cellColor="#26333f" sectionColor="#374151" fadeDistance={6} />
+        <Grid args={[4, 4]} position={[0, 0, 0]} cellColor={grid.cell} sectionColor={grid.section} fadeDistance={6} />
         <OrbitControls makeDefault target={target} />
         <ClipPlaybackDriver />
         <MainCameraCapture target={mainCameraRef} />
         <GizmoHelper alignment="top-right" margin={[64, 64]}>
-          <GizmoViewport axisColors={["#ff2060", "#20df80", "#2080ff"]} labelColor="#0a0a0a" />
+          <GizmoViewport axisColors={["#F43F5E", "#22C55E", "#3B82F6"]} labelColor="#0a0a0a" />
           <ViewCubeHome mainCameraRef={mainCameraRef} />
         </GizmoHelper>
       </Canvas>

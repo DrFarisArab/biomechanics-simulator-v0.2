@@ -71,7 +71,7 @@ export function DegreeSlider({
           disabled={disabled || value <= min}
           onClick={() => onChange(clamp(value - 1))}
           aria-label="Decrease by 1°"
-          className="grid h-6 w-6 shrink-0 place-items-center rounded border border-neutral-600 bg-neutral-800 text-[13px] font-semibold leading-none text-neutral-300 transition hover:border-teal-600/60 hover:text-teal-300 active:bg-neutral-700 disabled:cursor-not-allowed disabled:opacity-30 disabled:hover:border-neutral-600 disabled:hover:text-neutral-300"
+          className="grid h-6 w-6 shrink-0 place-items-center rounded border border-ink-600 bg-ink-800 text-[13px] font-semibold leading-none text-ink-300 transition hover:border-brand-600/60 hover:text-brand-300 active:bg-ink-700 disabled:cursor-not-allowed disabled:opacity-30 disabled:hover:border-ink-600 disabled:hover:text-ink-300"
         >
           −
         </button>
@@ -95,7 +95,7 @@ export function DegreeSlider({
           />
           {zeroPct !== null && (
             <div
-              className="pointer-events-none absolute top-1/2 h-2.5 w-px -translate-y-1/2 bg-neutral-500/70"
+              className="pointer-events-none absolute top-1/2 h-2.5 w-px -translate-y-1/2 bg-ink-500/70"
               style={{ left: `${zeroPct}%` }}
             />
           )}
@@ -106,7 +106,7 @@ export function DegreeSlider({
           disabled={disabled || value >= max}
           onClick={() => onChange(clamp(value + 1))}
           aria-label="Increase by 1°"
-          className="grid h-6 w-6 shrink-0 place-items-center rounded border border-neutral-600 bg-neutral-800 text-[13px] font-semibold leading-none text-neutral-300 transition hover:border-teal-600/60 hover:text-teal-300 active:bg-neutral-700 disabled:cursor-not-allowed disabled:opacity-30 disabled:hover:border-neutral-600 disabled:hover:text-neutral-300"
+          className="grid h-6 w-6 shrink-0 place-items-center rounded border border-ink-600 bg-ink-800 text-[13px] font-semibold leading-none text-ink-300 transition hover:border-brand-600/60 hover:text-brand-300 active:bg-ink-700 disabled:cursor-not-allowed disabled:opacity-30 disabled:hover:border-ink-600 disabled:hover:text-ink-300"
         >
           +
         </button>
@@ -125,12 +125,12 @@ export function DegreeSlider({
               >
                 <div
                   className={`w-px ${
-                    isZero ? "h-2 bg-neutral-400" : isBoundary ? "h-1.5 bg-neutral-600" : "h-1 bg-neutral-700"
+                    isZero ? "h-2 bg-ink-400" : isBoundary ? "h-1.5 bg-ink-600" : "h-1 bg-ink-700"
                   }`}
                 />
                 <span
                   className={`mt-0.5 text-[9px] tabular-nums ${
-                    isZero ? "font-medium text-neutral-400" : "text-neutral-600"
+                    isZero ? "font-medium text-ink-400" : "text-ink-600"
                   }`}
                 >
                   {t}
