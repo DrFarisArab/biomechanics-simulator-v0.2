@@ -194,9 +194,36 @@ body {
   transition: background-color 0.2s ease, color 0.2s ease;
 }
 
+/* Kill iOS Safari rubber-band / bounce so a touch-drag on the (viewport-
+   locked) shell can't scroll or overscroll the page behind it. The app
+   shell is exactly one dynamic-viewport tall (h-dvh) with its own internal
+   scroll regions, so the document itself never needs to scroll on any
+   screen — desktop already behaved this way. */
+html,
+body {
+  overscroll-behavior: none;
+}
+
 @layer utilities {
   .text-balance {
     text-wrap: balance;
+  }
+
+  /* iOS safe-area insets (require viewport-fit=cover, set in app/layout.tsx).
+     Applied to the app-shell root so the header/footer content clears the
+     notch and home indicator; env() resolves to 0 on non-notched devices and
+     on desktop, so these are inert there and never touch the desktop layout. */
+  .pt-safe {
+    padding-top: env(safe-area-inset-top);
+  }
+  .pb-safe {
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+  .pl-safe {
+    padding-left: env(safe-area-inset-left);
+  }
+  .pr-safe {
+    padding-right: env(safe-area-inset-right);
   }
 }
 

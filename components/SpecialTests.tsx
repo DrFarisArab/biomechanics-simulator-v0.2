@@ -732,7 +732,7 @@ export function SpecialTests() {
   }, [view, query, currentRegion, currentTest]);
 
   return (
-    <aside className="scroll-slim flex w-80 shrink-0 flex-col overflow-y-auto border-l border-ink-800 bg-ink-900">
+    <aside className="scroll-slim flex h-full w-full shrink-0 flex-col overflow-y-auto border-ink-800 bg-ink-900 sm:h-auto sm:w-80 sm:border-l">
       <div className="flex items-center justify-between border-b border-ink-800 px-4 py-3">
         <div>
           <div className="text-[13px] font-semibold text-ink-100">Special Tests</div>

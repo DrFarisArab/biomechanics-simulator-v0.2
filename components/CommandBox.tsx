@@ -55,7 +55,7 @@ export function CommandBox() {
   };
 
   return (
-    <div className="pointer-events-auto absolute bottom-3 right-3 w-80 rounded-lg border border-ink-700 bg-ink-900/90 p-2.5 backdrop-blur">
+    <div className="pointer-events-auto absolute inset-x-3 bottom-16 w-auto rounded-lg border border-ink-700 bg-ink-900/90 p-2.5 backdrop-blur sm:inset-x-auto sm:bottom-3 sm:right-3 sm:w-80">
       <div className="mb-1.5 flex items-center justify-between gap-2">
         <div className="text-[10px] font-semibold uppercase tracking-wider text-ink-500">
           Pose command <span className="text-ink-600">(type it naturally)</span>

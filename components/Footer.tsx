@@ -7,9 +7,15 @@ export function Footer() {
 
   return (
     <>
-      <footer className="flex h-8 shrink-0 items-center justify-between border-t border-ink-800 bg-ink-900 px-4 text-[10px] text-ink-500">
-        <div>© {new Date().getFullYear()} Human Biomechanics Simulator. For education and clinical reference only — not a diagnostic device.</div>
-        <button onClick={() => setShowAbout(true)} className="text-ink-400 transition hover:text-brand-400">
+      <footer className="flex h-8 shrink-0 items-center justify-between gap-3 border-t border-ink-800 bg-ink-900 px-4 text-[10px] text-ink-500">
+        <div className="min-w-0 truncate">
+          © {new Date().getFullYear()} Human Biomechanics Simulator.
+          <span className="hidden sm:inline"> For education and clinical reference only — not a diagnostic device.</span>
+        </div>
+        <button
+          onClick={() => setShowAbout(true)}
+          className="shrink-0 text-ink-400 transition hover:text-brand-400"
+        >
           About us
         </button>
       </footer>

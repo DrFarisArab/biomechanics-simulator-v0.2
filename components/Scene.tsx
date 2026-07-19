@@ -1,9 +1,9 @@
 "use client";
 
-import { Suspense, useMemo, useRef } from "react";
+import { Suspense, useEffect, useMemo, useRef, useState } from "react";
 import * as THREE from "three";
 import { Canvas, useThree, type ThreeEvent } from "@react-three/fiber";
-import { OrbitControls, Grid, GizmoHelper, GizmoViewport } from "@react-three/drei";
+import { OrbitControls, Grid, GizmoHelper, GizmoViewport, useProgress } from "@react-three/drei";
 import { BodyModel } from "./BodyModel";
 import { SkinOverlay } from "./SkinOverlay";
 import { ClipPlaybackDriver } from "./ClipPlaybackDriver";
@@ -111,6 +111,27 @@ export function Scene() {
   // flip back to "always" only while a clip is actually playing.
   const isAnimating = useRecordReplayStore((s) => s.isPlaying || s.previewPlaying);
 
+  // Startup warm-up: render continuously until the async GLBs have finished
+  // loading (drei's useProgress tracks the three loading manager), then a
+  // short buffer, then fall back to the on-demand loop for idle perf. This
+  // guarantees the model actually paints on first load — frameloop="demand"
+  // alone could leave a fresh load blank because the single mount-time frame
+  // races the model load, and a post-load invalidate doesn't re-run the
+  // measure/size setup the first paint needs. A hard cap makes sure we never
+  // render forever if progress never reports complete.
+  const { active: loadingActive, progress } = useProgress();
+  const [warmupDone, setWarmupDone] = useState(false);
+  useEffect(() => {
+    if (!loadingActive && progress >= 100) {
+      const id = window.setTimeout(() => setWarmupDone(true), 800);
+      return () => window.clearTimeout(id);
+    }
+  }, [loadingActive, progress]);
+  useEffect(() => {
+    const id = window.setTimeout(() => setWarmupDone(true), 10000);
+    return () => window.clearTimeout(id);
+  }, []);
+
   const theme = useThemeStore((s) => s.theme);
   const mode = useThemeStore((s) => s.mode);
   const grid = useMemo(() => getGridColors(theme, mode), [theme, mode]);
@@ -135,7 +156,7 @@ export function Scene() {
         // taller than the ~650px one this was originally tuned against.
         // ~4.0 covers y ≈ [-0.26, 2.66], fitting head-to-feet with margin.
         camera={{ position: DEFAULT_CAMERA_POSITION.toArray(), fov: 40, near: 0.01, far: 20 }}
-        frameloop={isAnimating ? "always" : "demand"}
+        frameloop={isAnimating || !warmupDone ? "always" : "demand"}
         className="!bg-ink-950"
       >
         <ambientLight intensity={0.6} />

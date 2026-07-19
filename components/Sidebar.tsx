@@ -32,7 +32,7 @@ export function Sidebar() {
 
   if (!selectedJoint) {
     return (
-      <aside className="flex w-80 shrink-0 flex-col items-center justify-center gap-2 border-l border-ink-800 bg-ink-900 px-6 text-center">
+      <aside className="flex h-full w-full shrink-0 flex-col items-center justify-center gap-2 border-ink-800 bg-ink-900 px-6 text-center sm:h-auto sm:w-80 sm:border-l">
         <div className="grid h-10 w-10 place-items-center rounded-full border border-ink-700 text-ink-500">
           ◎
         </div>
@@ -65,7 +65,7 @@ export function Sidebar() {
       selectedJoint === `ankle_${stanceLeg}`);
 
   return (
-    <aside className="flex w-80 shrink-0 flex-col overflow-y-auto border-l border-ink-800 bg-ink-900">
+    <aside className="flex h-full w-full shrink-0 flex-col overflow-y-auto border-ink-800 bg-ink-900 sm:h-auto sm:w-80 sm:border-l">
       <div className="border-b border-ink-800 px-4 py-3">
         <div className="text-[10px] font-semibold uppercase tracking-wider text-ink-500">
           Selected joint

@@ -54,8 +54,12 @@ export function PresetMenu() {
   }
 
   return (
-    <aside className="scroll-slim flex w-72 shrink-0 flex-col overflow-y-auto border-r border-ink-800 bg-ink-900">
-      <div className="flex items-center gap-2 border-b border-ink-800 p-3">
+    <>
+      {/* Phone: dim scrim behind the drawer; tap to collapse. Inert (hidden)
+          at sm+ where the menu is a normal docked column. */}
+      <div className="absolute inset-0 z-20 bg-black/30 sm:hidden" onClick={() => setCollapsed(true)} aria-hidden />
+      <aside className="scroll-slim absolute inset-y-0 left-0 z-30 flex w-72 shrink-0 flex-col overflow-y-auto border-r border-ink-800 bg-ink-900 shadow-2xl shadow-black/40 sm:static sm:z-auto sm:shadow-none">
+        <div className="flex items-center gap-2 border-b border-ink-800 p-3">
         <input
           type="text"
           placeholder="Search poses…"
@@ -111,6 +115,7 @@ export function PresetMenu() {
           );
         })}
       </div>
-    </aside>
+      </aside>
+    </>
   );
 }
