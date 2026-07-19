@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useMemo, useState, type ReactNode } from "react";
 import { usePatientAssessmentStore } from "@/lib/patientAssessmentStore";
 import {
   DURATION_LABELS,
@@ -16,6 +16,35 @@ import {
 import { TESTS } from "@/lib/specialTests";
 import { SectionLabel, TextAreaField } from "./shared";
 
+// A boxed field, deliberately styled to echo the wizard's own TextField/
+// TextAreaField boxes (small uppercase label above, bordered rounded box
+// below) — the report reads as a filled-in rendering of the same boxes the
+// clinician typed into, rather than a different, unfamiliar layout.
+function Box({ label, children }: { label: string; children: ReactNode }) {
+  return (
+    <div className="rounded-md border border-neutral-800 bg-neutral-900/60 px-2.5 py-1.5 print:border-neutral-300 print:bg-neutral-50">
+      <div className="text-[9px] font-semibold uppercase tracking-wide text-neutral-500 print:text-neutral-500">{label}</div>
+      <div className="mt-0.5 whitespace-pre-wrap text-[11px] leading-relaxed text-neutral-200 print:text-neutral-900">
+        {children}
+      </div>
+    </div>
+  );
+}
+
+// Top-level section divider — a colored accent bar + bold uppercase title,
+// one visual step more prominent than Box's own field labels, so the report
+// reads in a clear hierarchy: section > box > value.
+function Section({ title, children }: { title: string; children: ReactNode }) {
+  return (
+    <div className="flex flex-col gap-2">
+      <div className="flex items-center border-l-2 border-teal-600 pl-2 print:border-teal-700">
+        <span className="text-[11px] font-bold uppercase tracking-wider text-teal-400 print:text-teal-700">{title}</span>
+      </div>
+      <div className="flex flex-col gap-2">{children}</div>
+    </div>
+  );
+}
+
 export function Step5Report() {
   const draft = usePatientAssessmentStore((s) => s.draft);
   const setClinicalImpression = usePatientAssessmentStore((s) => s.setClinicalImpression);
@@ -29,6 +58,17 @@ export function Step5Report() {
   const insertSuggestion = (text: string) => {
     setClinicalImpression(draft.clinicalImpression ? `${draft.clinicalImpression}\n${text}` : text);
   };
+
+  const hasVitals = !!(draft.vitalsBP || draft.vitalsHR || draft.vitalsRR);
+  const hasObjectiveData =
+    !!draft.observationGait ||
+    !!draft.observationSwelling ||
+    hasVitals ||
+    !!draft.romNotes ||
+    !!draft.mmtNotes ||
+    !!draft.sensationNotes ||
+    !!draft.reflexNotes ||
+    !!draft.adlNotes;
 
   return (
     <div className="flex flex-col gap-3 px-4 py-3">
@@ -45,6 +85,13 @@ export function Step5Report() {
             {draft.sex && <span>{draft.sex === "M" ? "Male" : "Female"}</span>}
             {draft.occupation && <span>{draft.occupation}</span>}
             {draft.dominantHand && <span>{draft.dominantHand === "R" ? "Right" : draft.dominantHand === "L" ? "Left" : "Ambidextrous"}-handed</span>}
+            {(draft.heightCm != null || draft.weightKg != null) && (
+              <span>
+                {draft.heightCm != null ? `${draft.heightCm}cm` : ""}
+                {draft.heightCm != null && draft.weightKg != null ? " / " : ""}
+                {draft.weightKg != null ? `${draft.weightKg}kg` : ""}
+              </span>
+            )}
             <span>Assessed {draft.assessmentDate}</span>
           </div>
         </div>
@@ -61,77 +108,78 @@ export function Step5Report() {
           </div>
         )}
 
-        {/* Subjective summary */}
-        <div className="flex flex-col gap-1.5">
-          <div className="text-[10px] font-semibold uppercase tracking-wider text-neutral-400 print:text-neutral-600">Subjective</div>
-          {draft.chiefComplaint && (
-            <div>
-              <span className="font-medium text-neutral-300 print:text-neutral-800">Chief complaint: </span>
-              {draft.chiefComplaint}
-            </div>
-          )}
-          {draft.mechanismOfInjury && (
-            <div>
-              <span className="font-medium text-neutral-300 print:text-neutral-800">Mechanism of injury: </span>
-              {draft.mechanismOfInjury}
-            </div>
-          )}
-          {draft.duration && (
-            <div>
-              <span className="font-medium text-neutral-300 print:text-neutral-800">Duration: </span>
-              {DURATION_LABELS[draft.duration]}
-            </div>
-          )}
-          {draft.onsetChips.length > 0 && (
-            <div>
-              <span className="font-medium text-neutral-300 print:text-neutral-800">Onset: </span>
-              {draft.onsetChips.map((c) => ONSET_CHIP_LABELS[c]).join(", ")}
-            </div>
-          )}
-          <div>
-            <span className="font-medium text-neutral-300 print:text-neutral-800">Pain (0–10): </span>
-            rest {draft.painAtRest}, worst {draft.painAtWorst}, on movement {draft.painWithMovement}
-          </div>
-          {draft.aggravatingFactors && (
-            <div>
-              <span className="font-medium text-neutral-300 print:text-neutral-800">Aggravating factors: </span>
-              {draft.aggravatingFactors}
-            </div>
-          )}
-          {draft.relievingFactors && (
-            <div>
-              <span className="font-medium text-neutral-300 print:text-neutral-800">Relieving factors: </span>
-              {draft.relievingFactors}
-            </div>
-          )}
-          <div>
-            <span className="font-medium text-neutral-300 print:text-neutral-800">Night pain: </span>
-            {draft.nightPain ? "Yes" : "No"}
-          </div>
-        </div>
+        {/* Subjective Assessment */}
+        <Section title="Subjective Assessment">
+          {draft.chiefComplaint && <Box label="Chief Complaint">{draft.chiefComplaint}</Box>}
+          {draft.mechanismOfInjury && <Box label="Mechanism of Injury">{draft.mechanismOfInjury}</Box>}
 
-        {/* Joints assessed */}
-        <div className="flex flex-col gap-1.5">
-          <div className="text-[10px] font-semibold uppercase tracking-wider text-neutral-400 print:text-neutral-600">Joints Assessed</div>
-          {draft.selectedJoints.length === 0 ? (
-            <div className="text-neutral-500">None selected.</div>
-          ) : (
-            <div>
-              {draft.selectedJoints
+          {(draft.duration || draft.onsetChips.length > 0) && (
+            <div className="grid grid-cols-2 gap-2">
+              {draft.duration && <Box label="Duration">{DURATION_LABELS[draft.duration]}</Box>}
+              {draft.onsetChips.length > 0 && (
+                <Box label="Onset">{draft.onsetChips.map((c) => ONSET_CHIP_LABELS[c]).join(", ")}</Box>
+              )}
+            </div>
+          )}
+
+          <div className="grid grid-cols-3 gap-2">
+            <Box label="Pain at Rest">{draft.painAtRest}/10</Box>
+            <Box label="Pain at Worst">{draft.painAtWorst}/10</Box>
+            <Box label="Pain on Movement">{draft.painWithMovement}/10</Box>
+          </div>
+
+          <Box label="Night Pain">{draft.nightPain ? "Yes" : "No"}</Box>
+
+          {draft.aggravatingFactors && <Box label="Aggravating Factors">{draft.aggravatingFactors}</Box>}
+          {draft.relievingFactors && <Box label="Relieving Factors">{draft.relievingFactors}</Box>}
+          {draft.pastMedicalHistory && <Box label="Past Medical/Surgical History">{draft.pastMedicalHistory}</Box>}
+          {draft.currentMedications && <Box label="Current Medications">{draft.currentMedications}</Box>}
+          {draft.socialOccupationalHistory && (
+            <Box label="Social/Occupational History">{draft.socialOccupationalHistory}</Box>
+          )}
+        </Section>
+
+        {/* Objective Assessment */}
+        {hasObjectiveData && (
+          <Section title="Objective Assessment">
+            {draft.observationGait && (
+              <Box label="Posture, Gait Analysis, Transfers, Balance">{draft.observationGait}</Box>
+            )}
+            {draft.observationSwelling && <Box label="Swelling/Muscle Atrophy">{draft.observationSwelling}</Box>}
+
+            {hasVitals && (
+              <div className="grid grid-cols-3 gap-2">
+                <Box label="Blood Pressure">{draft.vitalsBP || "—"}</Box>
+                <Box label="Heart Rate">{draft.vitalsHR || "—"}</Box>
+                <Box label="Respiratory Rate">{draft.vitalsRR || "—"}</Box>
+              </div>
+            )}
+
+            {draft.romNotes && <Box label="Range of Motion (ROM)">{draft.romNotes}</Box>}
+            {draft.mmtNotes && <Box label="Manual Muscle Testing (MMT)">{draft.mmtNotes}</Box>}
+            {draft.sensationNotes && <Box label="Deep/Superficial Sensation">{draft.sensationNotes}</Box>}
+            {draft.reflexNotes && <Box label="Reflex Testing">{draft.reflexNotes}</Box>}
+            {draft.adlNotes && <Box label="Affected Activities of Daily Living (ADLs)">{draft.adlNotes}</Box>}
+          </Section>
+        )}
+
+        {/* Joints & Special Tests */}
+        <Section title="Special Tests">
+          <Box label="Joints Assessed">
+            {draft.selectedJoints.length === 0 ? (
+              <span className="text-neutral-500">None selected.</span>
+            ) : (
+              draft.selectedJoints
                 .map((j) => {
                   const cat = JOINT_CATEGORIES.find((c) => c.id === j.categoryId);
                   const label = cat?.label ?? j.categoryId;
                   const side = j.side === "L" ? "Left" : j.side === "R" ? "Right" : j.side === "bilateral" ? "Bilateral" : null;
                   return side ? `${label} (${side})` : label;
                 })
-                .join(", ")}
-            </div>
-          )}
-        </div>
+                .join(", ")
+            )}
+          </Box>
 
-        {/* Special test results, grouped by joint, excluding Not Tested */}
-        <div className="flex flex-col gap-2">
-          <div className="text-[10px] font-semibold uppercase tracking-wider text-neutral-400 print:text-neutral-600">Special Test Results</div>
           {draft.selectedJoints.map((joint) => {
             const cat = JOINT_CATEGORIES.find((c) => c.id === joint.categoryId);
             if (!cat) return null;
@@ -140,9 +188,14 @@ export function Step5Report() {
             );
             if (tested.length === 0) return null;
             return (
-              <div key={joint.categoryId} className="flex flex-col gap-1">
-                <div className="text-[11px] font-medium text-neutral-300 print:text-neutral-800">{cat.label}</div>
-                <table className="w-full border-collapse text-[10px]">
+              <div
+                key={joint.categoryId}
+                className="rounded-md border border-neutral-800 bg-neutral-900/60 px-2.5 py-1.5 print:border-neutral-300 print:bg-neutral-50"
+              >
+                <div className="text-[9px] font-semibold uppercase tracking-wide text-neutral-500 print:text-neutral-500">
+                  {cat.label} — Test Results
+                </div>
+                <table className="mt-1 w-full border-collapse text-[10px]">
                   <tbody>
                     {tested.map((f) => {
                       const test = TESTS.find((t) => t.id === f.testId);
@@ -173,12 +226,12 @@ export function Step5Report() {
           {Object.values(draft.testFindings).every((f) => f.result === "not_tested") && (
             <div className="text-neutral-500">No tests recorded.</div>
           )}
-        </div>
+        </Section>
 
-        {/* Clinical impression — visible textarea on screen, static mirror at print time */}
-        <div className="flex flex-col gap-1">
+        {/* Clinical impression — visible textarea on screen, static box at print time */}
+        <Section title="Clinical Impression">
           {suggestions.length > 0 && (
-            <div className="print:hidden mb-1 flex flex-col gap-1.5 rounded-md border border-teal-700/40 bg-teal-900/10 px-2.5 py-2">
+            <div className="print:hidden flex flex-col gap-1.5 rounded-md border border-teal-700/40 bg-teal-900/10 px-2.5 py-2">
               <div className="text-[10px] font-semibold uppercase tracking-wider text-teal-500">
                 Suggested impression — from positive tests, insert &amp; edit as needed
               </div>
@@ -209,10 +262,9 @@ export function Step5Report() {
             />
           </div>
           <div className="hidden print:block">
-            <div className="text-[10px] font-semibold uppercase tracking-wider text-neutral-400 print:text-neutral-600">Clinical Impression</div>
-            <div className="whitespace-pre-wrap text-neutral-200 print:text-neutral-900">{draft.clinicalImpression || "—"}</div>
+            <Box label="Clinical Impression">{draft.clinicalImpression || "—"}</Box>
           </div>
-        </div>
+        </Section>
       </div>
 
       <button

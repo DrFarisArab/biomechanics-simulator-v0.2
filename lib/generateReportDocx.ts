@@ -1,8 +1,8 @@
-// Builds a .docx version of the Step 5 report — same content as the printed
-// PDF (app/globals.css's print stylesheet + Step5Report.tsx), on the same
-// clinic letterhead. Runs entirely client-side (the `docx` package builds the
-// OOXML in-memory; Packer.toBlob() hands back a Blob to download), no server
-// round-trip needed.
+// Builds a .docx version of the Step 5 report — same content and section
+// structure as the printed PDF (app/globals.css's print stylesheet +
+// Step5Report.tsx), on the same clinic letterhead. Runs entirely client-side
+// (the `docx` package builds the OOXML in-memory; Packer.toBlob() hands back
+// a Blob to download), no server round-trip needed.
 import {
   BorderStyle,
   convertMillimetersToTwip,
@@ -53,31 +53,89 @@ const PAGE_HEIGHT_PX = Math.round((PAGE_HEIGHT_MM / 25.4) * 96);
 
 const INK = "1A1A1A";
 const MUTED = "595959";
+const LABEL_GRAY = "737373";
 const RED = "B91C1C";
 const RED_BG = "FEF2F2";
 const BORDER = "D4D4D4";
+const ACCENT = "0F766E"; // teal-700 — matches the app's on-screen accent color
+const BOX_BORDER = { style: BorderStyle.SINGLE, size: 2, color: BORDER } as const;
 
-function heading(text: string): Paragraph {
+function sectionHeader(title: string): Paragraph {
   return new Paragraph({
-    spacing: { before: 200, after: 80 },
-    children: [new TextRun({ text: text.toUpperCase(), bold: true, size: 16, color: MUTED, characterSpacing: 20 })],
+    spacing: { before: 240, after: 100 },
+    indent: { left: 120 },
+    border: { left: { style: BorderStyle.SINGLE, size: 18, color: ACCENT, space: 6 } },
+    children: [new TextRun({ text: title.toUpperCase(), bold: true, size: 18, color: ACCENT, characterSpacing: 20 })],
   });
 }
 
-function field(labelText: string, text: string): Paragraph {
-  return new Paragraph({
-    spacing: { after: 60 },
-    children: [
-      new TextRun({ text: `${labelText}: `, bold: true, size: 20, color: INK }),
-      new TextRun({ text, size: 20, color: INK }),
+// A single labeled field rendered as a bordered box — label line on top,
+// value line(s) below, all four sides enclosed — the docx equivalent of the
+// wizard's own TextField/TextAreaField boxes (and Step5Report's <Box>), so
+// the exported document reads as a filled-in rendering of the same boxes the
+// clinician typed into rather than a differently-styled document.
+function fieldBox(label: string, value: string): Paragraph[] {
+  const lines = (value || "—").split("\n");
+  const paragraphs: Paragraph[] = [
+    new Paragraph({
+      spacing: { before: 40, after: 20 },
+      border: { top: BOX_BORDER, left: BOX_BORDER, right: BOX_BORDER },
+      children: [new TextRun({ text: label.toUpperCase(), bold: true, size: 14, color: LABEL_GRAY, characterSpacing: 10 })],
+    }),
+  ];
+  lines.forEach((line, idx) => {
+    const isLast = idx === lines.length - 1;
+    paragraphs.push(
+      new Paragraph({
+        spacing: { after: isLast ? 120 : 0 },
+        border: isLast ? { bottom: BOX_BORDER, left: BOX_BORDER, right: BOX_BORDER } : { left: BOX_BORDER, right: BOX_BORDER },
+        children: [new TextRun({ text: line, size: 20, color: INK })],
+      })
+    );
+  });
+  return paragraphs;
+}
+
+// A row of 2-3 short fields side by side, each its own bordered box — used
+// for compact fixed sets (pain scores, vitals) where a single stacked
+// fieldBox per item would waste vertical space. A borderless 1-row table is
+// the standard way to lay out side-by-side boxes in OOXML (no CSS grid
+// equivalent), with each cell independently bordered to form the boxes.
+function boxRow(items: { label: string; value: string }[]): Table {
+  return new Table({
+    width: { size: 100, type: WidthType.PERCENTAGE },
+    borders: {
+      top: { style: BorderStyle.NONE, size: 0, color: "FFFFFF" },
+      bottom: { style: BorderStyle.NONE, size: 0, color: "FFFFFF" },
+      left: { style: BorderStyle.NONE, size: 0, color: "FFFFFF" },
+      right: { style: BorderStyle.NONE, size: 0, color: "FFFFFF" },
+      insideHorizontal: { style: BorderStyle.NONE, size: 0, color: "FFFFFF" },
+      insideVertical: { style: BorderStyle.NONE, size: 0, color: "FFFFFF" },
+    },
+    rows: [
+      new TableRow({
+        children: items.map(
+          (item) =>
+            new TableCell({
+              width: { size: Math.floor(100 / items.length), type: WidthType.PERCENTAGE },
+              margins: { top: 0, bottom: 0, left: 40, right: 40 },
+              borders: { top: BOX_BORDER, bottom: BOX_BORDER, left: BOX_BORDER, right: BOX_BORDER },
+              children: [
+                new Paragraph({
+                  spacing: { before: 40, after: 20 },
+                  children: [
+                    new TextRun({ text: item.label.toUpperCase(), bold: true, size: 14, color: LABEL_GRAY, characterSpacing: 10 }),
+                  ],
+                }),
+                new Paragraph({
+                  spacing: { after: 40 },
+                  children: [new TextRun({ text: item.value || "—", size: 20, color: INK })],
+                }),
+              ],
+            })
+        ),
+      }),
     ],
-  });
-}
-
-function plain(text: string, opts: { size?: number; color?: string; bold?: boolean } = {}): Paragraph {
-  return new Paragraph({
-    spacing: { after: 60 },
-    children: [new TextRun({ text, size: opts.size ?? 20, color: opts.color ?? INK, bold: opts.bold })],
   });
 }
 
@@ -115,10 +173,14 @@ function letterheadHeader(imageBytes: ArrayBuffer): Header {
 
 function redFlagBanner(redFlags: RedFlags): Paragraph[] {
   const checked = (Object.keys(redFlags) as (keyof RedFlags)[]).filter((k) => redFlags[k]);
-  const shading = { type: ShadingType.SOLID, fill: RED_BG } as const;
+  // CLEAR (not SOLID) — with SOLID, OOXML paints using `color` (the
+  // foreground pattern color, defaulting to black) rather than `fill`,
+  // which renders as a solid black band instead of the intended light-red
+  // background. CLEAR treats `fill` as the actual background color.
+  const shading = { type: ShadingType.CLEAR, fill: RED_BG, color: "auto" } as const;
   const sideBorder = { style: BorderStyle.SINGLE, size: 4, color: RED, space: 4 } as const;
 
-  const lines: Paragraph[] = [
+  return [
     new Paragraph({
       spacing: { before: 40, after: 20 },
       shading,
@@ -141,29 +203,23 @@ function redFlagBanner(redFlags: RedFlags): Paragraph[] {
       children: [new TextRun({ text: "", size: 4 })],
     }),
   ];
-  return lines;
 }
 
-// docx's Table defaults to a solid border on every side with color="auto"
-// (renders black) when no `borders` option is given — that unwanted black
-// grid, not any shading, is what showed up in the generated report. Every
-// side gets an explicit thin neutral-gray border instead, and result cells
-// no longer get a fill or colored text (bold alone marks a notable finding),
-// so the table reads as plain black-on-white with light gray rules.
-const NEUTRAL_TABLE_BORDER = { style: BorderStyle.SINGLE, size: 2, color: BORDER } as const;
-const NEUTRAL_TABLE_BORDERS = {
-  top: NEUTRAL_TABLE_BORDER,
-  bottom: NEUTRAL_TABLE_BORDER,
-  left: NEUTRAL_TABLE_BORDER,
-  right: NEUTRAL_TABLE_BORDER,
-  insideHorizontal: NEUTRAL_TABLE_BORDER,
-  insideVertical: NEUTRAL_TABLE_BORDER,
-};
-
+// Special-test-results table: plain and neutral by design (no shading, thin
+// gray borders) — see the earlier fix in this file's history where docx's
+// default black `auto`-color borders read as unwanted "black shading";
+// notable findings are marked with bold text only, never colored fill.
 function testResultsTable(rows: { name: string; resultLabel: string; notable: boolean; notes: string }[]): Table {
   return new Table({
     width: { size: 100, type: WidthType.PERCENTAGE },
-    borders: NEUTRAL_TABLE_BORDERS,
+    borders: {
+      top: BOX_BORDER,
+      bottom: BOX_BORDER,
+      left: BOX_BORDER,
+      right: BOX_BORDER,
+      insideHorizontal: BOX_BORDER,
+      insideVertical: BOX_BORDER,
+    },
     rows: rows.map(
       (r) =>
         new TableRow({
@@ -210,6 +266,11 @@ function buildBody(draft: Assessment): (Paragraph | Table)[] {
     draft.dominantHand
       ? `${draft.dominantHand === "R" ? "Right" : draft.dominantHand === "L" ? "Left" : "Ambidextrous"}-handed`
       : null,
+    draft.heightCm != null || draft.weightKg != null
+      ? [draft.heightCm != null ? `${draft.heightCm}cm` : null, draft.weightKg != null ? `${draft.weightKg}kg` : null]
+          .filter(Boolean)
+          .join(" / ")
+      : null,
     `Assessed ${draft.assessmentDate}`,
   ]
     .filter(Boolean)
@@ -224,39 +285,80 @@ function buildBody(draft: Assessment): (Paragraph | Table)[] {
 
   if (hasRedFlag(draft.redFlags)) body.push(...redFlagBanner(draft.redFlags));
 
-  // Subjective.
-  body.push(heading("Subjective"));
-  if (draft.chiefComplaint) body.push(field("Chief complaint", draft.chiefComplaint));
-  if (draft.mechanismOfInjury) body.push(field("Mechanism of injury", draft.mechanismOfInjury));
-  if (draft.duration) body.push(field("Duration", DURATION_LABELS[draft.duration]));
-  if (draft.onsetChips.length > 0) {
-    body.push(field("Onset", draft.onsetChips.map((c) => ONSET_CHIP_LABELS[c]).join(", ")));
+  // Subjective Assessment.
+  body.push(sectionHeader("Subjective Assessment"));
+  if (draft.chiefComplaint) body.push(...fieldBox("Chief Complaint", draft.chiefComplaint));
+  if (draft.mechanismOfInjury) body.push(...fieldBox("Mechanism of Injury", draft.mechanismOfInjury));
+  if (draft.duration || draft.onsetChips.length > 0) {
+    const items: { label: string; value: string }[] = [];
+    if (draft.duration) items.push({ label: "Duration", value: DURATION_LABELS[draft.duration] });
+    if (draft.onsetChips.length > 0) {
+      items.push({ label: "Onset", value: draft.onsetChips.map((c) => ONSET_CHIP_LABELS[c]).join(", ") });
+    }
+    body.push(boxRow(items));
   }
   body.push(
-    field("Pain (0–10)", `rest ${draft.painAtRest}, worst ${draft.painAtWorst}, on movement ${draft.painWithMovement}`)
+    boxRow([
+      { label: "Pain at Rest", value: `${draft.painAtRest}/10` },
+      { label: "Pain at Worst", value: `${draft.painAtWorst}/10` },
+      { label: "Pain on Movement", value: `${draft.painWithMovement}/10` },
+    ])
   );
-  if (draft.aggravatingFactors) body.push(field("Aggravating factors", draft.aggravatingFactors));
-  if (draft.relievingFactors) body.push(field("Relieving factors", draft.relievingFactors));
-  body.push(field("Night pain", draft.nightPain ? "Yes" : "No"));
-
-  // Joints assessed.
-  body.push(heading("Joints Assessed"));
-  if (draft.selectedJoints.length === 0) {
-    body.push(plain("None selected.", { color: MUTED }));
-  } else {
-    const joints = draft.selectedJoints
-      .map((j) => {
-        const cat = JOINT_CATEGORIES.find((c) => c.id === j.categoryId);
-        const jointLabel = cat?.label ?? j.categoryId;
-        const side = j.side === "L" ? "Left" : j.side === "R" ? "Right" : j.side === "bilateral" ? "Bilateral" : null;
-        return side ? `${jointLabel} (${side})` : jointLabel;
-      })
-      .join(", ");
-    body.push(plain(joints));
+  body.push(...fieldBox("Night Pain", draft.nightPain ? "Yes" : "No"));
+  if (draft.aggravatingFactors) body.push(...fieldBox("Aggravating Factors", draft.aggravatingFactors));
+  if (draft.relievingFactors) body.push(...fieldBox("Relieving Factors", draft.relievingFactors));
+  if (draft.pastMedicalHistory) body.push(...fieldBox("Past Medical/Surgical History", draft.pastMedicalHistory));
+  if (draft.currentMedications) body.push(...fieldBox("Current Medications", draft.currentMedications));
+  if (draft.socialOccupationalHistory) {
+    body.push(...fieldBox("Social/Occupational History", draft.socialOccupationalHistory));
   }
 
-  // Special test results, grouped by joint, excluding Not Tested.
-  body.push(heading("Special Test Results"));
+  // Objective Assessment — only if the clinician recorded anything here.
+  const hasVitals = !!(draft.vitalsBP || draft.vitalsHR || draft.vitalsRR);
+  const hasObjectiveData =
+    !!draft.observationGait ||
+    !!draft.observationSwelling ||
+    hasVitals ||
+    !!draft.romNotes ||
+    !!draft.mmtNotes ||
+    !!draft.sensationNotes ||
+    !!draft.reflexNotes ||
+    !!draft.adlNotes;
+  if (hasObjectiveData) {
+    body.push(sectionHeader("Objective Assessment"));
+    if (draft.observationGait) body.push(...fieldBox("Posture, Gait Analysis, Transfers, Balance", draft.observationGait));
+    if (draft.observationSwelling) body.push(...fieldBox("Swelling/Muscle Atrophy", draft.observationSwelling));
+    if (hasVitals) {
+      body.push(
+        boxRow([
+          { label: "Blood Pressure", value: draft.vitalsBP },
+          { label: "Heart Rate", value: draft.vitalsHR },
+          { label: "Respiratory Rate", value: draft.vitalsRR },
+        ])
+      );
+    }
+    if (draft.romNotes) body.push(...fieldBox("Range of Motion (ROM)", draft.romNotes));
+    if (draft.mmtNotes) body.push(...fieldBox("Manual Muscle Testing (MMT)", draft.mmtNotes));
+    if (draft.sensationNotes) body.push(...fieldBox("Deep/Superficial Sensation", draft.sensationNotes));
+    if (draft.reflexNotes) body.push(...fieldBox("Reflex Testing", draft.reflexNotes));
+    if (draft.adlNotes) body.push(...fieldBox("Affected Activities of Daily Living (ADLs)", draft.adlNotes));
+  }
+
+  // Special Tests — joints assessed + results, grouped by joint.
+  body.push(sectionHeader("Special Tests"));
+  const joints =
+    draft.selectedJoints.length === 0
+      ? "None selected."
+      : draft.selectedJoints
+          .map((j) => {
+            const cat = JOINT_CATEGORIES.find((c) => c.id === j.categoryId);
+            const jointLabel = cat?.label ?? j.categoryId;
+            const side = j.side === "L" ? "Left" : j.side === "R" ? "Right" : j.side === "bilateral" ? "Bilateral" : null;
+            return side ? `${jointLabel} (${side})` : jointLabel;
+          })
+          .join(", ");
+  body.push(...fieldBox("Joints Assessed", joints));
+
   let anyTested = false;
   for (const joint of draft.selectedJoints) {
     const cat = JOINT_CATEGORIES.find((c) => c.id === joint.categoryId);
@@ -266,7 +368,14 @@ function buildBody(draft: Assessment): (Paragraph | Table)[] {
     );
     if (tested.length === 0) continue;
     anyTested = true;
-    body.push(plain(cat.label, { bold: true, size: 20 }));
+    body.push(
+      new Paragraph({
+        spacing: { before: 80, after: 40 },
+        children: [
+          new TextRun({ text: `${cat.label.toUpperCase()} — TEST RESULTS`, bold: true, size: 14, color: LABEL_GRAY, characterSpacing: 10 }),
+        ],
+      })
+    );
     body.push(
       testResultsTable(
         tested.map((f) => {
@@ -280,15 +389,19 @@ function buildBody(draft: Assessment): (Paragraph | Table)[] {
         })
       )
     );
-    body.push(plain("", { size: 4 })); // small gap after each joint's table
+    body.push(plainSpacer());
   }
-  if (!anyTested) body.push(plain("No tests recorded.", { color: MUTED }));
+  if (!anyTested) body.push(plainSpacer("No tests recorded."));
 
   // Clinical impression.
-  body.push(heading("Clinical Impression"));
-  for (const line of (draft.clinicalImpression || "—").split("\n")) body.push(plain(line));
+  body.push(sectionHeader("Clinical Impression"));
+  body.push(...fieldBox("Clinical Impression", draft.clinicalImpression || "—"));
 
   return body;
+}
+
+function plainSpacer(text = ""): Paragraph {
+  return new Paragraph({ spacing: { after: 100 }, children: [new TextRun({ text, size: 18, color: MUTED })] });
 }
 
 export async function generateReportDocx(draft: Assessment): Promise<Blob> {

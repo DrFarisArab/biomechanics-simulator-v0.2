@@ -85,11 +85,13 @@ export function NumberField({
   value,
   onChange,
   suffix,
+  placeholder,
 }: {
   label: string;
   value: number | null;
   onChange: (v: number | null) => void;
   suffix?: string;
+  placeholder?: string;
 }) {
   return (
     <label className="flex flex-col gap-1">
@@ -101,6 +103,7 @@ export function NumberField({
         type="number"
         value={value ?? ""}
         onChange={(e) => onChange(e.target.value === "" ? null : Number(e.target.value))}
+        placeholder={placeholder}
         className="w-full rounded-md border border-neutral-700 bg-neutral-950 px-2.5 py-1.5 text-[12px] text-neutral-200 placeholder:text-neutral-500 focus:border-teal-600 focus:outline-none"
       />
     </label>

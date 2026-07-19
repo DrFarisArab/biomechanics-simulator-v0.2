@@ -23,11 +23,21 @@ export function Step1PatientInfo() {
     <div className="flex flex-col gap-4 px-4 py-3">
       <SectionLabel>Patient Information</SectionLabel>
 
-      <TextField label="Name" value={draft.patientName} onChange={(v) => setPatientField("patientName", v)} />
+      <TextField
+        label="Name"
+        value={draft.patientName}
+        onChange={(v) => setPatientField("patientName", v)}
+        placeholder="e.g. Jane Doe"
+      />
 
       <div className="grid grid-cols-2 gap-2">
-        <NumberField label="Age" value={draft.age} onChange={(v) => setPatientField("age", v)} />
-        <TextField label="Occupation" value={draft.occupation} onChange={(v) => setPatientField("occupation", v)} />
+        <NumberField label="Age" value={draft.age} onChange={(v) => setPatientField("age", v)} placeholder="e.g. 34" />
+        <TextField
+          label="Occupation"
+          value={draft.occupation}
+          onChange={(v) => setPatientField("occupation", v)}
+          placeholder="e.g. Office worker"
+        />
       </div>
 
       <div className="flex flex-col gap-1.5">
@@ -47,8 +57,20 @@ export function Step1PatientInfo() {
       </div>
 
       <div className="grid grid-cols-2 gap-2">
-        <NumberField label="Height" suffix="cm" value={draft.heightCm} onChange={(v) => setPatientField("heightCm", v)} />
-        <NumberField label="Weight" suffix="kg" value={draft.weightKg} onChange={(v) => setPatientField("weightKg", v)} />
+        <NumberField
+          label="Height"
+          suffix="cm"
+          value={draft.heightCm}
+          onChange={(v) => setPatientField("heightCm", v)}
+          placeholder="e.g. 170"
+        />
+        <NumberField
+          label="Weight"
+          suffix="kg"
+          value={draft.weightKg}
+          onChange={(v) => setPatientField("weightKg", v)}
+          placeholder="e.g. 70"
+        />
       </div>
 
       <div className="flex flex-col gap-1.5">

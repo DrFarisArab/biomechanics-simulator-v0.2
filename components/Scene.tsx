@@ -1,9 +1,9 @@
 "use client";
 
-import { Suspense, useMemo } from "react";
+import { Suspense, useMemo, useRef } from "react";
 import * as THREE from "three";
-import { Canvas } from "@react-three/fiber";
-import { OrbitControls, Grid } from "@react-three/drei";
+import { Canvas, useThree, type ThreeEvent } from "@react-three/fiber";
+import { OrbitControls, Grid, GizmoHelper, GizmoViewport } from "@react-three/drei";
 import { BodyModel } from "./BodyModel";
 import { SkinOverlay } from "./SkinOverlay";
 import { ClipPlaybackDriver } from "./ClipPlaybackDriver";
@@ -37,6 +37,56 @@ const MODEL_URLS = {
 // target would be badly off-center for those).
 const LOCAL_VIEW_CENTER = new THREE.Vector3(0, 0.9, -0.03);
 
+// Mirrors the Canvas's initial `camera` prop below — that prop only sets the
+// STARTING position, so restoring "home" after the user has orbited around
+// requires re-applying it imperatively via useThree's camera ref.
+const DEFAULT_CAMERA_POSITION = new THREE.Vector3(2.51, 1.34, 3.08);
+
+// Captures the MAIN scene camera/invalidate, rendered as a direct Canvas
+// child (outside GizmoHelper's <Hud>). Hud renders its children through
+// createPortal into a separate hud scene/camera pair, so a useThree() call
+// from *inside* GizmoHelper resolves to the gizmo's own small orthographic
+// camera, not the body's perspective camera — ViewCubeHome needs the real
+// one, captured here and handed down via ref.
+function MainCameraCapture({ target }: { target: React.MutableRefObject<MainCameraRef> }) {
+  const camera = useThree((s) => s.camera);
+  const invalidate = useThree((s) => s.invalidate);
+  target.current = { camera, invalidate };
+  return null;
+}
+
+interface MainCameraRef {
+  camera: THREE.Camera | null;
+  invalidate: (() => void) | null;
+}
+
+// Small hub at the center of the orientation gizmo — clicking it resets both
+// the camera framing and the model's joint pose back to their defaults, the
+// combined replacement for the old "Reset Pose" toolbar button. Axis-head
+// clicks (handled by GizmoViewport itself) only reorient the camera, so this
+// hub is the one control that also zeroes out the skeleton's angles.
+function ViewCubeHome({ mainCameraRef }: { mainCameraRef: React.MutableRefObject<MainCameraRef> }) {
+  const resetAll = useArmSimStore((s) => s.resetAll);
+
+  const handleReset = (e: ThreeEvent<PointerEvent>) => {
+    e.stopPropagation();
+    resetAll();
+    const { camera, invalidate } = mainCameraRef.current;
+    if (camera) {
+      camera.position.copy(DEFAULT_CAMERA_POSITION);
+      camera.up.set(0, 1, 0);
+    }
+    invalidate?.();
+  };
+
+  return (
+    <mesh onPointerDown={handleReset}>
+      <sphereGeometry args={[9, 20, 20]} />
+      <meshBasicMaterial color="#0d9488" toneMapped={false} />
+    </mesh>
+  );
+}
+
 export function Scene() {
   const appearance = useArmSimStore((s) => s.appearance);
   const showSkin = useArmSimStore((s) => s.showSkin);
@@ -56,6 +106,8 @@ export function Scene() {
   // flip back to "always" only while a clip is actually playing.
   const isAnimating = useRecordReplayStore((s) => s.isPlaying || s.previewPlaying);
 
+  const mainCameraRef = useRef<MainCameraRef>({ camera: null, invalidate: null });
+
   const target = useMemo<[number, number, number]>(() => {
     const quat = new THREE.Quaternion().setFromEuler(
       new THREE.Euler(rootRotation[0], rootRotation[1], rootRotation[2], "XYZ")
@@ -73,7 +125,7 @@ export function Scene() {
         // (1.2), clipping the feet (y=0) at the bottom on any viewport
         // taller than the ~650px one this was originally tuned against.
         // ~4.0 covers y ≈ [-0.26, 2.66], fitting head-to-feet with margin.
-        camera={{ position: [2.51, 1.34, 3.08], fov: 40, near: 0.01, far: 20 }}
+        camera={{ position: DEFAULT_CAMERA_POSITION.toArray(), fov: 40, near: 0.01, far: 20 }}
         frameloop={isAnimating ? "always" : "demand"}
         className="!bg-neutral-950"
       >
@@ -89,6 +141,11 @@ export function Scene() {
         <Grid args={[4, 4]} position={[0, 0, 0]} cellColor="#26333f" sectionColor="#374151" fadeDistance={6} />
         <OrbitControls makeDefault target={target} />
         <ClipPlaybackDriver />
+        <MainCameraCapture target={mainCameraRef} />
+        <GizmoHelper alignment="top-right" margin={[64, 64]}>
+          <GizmoViewport axisColors={["#ff2060", "#20df80", "#2080ff"]} labelColor="#0a0a0a" />
+          <ViewCubeHome mainCameraRef={mainCameraRef} />
+        </GizmoHelper>
       </Canvas>
     </ErrorBoundary>
   );

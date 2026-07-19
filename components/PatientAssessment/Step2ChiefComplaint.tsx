@@ -42,11 +42,13 @@ export function Step2ChiefComplaint() {
         label="Chief Complaint"
         value={draft.chiefComplaint}
         onChange={(v) => setPatientField("chiefComplaint", v)}
+        placeholder="e.g. Right shoulder pain when reaching overhead, 6/10 at worst"
       />
       <TextAreaField
         label="Mechanism of Injury"
         value={draft.mechanismOfInjury}
         onChange={(v) => setPatientField("mechanismOfInjury", v)}
+        placeholder="e.g. Fell onto outstretched hand 3 weeks ago; or gradual onset, no trauma"
       />
 
       <div className="flex flex-col gap-1.5">
@@ -91,12 +93,14 @@ export function Step2ChiefComplaint() {
         label="Aggravating Factors"
         value={draft.aggravatingFactors}
         onChange={(v) => setPatientField("aggravatingFactors", v)}
+        placeholder="e.g. Overhead reaching, lifting, lying on affected side"
         rows={2}
       />
       <TextAreaField
         label="Relieving Factors"
         value={draft.relievingFactors}
         onChange={(v) => setPatientField("relievingFactors", v)}
+        placeholder="e.g. Rest, ice, avoiding overhead activity"
         rows={2}
       />
 
@@ -104,18 +108,21 @@ export function Step2ChiefComplaint() {
         label="Past Medical/Surgical History"
         value={draft.pastMedicalHistory}
         onChange={(v) => setPatientField("pastMedicalHistory", v)}
+        placeholder="e.g. Type 2 diabetes; right rotator cuff repair (2019)"
         rows={2}
       />
       <TextAreaField
         label="Current Medications"
         value={draft.currentMedications}
         onChange={(v) => setPatientField("currentMedications", v)}
+        placeholder="e.g. Metformin 500mg BID; Ibuprofen PRN"
         rows={2}
       />
       <TextAreaField
         label="Social/Occupational History"
         value={draft.socialOccupationalHistory}
         onChange={(v) => setPatientField("socialOccupationalHistory", v)}
+        placeholder="e.g. Office worker, right-hand dominant, recreational tennis"
         rows={2}
       />
 
