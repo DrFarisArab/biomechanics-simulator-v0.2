@@ -11,6 +11,7 @@ import { ViewportTabsDock } from "@/components/ViewportTabsDock";
 import { Toolbar } from "@/components/Toolbar";
 import { MobileSheet } from "@/components/MobileSheet";
 import { Footer } from "@/components/Footer";
+import { MovementSummaryPanel } from "@/components/MovementSummaryPanel";
 import { useIsPhone } from "@/lib/useMediaQuery";
 import { useArmSimStore } from "@/lib/store";
 import { useRecordReplayStore } from "@/lib/recordReplayStore";
@@ -71,6 +72,7 @@ export default function Home() {
         <PresetMenu />
         <main className="relative min-w-0 flex-1">
           <Scene />
+          <MovementSummaryPanel />
           <CommandBox />
           <ViewportTabsDock />
         </main>

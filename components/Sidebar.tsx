@@ -22,23 +22,127 @@ const STANCE_OPTIONS: { id: "none" | "left" | "right"; label: string }[] = [
   { id: "right", label: "R stance" },
 ];
 
+type JointPickerItem = {
+  key: string;
+  jointId: string;
+  label: string;
+};
+
+const JOINT_PICKER_SECTIONS: { id: string; label: string; joints: JointPickerItem[] }[] = [
+  {
+    id: "center",
+    label: "Center",
+    joints: [
+      { key: "head", jointId: "head", label: JOINT_LABELS.head },
+      { key: "cervical", jointId: "cervical", label: JOINT_LABELS.cervical },
+      { key: "thoracic", jointId: "thoracic", label: JOINT_LABELS.thoracic },
+      { key: "lumbar", jointId: "lumbar", label: JOINT_LABELS.lumbar },
+      { key: "pelvis", jointId: "pelvis", label: JOINT_LABELS.pelvis },
+    ],
+  },
+  {
+    id: "left",
+    label: "Left",
+    joints: [
+      { key: "tmj_left", jointId: "mandible", label: "Left TMJ" },
+      { key: "shoulder_left", jointId: "shoulder_left", label: JOINT_LABELS.shoulder_left },
+      { key: "elbow_left", jointId: "elbow_left", label: JOINT_LABELS.elbow_left },
+      { key: "forearm_left", jointId: "forearm_left", label: JOINT_LABELS.forearm_left },
+      { key: "wrist_left", jointId: "wrist_left", label: JOINT_LABELS.wrist_left },
+      { key: "hip_left", jointId: "hip_left", label: JOINT_LABELS.hip_left },
+      { key: "knee_left", jointId: "knee_left", label: JOINT_LABELS.knee_left },
+      { key: "ankle_left", jointId: "ankle_left", label: JOINT_LABELS.ankle_left },
+    ],
+  },
+  {
+    id: "right",
+    label: "Right",
+    joints: [
+      { key: "tmj_right", jointId: "mandible", label: "Right TMJ" },
+      { key: "shoulder_right", jointId: "shoulder_right", label: JOINT_LABELS.shoulder_right },
+      { key: "elbow_right", jointId: "elbow_right", label: JOINT_LABELS.elbow_right },
+      { key: "forearm_right", jointId: "forearm_right", label: JOINT_LABELS.forearm_right },
+      { key: "wrist_right", jointId: "wrist_right", label: JOINT_LABELS.wrist_right },
+      { key: "hip_right", jointId: "hip_right", label: JOINT_LABELS.hip_right },
+      { key: "knee_right", jointId: "knee_right", label: JOINT_LABELS.knee_right },
+      { key: "ankle_right", jointId: "ankle_right", label: JOINT_LABELS.ankle_right },
+    ],
+  },
+];
+
+function activeDofCount(jointAngles: Record<string, number> | undefined) {
+  return Object.values(jointAngles ?? {}).filter((value) => Math.abs(value) >= 0.5).length;
+}
+
+function ListIcon() {
+  return (
+    <svg viewBox="0 0 16 16" fill="none" className="h-3.5 w-3.5" aria-hidden>
+      <path d="M5.2 4.2h7.3M5.2 8h7.3M5.2 11.8h7.3" stroke="currentColor" strokeWidth="1.35" strokeLinecap="round" />
+      <path d="M2.8 4.2h.05M2.8 8h.05M2.8 11.8h.05" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+    </svg>
+  );
+}
+
 export function Sidebar() {
   const selectedJoint = useArmSimStore((s) => s.selectedJoint);
+  const hoveredJoint = useArmSimStore((s) => s.hoveredJoint);
   const angles = useArmSimStore((s) => s.angles);
   const setAngle = useArmSimStore((s) => s.setAngle);
   const resetAll = useArmSimStore((s) => s.resetAll);
+  const selectJoint = useArmSimStore((s) => s.selectJoint);
+  const hoverJoint = useArmSimStore((s) => s.hoverJoint);
   const stanceLeg = useArmSimStore((s) => s.stanceLeg);
   const setStanceLeg = useArmSimStore((s) => s.setStanceLeg);
 
   if (!selectedJoint) {
     return (
-      <aside className="flex h-full w-full shrink-0 flex-col items-center justify-center gap-2 border-ink-800 bg-ink-900 px-6 text-center sm:h-auto sm:w-80 sm:border-l">
-        <div className="grid h-10 w-10 place-items-center rounded-full border border-ink-700 text-ink-500">
-          ◎
+      <aside className="flex h-full w-full shrink-0 flex-col overflow-y-auto border-ink-800 bg-ink-900 sm:h-auto sm:w-80 sm:border-l">
+        <div className="border-b border-ink-800 px-4 py-3">
+          <div className="text-[10px] font-semibold uppercase tracking-wider text-ink-500">
+            Joint markers
+          </div>
+          <div className="mt-0.5 text-[15px] font-semibold text-ink-100">Select a joint</div>
         </div>
-        <div className="text-[13px] font-medium text-ink-200">No joint selected</div>
-        <div className="text-[12px] leading-relaxed text-ink-500">
-          Click a joint marker in the viewport to open its degrees of freedom.
+
+        <div className="flex flex-col gap-3 px-4 py-3">
+          {JOINT_PICKER_SECTIONS.map((section) => (
+            <section key={section.id}>
+              <div className="mb-1.5 text-[10px] font-semibold uppercase tracking-wider text-ink-500">
+                {section.label}
+              </div>
+              <div className="grid grid-cols-1 gap-1.5">
+                {section.joints.map((joint) => {
+                  const isHovered = hoveredJoint === joint.jointId;
+                  const activeCount = activeDofCount(angles[joint.jointId]);
+                  return (
+                    <button
+                      key={joint.key}
+                      type="button"
+                      onClick={() => selectJoint(joint.jointId)}
+                      onMouseEnter={() => hoverJoint(joint.jointId)}
+                      onMouseLeave={() => hoverJoint(null)}
+                      onFocus={() => hoverJoint(joint.jointId)}
+                      onBlur={() => hoverJoint(null)}
+                      className={`flex h-9 items-center justify-between gap-2 rounded-md border px-2.5 text-left transition ${
+                        isHovered
+                          ? "border-brand-600/70 bg-brand-900/30 text-brand-200"
+                          : "border-ink-700 bg-ink-800/40 text-ink-200 hover:border-ink-600 hover:bg-ink-800"
+                      }`}
+                    >
+                      <span className="min-w-0 truncate text-[12px] font-medium">{joint.label}</span>
+                      <span
+                        className={`shrink-0 rounded px-1.5 py-0.5 text-[10px] font-medium ${
+                          activeCount > 0 ? "bg-brand-900/40 text-brand-400" : "bg-ink-900 text-ink-500"
+                        }`}
+                      >
+                        {activeCount > 0 ? `${activeCount} moved` : "Neutral"}
+                      </span>
+                    </button>
+                  );
+                })}
+              </div>
+            </section>
+          ))}
         </div>
       </aside>
     );
@@ -70,8 +174,22 @@ export function Sidebar() {
         <div className="text-[10px] font-semibold uppercase tracking-wider text-ink-500">
           Selected joint
         </div>
-        <div className="mt-0.5 text-[15px] font-semibold text-ink-100">
-          {JOINT_LABELS[selectedJoint]}
+        <div className="mt-0.5 flex items-center justify-between gap-2">
+          <div className="min-w-0 truncate text-[15px] font-semibold text-ink-100">
+            {JOINT_LABELS[selectedJoint]}
+          </div>
+          <button
+            type="button"
+            onClick={() => {
+              hoverJoint(null);
+              selectJoint(null);
+            }}
+            aria-label="Show joint marker list"
+            title="Joint marker list"
+            className="grid h-7 w-7 shrink-0 place-items-center rounded border border-ink-700 bg-ink-800 text-ink-300 transition hover:border-brand-600/60 hover:text-brand-300"
+          >
+            <ListIcon />
+          </button>
         </div>
       </div>
 
