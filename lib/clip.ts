@@ -1,3 +1,8 @@
+import type {
+  GravityMovementId,
+  GravityMovementSide,
+} from "./gravityMovements";
+
 // Record & Replay data model. A clip is a SPARSE animation: only the joints
 // the user chose to animate are ever present in a keyframe's `poses` map —
 // every other joint is left completely alone by playback (see
@@ -13,6 +18,12 @@ export interface Keyframe {
   // added) so a joint's own multi-DOF composition is always well-defined
   // for interpolation, never partially specified within one keyframe.
   poses: Record<string, Record<string, number>>;
+  // Closed-chain clips capture the movement control itself so playback
+  // continues to run through the existing ground-contact constraint layer.
+  closedChain?: {
+    amount: number;
+    side: GravityMovementSide;
+  };
 }
 
 export interface Clip {
@@ -21,6 +32,7 @@ export interface Clip {
   trackedJoints: string[];
   keyframes: Keyframe[]; // kept sorted ascending by time
   easing: Easing;
+  closedChainMovement?: GravityMovementId;
 }
 
 let idCounter = 0;

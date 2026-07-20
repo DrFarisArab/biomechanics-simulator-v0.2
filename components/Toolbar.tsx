@@ -63,8 +63,6 @@ export function Toolbar() {
   const setShowJointMarkers = useArmSimStore((s) => s.setShowJointMarkers);
   const showCommandBox = useArmSimStore((s) => s.showCommandBox);
   const setShowCommandBox = useArmSimStore((s) => s.setShowCommandBox);
-  const gravityEnabled = useArmSimStore((s) => s.gravityEnabled);
-  const setGravityEnabled = useArmSimStore((s) => s.setGravityEnabled);
 
   const [menuOpen, setMenuOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
@@ -83,16 +81,6 @@ export function Toolbar() {
       {/* Desktop (lg+): original horizontal row, unchanged. */}
       <div className="hidden items-center gap-3 lg:flex">
         <ThemeToggle />
-        <div className="h-4 w-px bg-ink-800" />
-        <div className="flex items-center gap-2">
-          <span className={`${LABEL} ${gravityEnabled ? "text-brand-400" : "text-ink-500"}`}>Gravity</span>
-          <Switch
-            checked={gravityEnabled}
-            onToggle={() => setGravityEnabled(!gravityEnabled)}
-            ariaLabel="Toggle gravity support constraints"
-            title="Temporarily anchor pose support points and solve proximal compensation"
-          />
-        </div>
         <div className="h-4 w-px bg-ink-800" />
         <div className="flex items-center gap-2">
           <span className={`${LABEL} ${showJointMarkers ? "text-brand-400" : "text-ink-500"}`}>Markers</span>
@@ -179,15 +167,6 @@ export function Toolbar() {
                   ariaLabel="Toggle translucent reference skin overlay"
                   disabled={skinDisabled}
                   title={skinDisabled ? "Skin overlay is only available on the skeleton model" : undefined}
-                />
-              </div>
-              <div className="flex items-center justify-between">
-                <span className={`${LABEL} ${gravityEnabled ? "text-brand-400" : "text-ink-300"}`}>Gravity</span>
-                <Switch
-                  checked={gravityEnabled}
-                  onToggle={() => setGravityEnabled(!gravityEnabled)}
-                  ariaLabel="Toggle gravity support constraints"
-                  title="Temporarily anchor pose support points and solve proximal compensation"
                 />
               </div>
               <div className="flex items-center justify-between gap-2">

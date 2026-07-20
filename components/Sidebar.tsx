@@ -84,6 +84,49 @@ function ListIcon() {
   );
 }
 
+function ChainModeSelector({
+  closedChain,
+  onChange,
+}: {
+  closedChain: boolean;
+  onChange: (closedChain: boolean) => void;
+}) {
+  return (
+    <div className="border-b border-ink-800 px-4 py-3">
+      <div className="mb-1.5 text-[10px] font-semibold uppercase tracking-wider text-ink-500">
+        Chain mode
+      </div>
+      <div className="flex items-center justify-between gap-3">
+        <span
+          className={`text-[11px] font-medium transition ${
+            closedChain ? "text-brand-400" : "text-ink-500"
+          }`}
+        >
+          Close-chain
+        </span>
+        <button
+          type="button"
+          role="switch"
+          aria-checked={!closedChain}
+          aria-label="Toggle between close-chain and open-chain modes"
+          onClick={() => onChange(!closedChain)}
+          data-on={!closedChain}
+          className="flex h-6 w-11 shrink-0 items-center rounded-full border border-ink-700 bg-ink-800 p-0.5 outline-none transition-colors focus-visible:ring-2 focus-visible:ring-brand-500/50 focus-visible:ring-offset-2 focus-visible:ring-offset-ink-900 data-[on=true]:justify-end data-[on=true]:border-brand-600 data-[on=true]:bg-brand-600"
+        >
+          <span className="h-4 w-4 rounded-full bg-ink-50 shadow-sm transition-transform" />
+        </button>
+        <span
+          className={`text-[11px] font-medium transition ${
+            !closedChain ? "text-brand-400" : "text-ink-500"
+          }`}
+        >
+          Open-chain
+        </span>
+      </div>
+    </div>
+  );
+}
+
 export function Sidebar() {
   const selectedJoint = useArmSimStore((s) => s.selectedJoint);
   const hoveredJoint = useArmSimStore((s) => s.hoveredJoint);
@@ -96,20 +139,28 @@ export function Sidebar() {
   const setStanceLeg = useArmSimStore((s) => s.setStanceLeg);
   const gravityEnabled = useArmSimStore((s) => s.gravityEnabled);
   const gravityMovement = useArmSimStore((s) => s.gravityMovement);
+  const setGravityEnabled = useArmSimStore((s) => s.setGravityEnabled);
   const setGravityMovement = useArmSimStore((s) => s.setGravityMovement);
   const setGravityMovementAmount = useArmSimStore((s) => s.setGravityMovementAmount);
   const setGravityMovementSide = useArmSimStore((s) => s.setGravityMovementSide);
   const resetGravityMovement = useArmSimStore((s) => s.resetGravityMovement);
+  const setChainMode = (closedChain: boolean) => {
+    if (closedChain === gravityEnabled) return;
+    hoverJoint(null);
+    selectJoint(null);
+    setGravityEnabled(closedChain);
+  };
 
   if (gravityEnabled) {
     const movement = GRAVITY_MOVEMENTS.find((item) => item.id === gravityMovement.id) ?? GRAVITY_MOVEMENTS[0];
     return (
       <aside className="flex h-full w-full shrink-0 flex-col overflow-y-auto border-ink-800 bg-ink-900 sm:h-auto sm:w-80 sm:border-l">
+        <ChainModeSelector closedChain onChange={setChainMode} />
         <div className="border-b border-ink-800 px-4 py-3">
           <div className="text-[10px] font-semibold uppercase tracking-wider text-ink-500">
-            Gravity movements
+            Closed-chain movements
           </div>
-          <div className="mt-0.5 text-[15px] font-semibold text-ink-100">Closed-chain controls</div>
+          <div className="mt-0.5 text-[15px] font-semibold text-ink-100">Select a Movement</div>
         </div>
 
         <div className="flex flex-col gap-4 px-4 py-3">
@@ -199,9 +250,10 @@ export function Sidebar() {
   if (!selectedJoint) {
     return (
       <aside className="flex h-full w-full shrink-0 flex-col overflow-y-auto border-ink-800 bg-ink-900 sm:h-auto sm:w-80 sm:border-l">
+        <ChainModeSelector closedChain={false} onChange={setChainMode} />
         <div className="border-b border-ink-800 px-4 py-3">
           <div className="text-[10px] font-semibold uppercase tracking-wider text-ink-500">
-            Joint markers
+            Open-chain movements
           </div>
           <div className="mt-0.5 text-[15px] font-semibold text-ink-100">Select a joint</div>
         </div>
@@ -272,6 +324,7 @@ export function Sidebar() {
 
   return (
     <aside className="flex h-full w-full shrink-0 flex-col overflow-y-auto border-ink-800 bg-ink-900 sm:h-auto sm:w-80 sm:border-l">
+      <ChainModeSelector closedChain={false} onChange={setChainMode} />
       <div className="border-b border-ink-800 px-4 py-3">
         <div className="text-[10px] font-semibold uppercase tracking-wider text-ink-500">
           Selected joint

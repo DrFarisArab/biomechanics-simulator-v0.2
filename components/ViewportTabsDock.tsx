@@ -35,6 +35,17 @@ function RecordIcon() {
   );
 }
 
+function JointsIcon() {
+  return (
+    <svg viewBox="0 0 16 16" fill="none" className="h-4 w-4" aria-hidden>
+      <circle cx="4" cy="8" r="1.8" stroke="currentColor" strokeWidth="1.4" />
+      <circle cx="12" cy="4" r="1.8" stroke="currentColor" strokeWidth="1.4" />
+      <circle cx="12" cy="12" r="1.8" stroke="currentColor" strokeWidth="1.4" />
+      <path d="m5.7 7.2 4.6-2.3M5.7 8.8l4.6 2.3" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" />
+    </svg>
+  );
+}
+
 function DockButton({
   active,
   onClick,
@@ -61,12 +72,17 @@ function DockButton({
   );
 }
 
-// Floating pill dock over the bottom-center of the viewport — replaces the
-// three panel-toggle buttons that used to live in the top header. Order and
-// short labels per the redesign: New Patient, Special Tests, Record, each
-// toggling one of the three mutually-exclusive right-side panels (closing
-// the other two, same three-way exclusion the header buttons already did).
-export function ViewportTabsDock() {
+// Floating pill dock over the bottom-center of the viewport. The Joints tab
+// is also the explicit phone entry point for the otherwise hidden Sidebar.
+export function ViewportTabsDock({
+  jointsActive,
+  onOpenJoints,
+  onCloseJoints,
+}: {
+  jointsActive: boolean;
+  onOpenJoints: () => void;
+  onCloseJoints: () => void;
+}) {
   const specialTestsOpen = useArmSimStore((s) => s.specialTestsOpen);
   const setSpecialTestsOpen = useArmSimStore((s) => s.setSpecialTestsOpen);
   const recordReplayOpen = useRecordReplayStore((s) => s.panelOpen);
@@ -87,6 +103,7 @@ export function ViewportTabsDock() {
               setPatientAssessmentOpen(false);
               return;
             }
+            onCloseJoints();
             setSpecialTestsOpen(false);
             setRecordReplayOpen(false);
             openOrResumeAssessment();
@@ -99,6 +116,7 @@ export function ViewportTabsDock() {
           onClick={() => {
             setSpecialTestsOpen(!specialTestsOpen);
             if (!specialTestsOpen) {
+              onCloseJoints();
               setRecordReplayOpen(false);
               setPatientAssessmentOpen(false);
             }
@@ -111,10 +129,17 @@ export function ViewportTabsDock() {
           onClick={() => {
             setRecordReplayOpen(!recordReplayOpen);
             if (!recordReplayOpen) {
+              onCloseJoints();
               setSpecialTestsOpen(false);
               setPatientAssessmentOpen(false);
             }
           }}
+        />
+        <DockButton
+          active={jointsActive}
+          icon={<JointsIcon />}
+          label="Joints"
+          onClick={onOpenJoints}
         />
       </div>
     </div>

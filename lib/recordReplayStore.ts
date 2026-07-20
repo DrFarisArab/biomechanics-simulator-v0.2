@@ -1,12 +1,18 @@
 import { create } from "zustand";
 import { useArmSimStore } from "./store";
-import { applyClipAtTime } from "./clipInterpolation";
+import { applyClipAtTime, easingFn } from "./clipInterpolation";
 import { clipDuration, makeId, sortKeyframes, type Clip, type Easing } from "./clip";
+import {
+  GRAVITY_MOVEMENTS,
+  type GravityMovementId,
+  type GravityMovementSide,
+} from "./gravityMovements";
 
 interface RecordReplayState {
   panelOpen: boolean;
   clip: Clip | null;
   pendingJoints: string[]; // joint picker selection, before a clip exists
+  pendingClosedChainMovement: GravityMovementId | null;
   currentTime: number;
   isPlaying: boolean;
   loop: boolean; // ping-pong: plays forward to the end, then backward to the start, repeating
@@ -28,6 +34,7 @@ interface RecordReplayState {
 
   setPanelOpen: (open: boolean) => void;
   toggleJoint: (jointId: string) => void;
+  selectClosedChainMovement: (movementId: GravityMovementId) => void;
   startClip: () => void;
   discardClip: () => void;
   setEasing: (easing: Easing) => void;
@@ -60,6 +67,34 @@ function bounce(next: number, duration: number, dir: 1 | -1): { time: number; di
   return { time: Math.min(duration, Math.max(0, t)), dir: d };
 }
 
+function closedChainAtTime(
+  clip: Clip,
+  time: number
+): { amount: number; side: GravityMovementSide } | null {
+  const keyed = clip.keyframes.filter((keyframe) => keyframe.closedChain);
+  if (keyed.length === 0) return null;
+
+  const first = keyed[0];
+  if (keyed.length === 1 || time <= first.time) return first.closedChain!;
+  const last = keyed[keyed.length - 1];
+  if (time >= last.time) return last.closedChain!;
+
+  let index = 0;
+  while (index < keyed.length - 1 && keyed[index + 1].time <= time) index++;
+  const from = keyed[index];
+  const to = keyed[index + 1];
+  const span = to.time - from.time;
+  const rawAlpha = span > 0 ? (time - from.time) / span : 1;
+  const alpha = easingFn(clip.easing)(Math.min(1, Math.max(0, rawAlpha)));
+  const fromState = from.closedChain!;
+  const toState = to.closedChain!;
+
+  return {
+    amount: fromState.amount + (toState.amount - fromState.amount) * alpha,
+    side: alpha < 0.5 ? fromState.side : toState.side,
+  };
+}
+
 // Pushes the clip's interpolated pose (only its tracked joints) into the
 // main store — the ONE place this module ever touches `angles`. Reuses
 // setAngle's sibling `patchAngles`, so every OTHER joint (and the whole
@@ -67,6 +102,27 @@ function bounce(next: number, duration: number, dir: 1 | -1): { time: number; di
 // unaffected — this really is just another writer into the same joint
 // state those already use, not a parallel system.
 function applyToScene(clip: Clip, time: number) {
+  if (clip.closedChainMovement) {
+    const movement = closedChainAtTime(clip, time);
+    if (!movement) return;
+
+    let armState = useArmSimStore.getState();
+    if (!armState.gravityEnabled) {
+      armState.setGravityEnabled(true);
+      armState = useArmSimStore.getState();
+    }
+    if (armState.gravityMovement.id !== clip.closedChainMovement) {
+      armState.setGravityMovement(clip.closedChainMovement);
+      armState = useArmSimStore.getState();
+    }
+    if (armState.gravityMovement.side !== movement.side) {
+      armState.setGravityMovementSide(movement.side);
+      armState = useArmSimStore.getState();
+    }
+    armState.setGravityMovementAmount(movement.amount);
+    return;
+  }
+
   const patch = applyClipAtTime(clip, time);
   useArmSimStore.getState().patchAngles(patch);
 }
@@ -75,6 +131,7 @@ export const useRecordReplayStore = create<RecordReplayState>((set, get) => ({
   panelOpen: false,
   clip: null,
   pendingJoints: [],
+  pendingClosedChainMovement: null,
   currentTime: 0,
   isPlaying: false,
   loop: false,
@@ -88,27 +145,52 @@ export const useRecordReplayStore = create<RecordReplayState>((set, get) => ({
 
   setPanelOpen: (open) => set({ panelOpen: open }),
 
-  toggleJoint: (jointId) =>
+  toggleJoint: (jointId) => {
+    useArmSimStore.getState().setGravityEnabled(false);
     set((s) => ({
       pendingJoints: s.pendingJoints.includes(jointId)
         ? s.pendingJoints.filter((j) => j !== jointId)
         : [...s.pendingJoints, jointId],
-    })),
+      pendingClosedChainMovement: null,
+    }));
+  },
+
+  selectClosedChainMovement: (movementId) => {
+    const armState = useArmSimStore.getState();
+    if (!armState.gravityEnabled) armState.setGravityEnabled(true);
+    useArmSimStore.getState().setGravityMovement(movementId);
+    set({
+      pendingClosedChainMovement: movementId,
+      pendingJoints: [],
+    });
+  },
 
   startClip: () =>
     set((s) => {
-      if (s.pendingJoints.length === 0) return {};
+      if (!s.pendingClosedChainMovement && s.pendingJoints.length === 0) return {};
+      const movementDefinition = s.pendingClosedChainMovement
+        ? GRAVITY_MOVEMENTS.find((movement) => movement.id === s.pendingClosedChainMovement)
+        : null;
       const clip: Clip = {
         id: makeId("clip"),
-        name: "Untitled clip",
-        trackedJoints: [...s.pendingJoints],
+        name: movementDefinition?.label ?? "Untitled clip",
+        trackedJoints: s.pendingClosedChainMovement ? [] : [...s.pendingJoints],
         keyframes: [],
         easing: "easeInOut",
+        closedChainMovement: s.pendingClosedChainMovement ?? undefined,
       };
       return { clip, currentTime: 0, isPlaying: false, direction: 1 };
     }),
 
-  discardClip: () => set({ clip: null, pendingJoints: [], currentTime: 0, isPlaying: false, direction: 1 }),
+  discardClip: () =>
+    set({
+      clip: null,
+      pendingJoints: [],
+      pendingClosedChainMovement: null,
+      currentTime: 0,
+      isPlaying: false,
+      direction: 1,
+    }),
 
   setEasing: (easing) =>
     set((s) => (s.clip ? { clip: { ...s.clip, easing } } : {})),
@@ -120,7 +202,8 @@ export const useRecordReplayStore = create<RecordReplayState>((set, get) => ({
   addKeyframe: () =>
     set((s) => {
       if (!s.clip) return {};
-      const liveAngles = useArmSimStore.getState().angles;
+      const armState = useArmSimStore.getState();
+      const liveAngles = armState.angles;
       const poses: Record<string, Record<string, number>> = {};
       for (const jointId of s.clip.trackedJoints) {
         poses[jointId] = { ...liveAngles[jointId] };
@@ -128,7 +211,17 @@ export const useRecordReplayStore = create<RecordReplayState>((set, get) => ({
       const withoutSameTime = s.clip.keyframes.filter((k) => k.time !== s.currentTime);
       const keyframes = sortKeyframes([
         ...withoutSameTime,
-        { id: makeId("kf"), time: s.currentTime, poses },
+        {
+          id: makeId("kf"),
+          time: s.currentTime,
+          poses,
+          closedChain: s.clip.closedChainMovement
+            ? {
+                amount: armState.gravityMovement.amount,
+                side: armState.gravityMovement.side,
+              }
+            : undefined,
+        },
       ]);
       return { clip: { ...s.clip, keyframes } };
     }),

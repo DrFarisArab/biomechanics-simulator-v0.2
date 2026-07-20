@@ -59,6 +59,7 @@ function ContactLink({
 
 export function Footer() {
   const [showAbout, setShowAbout] = useState(false);
+  const [showHowToUse, setShowHowToUse] = useState(false);
 
   return (
     <>
@@ -67,13 +68,104 @@ export function Footer() {
           © {new Date().getFullYear()} Human Biomechanics Simulator.
           <span className="hidden sm:inline"> For education and clinical reference only — not a diagnostic device.</span>
         </div>
-        <button
-          onClick={() => setShowAbout(true)}
-          className="shrink-0 text-ink-400 transition hover:text-brand-400"
-        >
-          About us
-        </button>
+        <div className="flex shrink-0 items-center gap-3">
+          <button
+            onClick={() => setShowHowToUse(true)}
+            className="text-ink-400 transition hover:text-brand-400"
+          >
+            How to use
+          </button>
+          <button
+            onClick={() => setShowAbout(true)}
+            className="text-ink-400 transition hover:text-brand-400"
+          >
+            About us
+          </button>
+        </div>
       </footer>
+
+      {showHowToUse && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/60"
+          onClick={() => setShowHowToUse(false)}
+        >
+          <div
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="how-to-use-title"
+            className="mx-4 max-h-[88dvh] w-full max-w-lg overflow-y-auto rounded-lg border border-ink-700 bg-ink-900 p-5 text-ink-200 shadow-2xl shadow-black/35"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div id="how-to-use-title" className="mb-1 text-[14px] font-semibold">
+              How to use
+            </div>
+            <p className="mb-4 text-[11px] leading-relaxed text-ink-500">
+              Explore joint motion, functional positions, and clinical workflows directly on the
+              3D model.
+            </p>
+
+            <div className="space-y-3">
+              <section>
+                <div className="text-[12px] font-semibold text-ink-200">1. Move the model view</div>
+                <p className="mt-0.5 text-[11px] leading-relaxed text-ink-400">
+                  Drag to rotate the view. Scroll or pinch to zoom. Drag with the secondary mouse
+                  button to reposition the view.
+                </p>
+              </section>
+
+              <section>
+                <div className="text-[12px] font-semibold text-ink-200">2. Select and move a joint</div>
+                <p className="mt-0.5 text-[11px] leading-relaxed text-ink-400">
+                  Open Joints from the center dock, select a joint marker on the model, or choose a
+                  joint from the selection list. Adjust each movement with its slider or the minus
+                  and plus buttons. Current angles appear in the movement summary.
+                </p>
+              </section>
+
+              <section>
+                <div className="text-[12px] font-semibold text-ink-200">3. Apply a pose</div>
+                <p className="mt-0.5 text-[11px] leading-relaxed text-ink-400">
+                  Open the pose menu on the left and choose a preset. Use Reset Pose in the joint
+                  panel to return the model to neutral.
+                </p>
+              </section>
+
+              <section>
+                <div className="text-[12px] font-semibold text-ink-200">4. Choose a chain mode</div>
+                <p className="mt-0.5 text-[11px] leading-relaxed text-ink-400">
+                  Use the right-side selector to choose Close-chain for coordinated Squat, Lunge,
+                  Hip Hike, and Calf Raise controls, or Open-chain for individual joint movement.
+                  Choose a side when available, then adjust the movement knob.
+                </p>
+              </section>
+
+              <section>
+                <div className="text-[12px] font-semibold text-ink-200">5. Change model layers</div>
+                <p className="mt-0.5 text-[11px] leading-relaxed text-ink-400">
+                  Use the top toolbar to show or hide joint markers and skin, switch between the
+                  skeleton and muscles, change the theme, or open the command box.
+                </p>
+              </section>
+
+              <section>
+                <div className="text-[12px] font-semibold text-ink-200">6. Use clinical tools</div>
+                <p className="mt-0.5 text-[11px] leading-relaxed text-ink-400">
+                  Patient opens the assessment workspace, Tests provides orthopedic special tests,
+                  and Record captures movements for replay. Add at least two keyframes, then use
+                  Export MP4 to download the animated model view as a video.
+                </p>
+              </section>
+            </div>
+
+            <button
+              onClick={() => setShowHowToUse(false)}
+              className="mt-5 w-full rounded-md border border-brand-700/50 bg-brand-900/20 px-2.5 py-1.5 text-[12px] font-medium text-brand-400 transition hover:bg-brand-900/40"
+            >
+              Close
+            </button>
+          </div>
+        </div>
+      )}
 
       {showAbout && (
         <div

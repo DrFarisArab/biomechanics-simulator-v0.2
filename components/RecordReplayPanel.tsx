@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import { useArmSimStore } from "@/lib/store";
 import { useRecordReplayStore } from "@/lib/recordReplayStore";
 import { ARM_JOINT_DOFS, ARM_DOF_META } from "@/lib/armDofs";
@@ -9,6 +9,11 @@ import { LEG_JOINT_DOFS, LEG_DOF_META } from "@/lib/legDofs";
 import { MANDIBLE_JOINT_DOFS, MANDIBLE_DOF_META } from "@/lib/mandibleDofs";
 import { JOINT_LABELS, ALL_JOINT_IDS } from "@/lib/jointLabels";
 import { clipDuration } from "@/lib/clip";
+import {
+  GRAVITY_MOVEMENTS,
+  type GravityMovementId,
+} from "@/lib/gravityMovements";
+import { exportClipToMp4 } from "@/lib/exportClipVideo";
 import { DegreeSlider } from "./DegreeSlider";
 
 const ALL_JOINT_DOFS = { ...ARM_JOINT_DOFS, ...TRUNK_JOINT_DOFS, ...LEG_JOINT_DOFS, ...MANDIBLE_JOINT_DOFS };
@@ -22,46 +27,141 @@ function formatTime(t: number): string {
 
 function JointPicker() {
   const pendingJoints = useRecordReplayStore((s) => s.pendingJoints);
+  const pendingClosedChainMovement = useRecordReplayStore((s) => s.pendingClosedChainMovement);
   const toggleJoint = useRecordReplayStore((s) => s.toggleJoint);
+  const selectClosedChainMovement = useRecordReplayStore((s) => s.selectClosedChainMovement);
   const startClip = useRecordReplayStore((s) => s.startClip);
+  const selectedMovement = GRAVITY_MOVEMENTS.find(
+    (movement) => movement.id === pendingClosedChainMovement
+  );
+  const canStart = Boolean(pendingClosedChainMovement || pendingJoints.length > 0);
 
   return (
-    <div className="flex flex-col gap-3 px-4 py-3">
-      <div className="text-[11px] leading-relaxed text-ink-300">
-        Pick one or more joints to animate. Every other joint stays exactly where it is during playback.
-      </div>
-      <div className="grid grid-cols-2 gap-1">
-        {ALL_JOINT_IDS.map((jointId) => {
-          const checked = pendingJoints.includes(jointId);
-          return (
-            <button
-              key={jointId}
-              onClick={() => toggleJoint(jointId)}
-              className={`flex items-center gap-1.5 rounded-md border px-2 py-1.5 text-left text-[11px] font-medium transition ${
-                checked
-                  ? "border-brand-600/60 bg-brand-900/25 text-brand-400"
-                  : "border-ink-700 bg-ink-800/40 text-ink-300 hover:border-ink-600"
-              }`}
-            >
-              <span
-                className={`grid h-3.5 w-3.5 shrink-0 place-items-center rounded-sm border ${
-                  checked ? "border-brand-500 bg-brand-500" : "border-ink-600"
+    <div className="flex flex-col gap-4 px-4 py-3">
+      <section className="flex flex-col gap-2">
+        <div>
+          <div className="text-[10px] font-semibold uppercase tracking-wider text-ink-400">
+            Closed-chain movements
+          </div>
+          <div className="mt-0.5 text-[11px] leading-relaxed text-ink-300">
+            Record a ground-contact movement through its linked joint constraints.
+          </div>
+        </div>
+        <div className="grid grid-cols-2 gap-1.5">
+          {GRAVITY_MOVEMENTS.map((movement) => {
+            const selected = pendingClosedChainMovement === movement.id;
+            return (
+              <button
+                key={movement.id}
+                onClick={() => selectClosedChainMovement(movement.id)}
+                aria-pressed={selected}
+                className={`rounded-md border px-2 py-2 text-left text-[11px] font-medium transition ${
+                  selected
+                    ? "border-brand-600/60 bg-brand-900/25 text-brand-400"
+                    : "border-ink-700 bg-ink-800/40 text-ink-300 hover:border-ink-600"
                 }`}
               >
-                {checked && <span className="text-[9px] leading-none text-ink-950">✓</span>}
-              </span>
-              {JOINT_LABELS[jointId]}
-            </button>
-          );
-        })}
-      </div>
+                {movement.label}
+              </button>
+            );
+          })}
+        </div>
+      </section>
+
+      <section className="flex flex-col gap-2 border-t border-ink-800 pt-3">
+        <div>
+          <div className="text-[10px] font-semibold uppercase tracking-wider text-ink-400">
+            Open-chain movements
+          </div>
+          <div className="mt-0.5 text-[11px] leading-relaxed text-ink-300">
+            Pick one or more joints. Every other joint stays unchanged during playback.
+          </div>
+        </div>
+        <div className="grid grid-cols-2 gap-1">
+          {ALL_JOINT_IDS.map((jointId) => {
+            const checked = pendingJoints.includes(jointId);
+            return (
+              <button
+                key={jointId}
+                onClick={() => toggleJoint(jointId)}
+                className={`flex items-center gap-1.5 rounded-md border px-2 py-1.5 text-left text-[11px] font-medium transition ${
+                  checked
+                    ? "border-brand-600/60 bg-brand-900/25 text-brand-400"
+                    : "border-ink-700 bg-ink-800/40 text-ink-300 hover:border-ink-600"
+                }`}
+              >
+                <span
+                  className={`grid h-3.5 w-3.5 shrink-0 place-items-center rounded-sm border ${
+                    checked ? "border-brand-500 bg-brand-500" : "border-ink-600"
+                  }`}
+                >
+                  {checked && <span className="text-[9px] leading-none text-ink-950">✓</span>}
+                </span>
+                {JOINT_LABELS[jointId]}
+              </button>
+            );
+          })}
+        </div>
+      </section>
+
       <button
         onClick={startClip}
-        disabled={pendingJoints.length === 0}
+        disabled={!canStart}
         className="w-full rounded-md border border-brand-700/50 bg-brand-900/20 px-3 py-2 text-[12px] font-semibold text-brand-400 transition hover:bg-brand-900/40 disabled:cursor-not-allowed disabled:opacity-40"
       >
-        Start Recording{pendingJoints.length > 0 ? ` (${pendingJoints.length} joint${pendingJoints.length > 1 ? "s" : ""})` : ""}
+        {selectedMovement
+          ? `Start Recording ${selectedMovement.label}`
+          : `Start Recording${pendingJoints.length > 0 ? ` (${pendingJoints.length} joint${pendingJoints.length > 1 ? "s" : ""})` : ""}`}
       </button>
+    </div>
+  );
+}
+
+function ClosedChainMovementEditor({ movementId }: { movementId: GravityMovementId }) {
+  const gravityMovement = useArmSimStore((s) => s.gravityMovement);
+  const setGravityMovementAmount = useArmSimStore((s) => s.setGravityMovementAmount);
+  const setGravityMovementSide = useArmSimStore((s) => s.setGravityMovementSide);
+  const movement = GRAVITY_MOVEMENTS.find((item) => item.id === movementId)!;
+
+  return (
+    <div className="flex flex-col gap-2">
+      {movement.sideLabel && (
+        <div>
+          <div className="mb-1 text-[10px] font-semibold uppercase tracking-wider text-ink-400">
+            {movement.sideLabel}
+          </div>
+          <div className="grid grid-cols-2 gap-1.5">
+            {(["left", "right"] as const).map((side) => (
+              <button
+                key={side}
+                onClick={() => setGravityMovementSide(side)}
+                className={`rounded-md border px-2 py-1.5 text-[11px] font-medium capitalize transition ${
+                  gravityMovement.side === side
+                    ? "border-brand-600/60 bg-brand-900/25 text-brand-400"
+                    : "border-ink-700 bg-ink-800/40 text-ink-300 hover:border-ink-600"
+                }`}
+              >
+                {side}
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
+      <div className="rounded-md border border-ink-700 bg-ink-800/50 p-2">
+        <div className="mb-0.5 flex items-baseline justify-between">
+          <div className="text-[11px] font-medium text-ink-200">{movement.controlLabel}</div>
+          <div className="font-mono text-[11px] tabular-nums text-brand-400">
+            {Math.round(gravityMovement.amount)}°
+          </div>
+        </div>
+        <div className="mb-1.5 text-[10px] text-ink-400">{movement.summary}</div>
+        <DegreeSlider
+          value={gravityMovement.amount}
+          min={0}
+          max={movement.max}
+          onChange={setGravityMovementAmount}
+        />
+      </div>
     </div>
   );
 }
@@ -206,10 +306,34 @@ export function RecordReplayPanel() {
   const addKeyframe = useRecordReplayStore((s) => s.addKeyframe);
   const setEasing = useRecordReplayStore((s) => s.setEasing);
   const setPanelOpen = useRecordReplayStore((s) => s.setPanelOpen);
+  const [isExporting, setIsExporting] = useState(false);
+  const [exportProgress, setExportProgress] = useState(0);
+  const [exportError, setExportError] = useState<string | null>(null);
+
+  const canExport = Boolean(clip && clip.keyframes.length >= 2 && clipDuration(clip) > 0);
+
+  const handleExport = async () => {
+    if (!clip || !canExport || isExporting) return;
+    setExportError(null);
+    setExportProgress(0);
+    setIsExporting(true);
+    try {
+      await exportClipToMp4(clip, setExportProgress);
+    } catch (error) {
+      setExportError(error instanceof Error ? error.message : "The MP4 video could not be exported.");
+    } finally {
+      setIsExporting(false);
+    }
+  };
 
   const trackedLabel = useMemo(
-    () => clip?.trackedJoints.map((j) => JOINT_LABELS[j]).join(", ") ?? "",
-    [clip?.trackedJoints]
+    () => {
+      if (clip?.closedChainMovement) {
+        return GRAVITY_MOVEMENTS.find((movement) => movement.id === clip.closedChainMovement)?.label ?? "";
+      }
+      return clip?.trackedJoints.map((joint) => JOINT_LABELS[joint]).join(", ") ?? "";
+    },
+    [clip]
   );
 
   return (
@@ -239,50 +363,82 @@ export function RecordReplayPanel() {
             </div>
             <button
               onClick={discardClip}
+              disabled={isExporting}
               className="shrink-0 rounded-md border border-ink-700 px-2 py-1 text-[10px] font-medium text-ink-300 transition hover:border-danger-700/60 hover:text-danger-400"
             >
               Discard
             </button>
           </div>
 
-          <div className="flex flex-col gap-3 px-4 py-3">
-            {clip.trackedJoints.map((jointId) => (
-              <TrackedJointEditor key={jointId} jointId={jointId} />
-            ))}
+          <div className={isExporting ? "pointer-events-none opacity-60" : ""}>
+            <div className="flex flex-col gap-3 px-4 py-3">
+              {clip.closedChainMovement ? (
+                <ClosedChainMovementEditor movementId={clip.closedChainMovement} />
+              ) : (
+                clip.trackedJoints.map((jointId) => (
+                  <TrackedJointEditor key={jointId} jointId={jointId} />
+                ))
+              )}
 
-            <button
-              onClick={addKeyframe}
-              className="w-full rounded-md border border-brand-700/50 bg-brand-900/20 px-3 py-2 text-[12px] font-semibold text-brand-400 transition hover:bg-brand-900/40"
-            >
-              Add Keyframe @ {formatTime(currentTime)}
-            </button>
+              <button
+                onClick={addKeyframe}
+                className="w-full rounded-md border border-brand-700/50 bg-brand-900/20 px-3 py-2 text-[12px] font-semibold text-brand-400 transition hover:bg-brand-900/40"
+              >
+                Add Keyframe @ {formatTime(currentTime)}
+              </button>
 
-            <div className="flex items-center justify-between rounded-md border border-ink-700 bg-ink-800/40 px-2.5 py-1.5">
-              <span className="text-[11px] text-ink-300">Easing</span>
-              <div className="flex gap-1">
-                {(["easeInOut", "linear"] as const).map((e) => (
-                  <button
-                    key={e}
-                    onClick={() => setEasing(e)}
-                    className={`rounded px-2 py-1 text-[10px] font-medium transition ${
-                      clip.easing === e
-                        ? "border border-brand-600/60 bg-brand-900/25 text-brand-400"
-                        : "border border-ink-700 text-ink-300 hover:text-ink-200"
-                    }`}
-                  >
-                    {e === "easeInOut" ? "Ease in-out" : "Linear"}
-                  </button>
-                ))}
+              <div className="flex items-center justify-between rounded-md border border-ink-700 bg-ink-800/40 px-2.5 py-1.5">
+                <span className="text-[11px] text-ink-300">Easing</span>
+                <div className="flex gap-1">
+                  {(["easeInOut", "linear"] as const).map((e) => (
+                    <button
+                      key={e}
+                      onClick={() => setEasing(e)}
+                      className={`rounded px-2 py-1 text-[10px] font-medium transition ${
+                        clip.easing === e
+                          ? "border border-brand-600/60 bg-brand-900/25 text-brand-400"
+                          : "border border-ink-700 text-ink-300 hover:text-ink-200"
+                      }`}
+                    >
+                      {e === "easeInOut" ? "Ease in-out" : "Linear"}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              <div className="text-[10px] leading-relaxed text-ink-400">
+                {clip.keyframes.length} keyframe{clip.keyframes.length === 1 ? "" : "s"} — move a slider above, then Add
+                Keyframe at the time you want it captured.
               </div>
             </div>
 
-            <div className="text-[10px] leading-relaxed text-ink-400">
-              {clip.keyframes.length} keyframe{clip.keyframes.length === 1 ? "" : "s"} — move a slider above, then Add
-              Keyframe at the time you want it captured.
-            </div>
+            <Timeline />
           </div>
 
-          <Timeline />
+          <div className="border-t border-ink-800 px-4 py-3">
+            <button
+              onClick={handleExport}
+              disabled={!canExport || isExporting}
+              className="w-full rounded-md border border-brand-700/60 bg-brand-900/25 px-3 py-2 text-[12px] font-semibold text-brand-300 transition hover:bg-brand-900/45 disabled:cursor-not-allowed disabled:opacity-40"
+            >
+              {isExporting ? `Exporting MP4 · ${Math.round(exportProgress * 100)}%` : "↓ Export MP4"}
+            </button>
+            {isExporting && (
+              <div className="mt-2 h-1 overflow-hidden rounded-full bg-ink-800">
+                <div
+                  className="h-full bg-brand-500 transition-[width] duration-100"
+                  style={{ width: `${Math.max(2, exportProgress * 100)}%` }}
+                />
+              </div>
+            )}
+            {exportError ? (
+              <div className="mt-2 text-[10px] leading-relaxed text-danger-400">{exportError}</div>
+            ) : (
+              <div className="mt-1.5 text-[10px] leading-relaxed text-ink-400">
+                Exports the model viewport at 30 fps using the current camera and display layers.
+              </div>
+            )}
+          </div>
         </>
       )}
     </aside>

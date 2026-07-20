@@ -14,7 +14,7 @@ import { Bed } from "./furniture/Bed";
 import { useArmSimStore } from "@/lib/store";
 import { useRecordReplayStore } from "@/lib/recordReplayStore";
 import { useThemeStore } from "@/lib/themeStore";
-import { getBrand500, getGridColors } from "@/lib/themeColors";
+import { getBrand500, getGridColors, getInk950 } from "@/lib/themeColors";
 
 const MODEL_URLS = {
   skeleton: "/models/v2-body-skeleton.glb",
@@ -136,6 +136,7 @@ export function Scene() {
   const theme = useThemeStore((s) => s.theme);
   const mode = useThemeStore((s) => s.mode);
   const grid = useMemo(() => getGridColors(theme, mode), [theme, mode]);
+  const background = useMemo(() => getInk950(theme, mode), [theme, mode]);
 
   const mainCameraRef = useRef<MainCameraRef>({ camera: null, invalidate: null });
 
@@ -157,9 +158,14 @@ export function Scene() {
         // taller than the ~650px one this was originally tuned against.
         // ~4.0 covers y ≈ [-0.26, 2.66], fitting head-to-feet with margin.
         camera={{ position: DEFAULT_CAMERA_POSITION.toArray(), fov: 40, near: 0.01, far: 20 }}
+        // The export path captures the WebGL canvas directly. Keeping the
+        // final rendered frame lets MediaRecorder encode the actual model
+        // pixels instead of a cleared WebGL buffer.
+        gl={{ alpha: false, preserveDrawingBuffer: true }}
         frameloop={isAnimating || !warmupDone ? "always" : "demand"}
         className="!bg-ink-950"
       >
+        <color attach="background" args={[background]} />
         <ambientLight intensity={0.6} />
         <directionalLight position={[1, 2, 1]} intensity={1.3} />
         <directionalLight position={[-1, 0.5, -1]} intensity={0.4} />

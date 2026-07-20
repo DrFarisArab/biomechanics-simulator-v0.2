@@ -1,6 +1,7 @@
 "use client";
 
 import dynamic from "next/dynamic";
+import { useState } from "react";
 import { Sidebar } from "@/components/Sidebar";
 import { PresetMenu } from "@/components/PresetMenu";
 import { SpecialTests } from "@/components/SpecialTests";
@@ -24,10 +25,13 @@ export default function Home() {
   const setSpecialTestsOpen = useArmSimStore((s) => s.setSpecialTestsOpen);
   const selectedJoint = useArmSimStore((s) => s.selectedJoint);
   const selectJoint = useArmSimStore((s) => s.selectJoint);
+  const gravityEnabled = useArmSimStore((s) => s.gravityEnabled);
+  const setGravityEnabled = useArmSimStore((s) => s.setGravityEnabled);
   const recordReplayOpen = useRecordReplayStore((s) => s.panelOpen);
   const setRecordReplayOpen = useRecordReplayStore((s) => s.setPanelOpen);
   const patientAssessmentOpen = usePatientAssessmentStore((s) => s.panelOpen);
   const setPatientAssessmentOpen = usePatientAssessmentStore((s) => s.setPanelOpen);
+  const [jointListOpen, setJointListOpen] = useState(false);
 
   const isPhone = useIsPhone();
 
@@ -44,17 +48,31 @@ export default function Home() {
   ) : null;
   const sidePanel = overlayPanel ?? <Sidebar />;
 
-  // On phone the panel is a swipe-up sheet instead of a docked column, and it
-  // only appears when there's something worth showing — an overlay panel or a
-  // selected joint. (The empty "No joint selected" hint isn't worth covering
-  // the viewport for on a phone.)
-  const sheetOpen = overlayPanel !== null || selectedJoint !== null;
+  // On phone the Joints dock tab explicitly opens the otherwise hidden
+  // default Sidebar, including its complete joint-selection list.
+  const sheetOpen = overlayPanel !== null || selectedJoint !== null || jointListOpen;
+  const jointsActive =
+    overlayPanel === null &&
+    !gravityEnabled &&
+    (!isPhone || jointListOpen || selectedJoint !== null);
+
+  const openJointList = () => {
+    setSpecialTestsOpen(false);
+    setRecordReplayOpen(false);
+    setPatientAssessmentOpen(false);
+    setGravityEnabled(false);
+    selectJoint(null);
+    setJointListOpen(true);
+  };
 
   const closeActivePanel = () => {
     if (specialTestsOpen) setSpecialTestsOpen(false);
     else if (recordReplayOpen) setRecordReplayOpen(false);
     else if (patientAssessmentOpen) setPatientAssessmentOpen(false);
-    else if (selectedJoint) selectJoint(null);
+    else {
+      setJointListOpen(false);
+      if (selectedJoint) selectJoint(null);
+    }
   };
 
   return (
@@ -74,7 +92,11 @@ export default function Home() {
           <Scene />
           <MovementSummaryPanel />
           <CommandBox />
-          <ViewportTabsDock />
+          <ViewportTabsDock
+            jointsActive={jointsActive}
+            onOpenJoints={openJointList}
+            onCloseJoints={() => setJointListOpen(false)}
+          />
         </main>
         {/* Tablet + desktop: docked side panel. Phone renders it as a sheet
             instead. The `hidden sm:contents` wrapper keeps the column out of
