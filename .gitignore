@@ -2,6 +2,12 @@
 /.next
 /out
 /build
+.gradle
+android/.gradle
+android/local.properties
+android/app/build
+android/keystore.properties
+android/*.keystore
 *.tsbuildinfo
 next-env.d.ts
 .DS_Store

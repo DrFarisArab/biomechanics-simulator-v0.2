@@ -382,8 +382,7 @@ function EditPoseView({ test, onDone }: { test: SpecialTest; onDone: () => void 
   const save = () => {
     const corrected = trimAngles(angles);
     saveCorrection(test.id, corrected);
-    // Also write the correction to the corrected-special-tests/ folder (dev
-    // server), or download it as a fallback — the artifact folded into source.
+    // Download the correction JSON so it can be reviewed or folded into source.
     void exportCorrection({
       testId: test.id,
       testName: test.n,
@@ -587,8 +586,7 @@ function CorrectionsListView({ onBack, onOpenTest }: { onBack: () => void; onOpe
       </button>
       <div className="text-[15px] font-semibold text-ink-100">Corrected special tests</div>
       <div className="text-[11px] leading-relaxed text-ink-400">
-        Your saved end-pose corrections. Each overrides the shipped pose on this device and was written to the{" "}
-        <span className="font-mono text-ink-300">corrected-special-tests/</span> folder to fold back into the source.
+        Your saved end-pose corrections. Each overrides the shipped pose on this device, and saving one downloads a JSON artifact that can be folded back into the source.
       </div>
       {entries.length === 0 ? (
         <div className="rounded-md border border-dashed border-ink-700 bg-ink-800/20 px-3 py-2.5 text-[11px] text-ink-400">
