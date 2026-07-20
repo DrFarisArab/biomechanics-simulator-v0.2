@@ -6,6 +6,7 @@ import { Canvas, useThree, type ThreeEvent } from "@react-three/fiber";
 import { OrbitControls, Grid, GizmoHelper, GizmoViewport, useProgress } from "@react-three/drei";
 import { BodyModel } from "./BodyModel";
 import { SkinOverlay } from "./SkinOverlay";
+import { GravityConstraintLayer } from "./GravityConstraintLayer";
 import { ClipPlaybackDriver } from "./ClipPlaybackDriver";
 import { ErrorBoundary } from "./ErrorBoundary";
 import { Chair } from "./furniture/Chair";
@@ -163,6 +164,7 @@ export function Scene() {
         <directionalLight position={[1, 2, 1]} intensity={1.3} />
         <directionalLight position={[-1, 0.5, -1]} intensity={0.4} />
         <Suspense fallback={null}>
+          <GravityConstraintLayer />
           <BodyModel key={appearance} modelUrl={MODEL_URLS[appearance]} />
           {showSkin && <SkinOverlay />}
           {furniture === "chair" && <Chair />}

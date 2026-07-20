@@ -91,6 +91,7 @@ export function ApplyPoseButton({ test }: { test: SpecialTest }) {
     stopPreview();
     applyPose(preset.angles, {
       presetId: preset.id,
+      supportProfileId: preset.baseId ?? preset.id,
       rootPosition: preset.rootPosition,
       rootRotation: preset.rootRotation,
       furniture: preset.furniture,
@@ -112,6 +113,7 @@ export function ApplyPoseButton({ test }: { test: SpecialTest }) {
     // flash of the end pose before playback catches up to t=0.
     applyPose(preset.angles, {
       presetId: preset.id,
+      supportProfileId: preset.baseId ?? preset.id,
       rootPosition: preset.rootPosition,
       rootRotation: preset.rootRotation,
       furniture: preset.furniture,
@@ -349,6 +351,7 @@ function EditPoseView({ test, onDone }: { test: SpecialTest; onDone: () => void 
     if (!basePreset) return;
     applyPose(a ?? {}, {
       presetId: basePreset.id,
+      supportProfileId: basePreset.baseId ?? basePreset.id,
       rootPosition: basePreset.rootPosition,
       rootRotation: basePreset.rootRotation,
       furniture: basePreset.furniture,

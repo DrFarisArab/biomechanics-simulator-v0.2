@@ -5,18 +5,14 @@ import * as THREE from "three";
 import { useFrame, useLoader, useThree } from "@react-three/fiber";
 import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js";
 import { clone as cloneSkinned } from "three/examples/jsm/utils/SkeletonUtils.js";
-import { useArmSimStore, JOINT_IDS, TRUNK_IDS, LEG_IDS, MANDIBLE_IDS } from "@/lib/store";
+import { useArmSimStore } from "@/lib/store";
 import { useRecordReplayStore } from "@/lib/recordReplayStore";
-import { applyArmPose, ARM_BONE_NAMES } from "@/lib/armDofs";
-import { applyTrunkPose, TRUNK_BONE_NAMES } from "@/lib/trunkDofs";
-import { applyLegPose, LEG_BONE_NAMES } from "@/lib/legDofs";
-import { applyMandiblePose, MANDIBLE_BONE_NAMES } from "@/lib/mandibleDofs";
-import { applyScapularRhythm } from "@/lib/scapularRhythm";
-import { computePelvisPivotOffset, stanceLegRotationCorrection } from "@/lib/stanceMode";
-import { lumbopelvicTiltDeg } from "@/lib/lumbopelvicRhythm";
 import { recolorMaterials, JOINT_MARKER_COLORS as COLORS } from "@/lib/materials";
 import { CONDYLE_OFFSET_LEFT_LOCAL, CONDYLE_OFFSET_RIGHT_LOCAL } from "@/lib/mandibleDofs";
 import { getDracoLoader } from "@/lib/dracoLoader";
+import { mergeGravityAngles } from "@/lib/gravityMode";
+import { applyGravityMovement, gravityMovementStanceLeg } from "@/lib/gravityMovements";
+import { ALL_RIG_BONE_NAMES, applyRigPose } from "@/lib/rigPose";
 
 // Joint id -> the bone whose own local origin (head) IS that joint's pivot.
 // lumbar/thoracic/cervical are now per-vertebra CHAINS (see trunkDofs.ts) —
@@ -52,10 +48,6 @@ const JOINT_MARKER_MIDPOINT: Record<string, [string, string]> = {
   forearm_left: ["forearmL", "handL"],
   forearm_right: ["forearmR", "handR"],
 };
-
-const ALL_BONE_NAMES = Array.from(
-  new Set([...ARM_BONE_NAMES, ...TRUNK_BONE_NAMES, ...LEG_BONE_NAMES, ...MANDIBLE_BONE_NAMES, "head", "scapulaL", "scapulaR"])
-);
 
 /**
  * v0.2 unified body model — ONE armature (v2_body_rig) covering the full
@@ -105,12 +97,25 @@ export function BodyModel({ modelUrl }: { modelUrl: string }) {
   const rootRotation = useArmSimStore((s) => s.rootRotation);
   const stanceLeg = useArmSimStore((s) => s.stanceLeg);
   const showJointMarkers = useArmSimStore((s) => s.showJointMarkers);
+  const gravityEnabled = useArmSimStore((s) => s.gravityEnabled);
+  const gravityCompensation = useArmSimStore((s) => s.gravityCompensation);
+  const gravityRootOffsetY = useArmSimStore((s) => s.gravityRootOffsetY);
+  const gravityMovement = useArmSimStore((s) => s.gravityMovement);
+  const movementAngles = useMemo(
+    () => (gravityEnabled ? applyGravityMovement(angles, gravityMovement) : angles),
+    [angles, gravityEnabled, gravityMovement]
+  );
+  const effectiveAngles = useMemo(
+    () => (gravityEnabled ? mergeGravityAngles(movementAngles, gravityCompensation) : angles),
+    [angles, gravityCompensation, gravityEnabled, movementAngles]
+  );
+  const effectiveStanceLeg = gravityEnabled ? gravityMovementStanceLeg(gravityMovement) ?? stanceLeg : stanceLeg;
 
   const markerJoints = useMemo(() => {
     // Single clean skin (v2_body_rig, 41 joints, no name collisions) — every
     // bone name is unique, so a plain scene-wide lookup resolves correctly.
     const found: Record<string, THREE.Object3D | undefined> = {};
-    for (const name of ALL_BONE_NAMES) {
+    for (const name of ALL_RIG_BONE_NAMES) {
       found[name] = scene.getObjectByName(name) ?? undefined;
     }
     bonesRef.current = found;
@@ -159,65 +164,23 @@ export function BodyModel({ modelUrl }: { modelUrl: string }) {
   const invalidate = useThree((s) => s.invalidate);
 
   useEffect(() => {
-    const armSubset: Record<string, Record<string, number> | undefined> = {};
-    for (const id of JOINT_IDS) armSubset[id] = angles[id];
-    applyArmPose(bonesRef.current, restQuatsRef.current, armSubset);
-
-    const trunkSubset: Record<string, Record<string, number> | undefined> = {};
-    for (const id of TRUNK_IDS) trunkSubset[id] = angles[id];
-    applyTrunkPose(bonesRef.current, restQuatsRef.current, trunkSubset);
-
-    const legSubset: Record<string, Record<string, number> | undefined> = {};
-    for (const id of LEG_IDS) legSubset[id] = angles[id];
-    applyLegPose(bonesRef.current, restQuatsRef.current, legSubset);
-
-    const mandibleSubset: Record<string, Record<string, number> | undefined> = {};
-    for (const id of MANDIBLE_IDS) mandibleSubset[id] = angles[id];
-    applyMandiblePose(bonesRef.current, restQuatsRef.current, { jaw: jawRestPosRef.current ?? undefined }, mandibleSubset);
-
-    // Ground-contact stance leg rotation correction — must run AFTER
-    // applyLegPose (needs the thigh bone's already-computed normal local
-    // quaternion) and uses the SAME effective pelvis tilt (including the
-    // lumbopelvic rhythm contribution) that applyTrunkPose used, so the
-    // correction is computed from the pelvis's actual total delta, not just
-    // the user-dialled tilt. See stanceMode.ts's stanceLegRotationCorrection
-    // for why this can't be folded into applyLegPose as a simple DOF.
-    if (stanceLeg !== "none") {
-      const effectiveTilt = (angles.pelvis?.tilt ?? 0) + lumbopelvicTiltDeg(angles.lumbar?.flexExt ?? 0);
-      const rotationDeg = angles.pelvis?.rotation ?? 0;
-      const obliquityDeg = angles.pelvis?.obliquity ?? 0;
-      for (const side of ["left", "right"] as const) {
-        const boneName = side === "left" ? "thighL" : "thighR";
-        const bone = bonesRef.current[boneName];
-        if (!bone) continue;
-        const correction = stanceLegRotationCorrection(side, stanceLeg, effectiveTilt, rotationDeg, obliquityDeg);
-        bone.quaternion.premultiply(correction);
-      }
-    }
-
-    applyScapularRhythm(bonesRef.current, restQuatsRef.current, angles);
-
-    // Ground-contact stance pivot — must run AFTER applyTrunkPose (which
-    // only touches rotation); this adjusts the pelvis bone's own POSITION
-    // so the stance hip stays planted in world space while it hikes.
-    const pelvisBone = bonesRef.current.pelvis;
-    const restPos = pelvisRestPosRef.current;
-    if (pelvisBone && restPos) {
-      const offset = computePelvisPivotOffset(
-        stanceLeg,
-        restPos,
-        hipLocalOffsetsRef.current,
-        angles.pelvis?.obliquity ?? 0
-      );
-      pelvisBone.position.copy(offset);
-    }
+    applyRigPose(
+      {
+        bones: bonesRef.current,
+        restQuats: restQuatsRef.current,
+        pelvisRestPosition: pelvisRestPosRef.current,
+        hipLocalOffsets: hipLocalOffsetsRef.current,
+        jawRestPosition: jawRestPosRef.current,
+      },
+      effectiveAngles,
+      effectiveStanceLeg
+    );
 
     // Paint the freshly-applied pose. Two frames: one for the bone update
     // above, and one so the marker-tracking useFrame (which reads the
     // resulting world positions) repaints the markers on top of it.
     invalidate(2);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [angles, stanceLeg]);
+  }, [effectiveAngles, effectiveStanceLeg, invalidate]);
 
   const tmpWorld = useMemo(() => new THREE.Vector3(), []);
   const tmpWorld2 = useMemo(() => new THREE.Vector3(), []);
@@ -263,7 +226,7 @@ export function BodyModel({ modelUrl }: { modelUrl: string }) {
 
   return (
     <group position={rootPosition}>
-      <group ref={groupRef} quaternion={quaternion}>
+      <group ref={groupRef} quaternion={quaternion} position={[0, gravityEnabled ? gravityRootOffsetY : 0, 0]}>
         <primitive object={scene} />
         {showJointMarkers && markerJoints.map(({ jointId }) => {
           const isSelected = selectedJoint === jointId;

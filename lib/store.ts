@@ -4,6 +4,12 @@ import { TRUNK_JOINT_DOFS } from "./trunkDofs";
 import { LEG_JOINT_DOFS } from "./legDofs";
 import { MANDIBLE_JOINT_DOFS } from "./mandibleDofs";
 import type { StanceLeg } from "./stanceMode";
+import {
+  DEFAULT_GRAVITY_MOVEMENT,
+  type GravityMovementId,
+  type GravityMovementSide,
+  type GravityMovementState,
+} from "./gravityMovements";
 
 export const JOINT_IDS = Object.keys(ARM_JOINT_DOFS);
 export const TRUNK_IDS = Object.keys(TRUNK_JOINT_DOFS);
@@ -35,6 +41,7 @@ interface ArmSimState {
   rootPosition: Vec3;
   rootRotation: Vec3;
   activePreset: string | null;
+  gravitySupportProfileId: string;
   stanceLeg: StanceLeg;
   furniture: Furniture;
   furnitureRotation: number;
@@ -42,6 +49,11 @@ interface ArmSimState {
   showSkin: boolean;
   showJointMarkers: boolean;
   showCommandBox: boolean;
+  gravityEnabled: boolean;
+  gravityCompensation: Record<string, Record<string, number>>;
+  gravityRootOffsetY: number;
+  gravityMovement: GravityMovementState;
+  lastEdited: { jointId: string; dofId: string } | null;
   setAppearance: (a: Appearance) => void;
   setAngle: (jointId: string, dofId: string, value: number) => void;
   patchAngles: (partial: Record<string, Record<string, number>>) => void;
@@ -52,6 +64,12 @@ interface ArmSimState {
   setShowSkin: (show: boolean) => void;
   setShowJointMarkers: (show: boolean) => void;
   setShowCommandBox: (show: boolean) => void;
+  setGravityEnabled: (enabled: boolean) => void;
+  setGravityMovement: (id: GravityMovementId) => void;
+  setGravityMovementAmount: (amount: number) => void;
+  setGravityMovementSide: (side: GravityMovementSide) => void;
+  resetGravityMovement: () => void;
+  setGravitySolution: (solution: { compensation: Record<string, Record<string, number>>; rootOffsetY: number }) => void;
   resetAll: () => void;
   applyPose: (
     angles: Record<string, Record<string, number>>,
@@ -62,6 +80,7 @@ interface ArmSimState {
       furniture?: Furniture;
       furnitureRotation?: number;
       stanceLeg?: StanceLeg;
+      supportProfileId?: string;
     }
   ) => void;
 }
@@ -74,6 +93,7 @@ export const useArmSimStore = create<ArmSimState>((set) => ({
   rootPosition: [0, 0, 0],
   rootRotation: [0, 0, 0],
   activePreset: null,
+  gravitySupportProfileId: "standing",
   stanceLeg: "none",
   furniture: "none",
   furnitureRotation: 0,
@@ -82,6 +102,11 @@ export const useArmSimStore = create<ArmSimState>((set) => ({
   showJointMarkers: true,
   // Collapsed by default on app start for maximum viewport — see app/page.tsx.
   showCommandBox: false,
+  gravityEnabled: false,
+  gravityCompensation: {},
+  gravityRootOffsetY: 0,
+  gravityMovement: DEFAULT_GRAVITY_MOVEMENT,
+  lastEdited: null,
   // Skin overlay is a translucent reference layer meant to sit over the bare
   // skeleton — over the muscles model it just looks wrong (fights with the
   // muscle geometry it's supposed to be layered outside of), so switching to
@@ -91,6 +116,37 @@ export const useArmSimStore = create<ArmSimState>((set) => ({
   setShowSkin: (show) => set({ showSkin: show }),
   setShowJointMarkers: (show) => set({ showJointMarkers: show }),
   setShowCommandBox: (show) => set({ showCommandBox: show }),
+  setGravityEnabled: (enabled) =>
+    set({
+      gravityEnabled: enabled,
+      gravityCompensation: {},
+      gravityRootOffsetY: 0,
+      gravityMovement: DEFAULT_GRAVITY_MOVEMENT,
+    }),
+  setGravityMovement: (id) =>
+    set((s) => ({
+      gravityMovement: { ...s.gravityMovement, id, amount: 0 },
+      gravityCompensation: {},
+      gravityRootOffsetY: 0,
+    })),
+  setGravityMovementAmount: (amount) =>
+    set((s) => ({
+      gravityMovement: { ...s.gravityMovement, amount },
+    })),
+  setGravityMovementSide: (side) =>
+    set((s) => ({
+      gravityMovement: { ...s.gravityMovement, side },
+      gravityCompensation: {},
+      gravityRootOffsetY: 0,
+    })),
+  resetGravityMovement: () =>
+    set({
+      gravityMovement: DEFAULT_GRAVITY_MOVEMENT,
+      gravityCompensation: {},
+      gravityRootOffsetY: 0,
+    }),
+  setGravitySolution: (solution) =>
+    set({ gravityCompensation: solution.compensation, gravityRootOffsetY: solution.rootOffsetY }),
   setAngle: (jointId, dofId, value) =>
     set((s) => ({
       angles: {
@@ -98,6 +154,7 @@ export const useArmSimStore = create<ArmSimState>((set) => ({
         [jointId]: { ...s.angles[jointId], [dofId]: value },
       },
       activePreset: null,
+      lastEdited: { jointId, dofId },
     })),
   // Per-joint merge patch — unlike applyPose (which resets every joint to
   // neutral first), this touches ONLY the joints present in `partial` and
@@ -110,7 +167,7 @@ export const useArmSimStore = create<ArmSimState>((set) => ({
       for (const [jointId, dofs] of Object.entries(partial)) {
         next[jointId] = { ...next[jointId], ...dofs };
       }
-      return { angles: next };
+      return { angles: next, lastEdited: null };
     }),
   selectJoint: (jointId) => set({ selectedJoint: jointId }),
   hoverJoint: (jointId) => set({ hoveredJoint: jointId }),
@@ -122,9 +179,14 @@ export const useArmSimStore = create<ArmSimState>((set) => ({
       rootPosition: [0, 0, 0],
       rootRotation: [0, 0, 0],
       activePreset: null,
+      gravitySupportProfileId: "standing",
       stanceLeg: "none",
       furniture: "none",
       furnitureRotation: 0,
+      gravityCompensation: {},
+      gravityRootOffsetY: 0,
+      gravityMovement: DEFAULT_GRAVITY_MOVEMENT,
+      lastEdited: null,
     }),
   applyPose: (angles, opts) =>
     set((s) => ({
@@ -132,10 +194,15 @@ export const useArmSimStore = create<ArmSimState>((set) => ({
       rootPosition: opts?.rootPosition ?? [0, 0, 0],
       rootRotation: opts?.rootRotation ?? [0, 0, 0],
       activePreset: opts?.presetId ?? null,
+      gravitySupportProfileId: opts?.supportProfileId ?? opts?.presetId ?? "standing",
       furniture: opts?.furniture ?? "none",
       furnitureRotation: opts?.furnitureRotation ?? 0,
       stanceLeg: opts?.stanceLeg ?? "none",
       selectedJoint: s.selectedJoint,
+      gravityCompensation: {},
+      gravityRootOffsetY: 0,
+      gravityMovement: DEFAULT_GRAVITY_MOVEMENT,
+      lastEdited: null,
     })),
 }));
 

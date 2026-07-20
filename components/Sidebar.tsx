@@ -6,6 +6,7 @@ import { TRUNK_JOINT_DOFS, TRUNK_DOF_META } from "@/lib/trunkDofs";
 import { LEG_JOINT_DOFS, LEG_DOF_META } from "@/lib/legDofs";
 import { MANDIBLE_JOINT_DOFS, MANDIBLE_DOF_META } from "@/lib/mandibleDofs";
 import { JOINT_LABELS } from "@/lib/jointLabels";
+import { GRAVITY_MOVEMENTS } from "@/lib/gravityMovements";
 import { DegreeSlider } from "./DegreeSlider";
 
 const ALL_JOINT_DOFS = { ...ARM_JOINT_DOFS, ...TRUNK_JOINT_DOFS, ...LEG_JOINT_DOFS, ...MANDIBLE_JOINT_DOFS };
@@ -93,6 +94,107 @@ export function Sidebar() {
   const hoverJoint = useArmSimStore((s) => s.hoverJoint);
   const stanceLeg = useArmSimStore((s) => s.stanceLeg);
   const setStanceLeg = useArmSimStore((s) => s.setStanceLeg);
+  const gravityEnabled = useArmSimStore((s) => s.gravityEnabled);
+  const gravityMovement = useArmSimStore((s) => s.gravityMovement);
+  const setGravityMovement = useArmSimStore((s) => s.setGravityMovement);
+  const setGravityMovementAmount = useArmSimStore((s) => s.setGravityMovementAmount);
+  const setGravityMovementSide = useArmSimStore((s) => s.setGravityMovementSide);
+  const resetGravityMovement = useArmSimStore((s) => s.resetGravityMovement);
+
+  if (gravityEnabled) {
+    const movement = GRAVITY_MOVEMENTS.find((item) => item.id === gravityMovement.id) ?? GRAVITY_MOVEMENTS[0];
+    return (
+      <aside className="flex h-full w-full shrink-0 flex-col overflow-y-auto border-ink-800 bg-ink-900 sm:h-auto sm:w-80 sm:border-l">
+        <div className="border-b border-ink-800 px-4 py-3">
+          <div className="text-[10px] font-semibold uppercase tracking-wider text-ink-500">
+            Gravity movements
+          </div>
+          <div className="mt-0.5 text-[15px] font-semibold text-ink-100">Closed-chain controls</div>
+        </div>
+
+        <div className="flex flex-col gap-4 px-4 py-3">
+          <section>
+            <div className="mb-1.5 text-[10px] font-semibold uppercase tracking-wider text-ink-500">
+              Movement
+            </div>
+            <div className="grid grid-cols-2 gap-1.5">
+              {GRAVITY_MOVEMENTS.map((item) => {
+                const active = item.id === gravityMovement.id;
+                return (
+                  <button
+                    key={item.id}
+                    type="button"
+                    onClick={() => setGravityMovement(item.id)}
+                    className={`h-9 rounded-md border px-2 text-[12px] font-medium transition ${
+                      active
+                        ? "border-brand-600/70 bg-brand-900/30 text-brand-300"
+                        : "border-ink-700 bg-ink-800/40 text-ink-300 hover:border-ink-600 hover:bg-ink-800"
+                    }`}
+                  >
+                    {item.label}
+                  </button>
+                );
+              })}
+            </div>
+          </section>
+
+          {movement.sideLabel && (
+            <section>
+              <div className="mb-1.5 text-[10px] font-semibold uppercase tracking-wider text-ink-500">
+                {movement.sideLabel}
+              </div>
+              <div className="flex gap-1">
+                {(["left", "right"] as const).map((side) => (
+                  <button
+                    key={side}
+                    type="button"
+                    onClick={() => setGravityMovementSide(side)}
+                    className={`flex-1 rounded border px-2 py-1.5 text-[11px] font-medium capitalize transition ${
+                      gravityMovement.side === side
+                        ? "border-brand-600/60 bg-brand-900/25 text-brand-400"
+                        : "border-ink-700 text-ink-400 hover:text-ink-200"
+                    }`}
+                  >
+                    {side}
+                  </button>
+                ))}
+              </div>
+            </section>
+          )}
+
+          <section className="rounded-md border border-ink-700 bg-ink-800/50 p-2.5">
+            <div className="mb-1 flex items-baseline justify-between gap-2">
+              <div className="text-[12px] font-medium text-ink-200">{movement.controlLabel}</div>
+              <div className="shrink-0 font-mono text-[12px] tabular-nums text-brand-400">
+                {Math.round(gravityMovement.amount)}°
+              </div>
+            </div>
+            <div className="mb-1.5 text-[10px] leading-relaxed text-ink-500">{movement.summary}</div>
+            <DegreeSlider
+              value={gravityMovement.amount}
+              min={0}
+              max={movement.max}
+              onChange={setGravityMovementAmount}
+            />
+          </section>
+
+          <div className="rounded border border-ink-800 bg-ink-950/35 px-2.5 py-2 text-[10px] leading-relaxed text-ink-500">
+            Support contacts stay anchored while the movement knob coordinates the linked joints.
+          </div>
+        </div>
+
+        <div className="mt-auto border-t border-ink-800 px-4 py-3">
+          <button
+            type="button"
+            onClick={resetGravityMovement}
+            className="w-full rounded-md border border-brand-700/50 bg-brand-900/20 px-2.5 py-2 text-[12px] font-medium text-brand-400 transition hover:bg-brand-900/40"
+          >
+            Reset Movement
+          </button>
+        </div>
+      </aside>
+    );
+  }
 
   if (!selectedJoint) {
     return (

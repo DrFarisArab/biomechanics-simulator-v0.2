@@ -7,6 +7,8 @@ import { TRUNK_DOF_META, TRUNK_JOINT_DOFS } from "@/lib/trunkDofs";
 import { LEG_DOF_META, LEG_JOINT_DOFS } from "@/lib/legDofs";
 import { MANDIBLE_DOF_META, MANDIBLE_JOINT_DOFS } from "@/lib/mandibleDofs";
 import { ALL_JOINT_IDS, JOINT_LABELS } from "@/lib/jointLabels";
+import { applyGravityMovement } from "@/lib/gravityMovements";
+import { mergeGravityAngles } from "@/lib/gravityMode";
 
 const ALL_JOINT_DOFS = { ...ARM_JOINT_DOFS, ...TRUNK_JOINT_DOFS, ...LEG_JOINT_DOFS, ...MANDIBLE_JOINT_DOFS };
 const ALL_DOF_META = { ...ARM_DOF_META, ...TRUNK_DOF_META, ...LEG_DOF_META, ...MANDIBLE_DOF_META };
@@ -33,11 +35,18 @@ function formatValue(value: number, unit: "°" | "mm") {
 
 export function MovementSummaryPanel() {
   const angles = useArmSimStore((s) => s.angles);
+  const gravityEnabled = useArmSimStore((s) => s.gravityEnabled);
+  const gravityMovement = useArmSimStore((s) => s.gravityMovement);
+  const gravityCompensation = useArmSimStore((s) => s.gravityCompensation);
+  const effectiveAngles = useMemo(() => {
+    if (!gravityEnabled) return angles;
+    return mergeGravityAngles(applyGravityMovement(angles, gravityMovement), gravityCompensation);
+  }, [angles, gravityCompensation, gravityEnabled, gravityMovement]);
 
   const movingJoints = useMemo<MovingJoint[]>(
     () =>
       ALL_JOINT_IDS.map((jointId) => {
-        const jointAngles = angles[jointId] ?? {};
+        const jointAngles = effectiveAngles[jointId] ?? {};
         const dofs = Object.keys(ALL_JOINT_DOFS[jointId] ?? {})
           .map((dofId) => {
             const value = jointAngles[dofId] ?? 0;
@@ -53,7 +62,7 @@ export function MovementSummaryPanel() {
         if (dofs.length === 0) return null;
         return { id: jointId, label: JOINT_LABELS[jointId], dofs };
       }).filter((joint): joint is MovingJoint => joint !== null),
-    [angles]
+    [effectiveAngles]
   );
 
   return (
