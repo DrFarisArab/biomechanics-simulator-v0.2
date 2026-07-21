@@ -255,7 +255,16 @@ export function Sidebar() {
           <div className="text-[10px] font-semibold uppercase tracking-wider text-ink-500">
             Open-chain movements
           </div>
-          <div className="mt-0.5 text-[15px] font-semibold text-ink-100">Select a joint</div>
+          <div className="mt-0.5 flex items-center justify-between gap-2">
+            <div className="min-w-0 truncate text-[15px] font-semibold text-ink-100">Select a joint</div>
+            <button
+              type="button"
+              onClick={resetAll}
+              className="shrink-0 rounded-md border border-warning-500/45 bg-warning-500/12 px-2 py-1 text-[10px] font-semibold text-warning-300 transition hover:border-warning-400/70 hover:bg-warning-500/20"
+            >
+              Reset Model
+            </button>
+          </div>
         </div>
 
         <div className="scroll-slim flex flex-col gap-3 px-4 py-3 sm:min-h-0 sm:flex-1 sm:overflow-y-auto">
@@ -286,7 +295,9 @@ export function Sidebar() {
                       <span className="min-w-0 truncate text-[12px] font-medium">{joint.label}</span>
                       <span
                         className={`shrink-0 rounded px-1.5 py-0.5 text-[10px] font-medium ${
-                          activeCount > 0 ? "bg-brand-900/40 text-brand-400" : "bg-ink-900 text-ink-500"
+                          activeCount > 0
+                            ? "border border-warning-500/60 bg-warning-500/18 text-warning-300 shadow-[0_0_10px_rgba(245,158,11,0.18)]"
+                            : "bg-ink-900 text-ink-500"
                         }`}
                       >
                         {activeCount > 0 ? `${activeCount} moved` : "Neutral"}

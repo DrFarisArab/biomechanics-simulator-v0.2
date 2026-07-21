@@ -100,7 +100,7 @@ export function MovementSummaryPanel() {
               No joint movement applied.
             </div>
           ) : (
-            <div className="scroll-slim mt-1 flex max-h-[19dvh] min-h-0 flex-col gap-1 overflow-y-auto p-1">
+            <div className="pointer-events-auto scroll-slim mt-1 flex max-h-[19dvh] min-h-0 flex-col gap-1 overflow-y-auto overscroll-contain p-1">
               {movingJoints.map((joint) => (
                 <div
                   key={joint.id}

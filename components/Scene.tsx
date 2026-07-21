@@ -166,9 +166,9 @@ export function Scene() {
         className="!bg-ink-950"
       >
         <color attach="background" args={[background]} />
-        <ambientLight intensity={0.6} />
-        <directionalLight position={[1, 2, 1]} intensity={1.3} />
-        <directionalLight position={[-1, 0.5, -1]} intensity={0.4} />
+        <ambientLight intensity={0.82} />
+        <directionalLight position={[1, 2, 1]} intensity={1.55} />
+        <directionalLight position={[-1, 0.5, -1]} intensity={0.62} />
         <Suspense fallback={null}>
           <GravityConstraintLayer />
           <BodyModel key={appearance} modelUrl={MODEL_URLS[appearance]} />

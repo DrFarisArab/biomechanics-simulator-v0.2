@@ -203,17 +203,16 @@ function Timeline() {
   const currentTime = useRecordReplayStore((s) => s.currentTime);
   const isPlaying = useRecordReplayStore((s) => s.isPlaying);
   const loop = useRecordReplayStore((s) => s.loop);
-  const speed = useRecordReplayStore((s) => s.speed);
   const seek = useRecordReplayStore((s) => s.seek);
   const play = useRecordReplayStore((s) => s.play);
   const pause = useRecordReplayStore((s) => s.pause);
   const setLoop = useRecordReplayStore((s) => s.setLoop);
-  const setSpeed = useRecordReplayStore((s) => s.setSpeed);
   const deleteKeyframe = useRecordReplayStore((s) => s.deleteKeyframe);
 
   const duration = clipDuration(clip);
   const scrubMax = Math.max(duration, currentTime, 1);
   const canPlay = (clip?.keyframes.length ?? 0) >= 2;
+  const nudgeTime = (delta: number) => seek(Math.max(0, currentTime + delta));
 
   return (
     <div className="flex flex-col gap-2 border-t border-ink-800 px-4 py-3">
@@ -236,28 +235,30 @@ function Timeline() {
         >
           ⇄
         </button>
-        <select
-          value={speed}
-          onChange={(e) => setSpeed(Number(e.target.value))}
-          className="rounded-md border border-ink-700 bg-ink-800/50 px-1.5 py-1 text-[11px] text-ink-200 focus:border-brand-600 focus:outline-none"
-        >
-          {SPEED_OPTIONS.map((s) => (
-            <option key={s} value={s}>
-              {s}x
-            </option>
-          ))}
-        </select>
         <div className="ml-auto flex items-center gap-1 font-mono text-[11px] tabular-nums text-ink-300">
-          <input
-            type="number"
-            step={0.1}
-            min={0}
-            value={Math.round(currentTime * 10) / 10}
-            onChange={(e) => seek(Number(e.target.value))}
-            title="Exact time — type a value to jump the cursor there, e.g. to place the next keyframe past the current clip end"
-            className="w-14 rounded border border-ink-700 bg-ink-800/50 px-1 py-0.5 text-right text-ink-200 focus:border-brand-600 focus:outline-none"
-          />
-          <span>s / {formatTime(duration)}</span>
+          <button
+            type="button"
+            onClick={() => nudgeTime(-0.1)}
+            aria-label="Move replay time back 0.1 seconds"
+            className="grid h-7 w-7 shrink-0 place-items-center rounded-md border border-ink-700 bg-ink-800/50 text-[13px] text-ink-300 transition hover:border-brand-600/60 hover:text-brand-400"
+          >
+            -
+          </button>
+          <span
+            title="Current replay time"
+            className="min-w-12 rounded border border-ink-700 bg-ink-800/50 px-1.5 py-1 text-center text-ink-200"
+          >
+            {formatTime(currentTime)}
+          </span>
+          <button
+            type="button"
+            onClick={() => nudgeTime(0.1)}
+            aria-label="Move replay time forward 0.1 seconds"
+            className="grid h-7 w-7 shrink-0 place-items-center rounded-md border border-ink-700 bg-ink-800/50 text-[13px] text-ink-300 transition hover:border-brand-600/60 hover:text-brand-400"
+          >
+            +
+          </button>
+          <span>/ {formatTime(duration)}</span>
         </div>
       </div>
 
@@ -304,8 +305,10 @@ export function RecordReplayPanel() {
   const currentTime = useRecordReplayStore((s) => s.currentTime);
   const discardClip = useRecordReplayStore((s) => s.discardClip);
   const addKeyframe = useRecordReplayStore((s) => s.addKeyframe);
+  const speed = useRecordReplayStore((s) => s.speed);
   const setEasing = useRecordReplayStore((s) => s.setEasing);
   const setPanelOpen = useRecordReplayStore((s) => s.setPanelOpen);
+  const setSpeed = useRecordReplayStore((s) => s.setSpeed);
   const [isExporting, setIsExporting] = useState(false);
   const [exportProgress, setExportProgress] = useState(0);
   const [exportError, setExportError] = useState<string | null>(null);
@@ -370,7 +373,7 @@ export function RecordReplayPanel() {
             </button>
           </div>
 
-          <div className={isExporting ? "pointer-events-none opacity-60" : ""}>
+          <div className={`scroll-slim flex min-h-0 flex-1 flex-col overflow-y-auto ${isExporting ? "pointer-events-none opacity-60" : ""}`}>
             <div className="flex flex-col gap-3 px-4 py-3">
               {clip.closedChainMovement ? (
                 <ClosedChainMovementEditor movementId={clip.closedChainMovement} />
@@ -384,38 +387,45 @@ export function RecordReplayPanel() {
                 onClick={addKeyframe}
                 className="w-full rounded-md border border-brand-700/50 bg-brand-900/20 px-3 py-2 text-[12px] font-semibold text-brand-400 transition hover:bg-brand-900/40"
               >
-                Add Keyframe @ {formatTime(currentTime)}
+                Set Movement @ {formatTime(currentTime)}
               </button>
-
-              <div className="flex items-center justify-between rounded-md border border-ink-700 bg-ink-800/40 px-2.5 py-1.5">
-                <span className="text-[11px] text-ink-300">Easing</span>
-                <div className="flex gap-1">
-                  {(["easeInOut", "linear"] as const).map((e) => (
-                    <button
-                      key={e}
-                      onClick={() => setEasing(e)}
-                      className={`rounded px-2 py-1 text-[10px] font-medium transition ${
-                        clip.easing === e
-                          ? "border border-brand-600/60 bg-brand-900/25 text-brand-400"
-                          : "border border-ink-700 text-ink-300 hover:text-ink-200"
-                      }`}
-                    >
-                      {e === "easeInOut" ? "Ease in-out" : "Linear"}
-                    </button>
-                  ))}
-                </div>
-              </div>
-
-              <div className="text-[10px] leading-relaxed text-ink-400">
-                {clip.keyframes.length} keyframe{clip.keyframes.length === 1 ? "" : "s"} — move a slider above, then Add
-                Keyframe at the time you want it captured.
-              </div>
             </div>
 
             <Timeline />
           </div>
 
           <div className="border-t border-ink-800 px-4 py-3">
+            <div className="mb-2 flex items-center justify-between rounded-md border border-ink-700 bg-ink-800/40 px-2.5 py-1.5">
+              <select
+                value={speed}
+                onChange={(e) => setSpeed(Number(e.target.value))}
+                disabled={isExporting}
+                aria-label="Playback speed"
+                className="rounded-md border border-ink-700 bg-ink-800/50 px-1.5 py-1 text-[11px] text-ink-200 focus:border-brand-600 focus:outline-none disabled:cursor-not-allowed disabled:opacity-50"
+              >
+                {SPEED_OPTIONS.map((s) => (
+                  <option key={s} value={s}>
+                    {s}x
+                  </option>
+                ))}
+              </select>
+              <div className="flex gap-1">
+                {(["easeInOut", "linear"] as const).map((e) => (
+                  <button
+                    key={e}
+                    onClick={() => setEasing(e)}
+                    disabled={isExporting}
+                    className={`rounded px-2 py-1 text-[10px] font-medium transition ${
+                      clip.easing === e
+                        ? "border border-brand-600/60 bg-brand-900/25 text-brand-400"
+                        : "border border-ink-700 text-ink-300 hover:text-ink-200"
+                    } disabled:cursor-not-allowed disabled:opacity-50`}
+                  >
+                    {e === "easeInOut" ? "Ease in-out" : "Linear"}
+                  </button>
+                ))}
+              </div>
+            </div>
             <button
               onClick={handleExport}
               disabled={!canExport || isExporting}
@@ -435,7 +445,7 @@ export function RecordReplayPanel() {
               <div className="mt-2 text-[10px] leading-relaxed text-danger-400">{exportError}</div>
             ) : (
               <div className="mt-1.5 text-[10px] leading-relaxed text-ink-400">
-                Exports the model viewport at 30 fps using the current camera and display layers.
+                {clip.keyframes.length} keyframe{clip.keyframes.length === 1 ? "" : "s"} recorded. Exports the model viewport at 30 fps.
               </div>
             )}
           </div>

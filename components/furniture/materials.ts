@@ -7,6 +7,7 @@ import * as THREE from "three";
  * the v1 app's identical furniture treatment.
  */
 let _panel: THREE.Material | null = null;
+let _bedTop: THREE.Material | null = null;
 let _frame: THREE.Material | null = null;
 
 /** Translucent panel material (seat, backrest, table top). */
@@ -25,6 +26,21 @@ export function furniturePanelMaterial(): THREE.Material {
     depthWrite: false,
   });
   return _panel;
+}
+
+/** Extra-light treatment table top so recumbent bodies are not tinted. */
+export function furnitureBedTopMaterial(): THREE.Material {
+  if (_bedTop) return _bedTop;
+  _bedTop = new THREE.MeshStandardMaterial({
+    color: new THREE.Color("#5eead4"),
+    transparent: true,
+    opacity: 0.055,
+    roughness: 0.4,
+    metalness: 0,
+    side: THREE.DoubleSide,
+    depthWrite: false,
+  });
+  return _bedTop;
 }
 
 /** Slightly more visible frame/leg material, so the structure still reads. */

@@ -1,6 +1,6 @@
 "use client";
 
-import { furnitureFrameMaterial, furniturePanelMaterial } from "./materials";
+import { furnitureBedTopMaterial, furnitureFrameMaterial } from "./materials";
 
 /**
  * Semi-transparent treatment table, used for seated-on-table and (future)
@@ -9,7 +9,7 @@ import { furnitureFrameMaterial, furniturePanelMaterial } from "./materials";
  * table, not sinking into it. Ported from the v1 app's identical table.
  */
 export function Bed({ rotationY = 0 }: { rotationY?: number }) {
-  const panel = furniturePanelMaterial();
+  const panel = furnitureBedTopMaterial();
   const frame = furnitureFrameMaterial();
   const topY = 0.53; // box centre; physical top surface ≈ 0.555
   const length = 2.15; // along Z (before any rotationY)
