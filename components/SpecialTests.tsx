@@ -786,7 +786,12 @@ export function SpecialTests() {
           </span>
         </button>
       </div>
-      <div style={{ zoom: TEXT_SCALE_STEPS[textScaleIndex] }}>{content}</div>
+      <div
+        className="scroll-slim sm:min-h-0 sm:flex-1 sm:overflow-y-auto"
+        style={{ zoom: TEXT_SCALE_STEPS[textScaleIndex] }}
+      >
+        {content}
+      </div>
     </aside>
   );
 }

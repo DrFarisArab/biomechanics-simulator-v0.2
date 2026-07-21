@@ -208,26 +208,30 @@ body {
    navigation context rather than a bright browser control over the model. */
 .scroll-slim {
   scrollbar-width: thin;
-  scrollbar-color: rgb(var(--brand-500) / 0.42) transparent;
+  scrollbar-color: rgb(var(--brand-400) / 0.46) rgb(var(--ink-950) / 0.18);
+  scrollbar-gutter: stable;
 }
 
 .scroll-slim::-webkit-scrollbar {
-  width: 6px;
-}
-
-.scroll-slim::-webkit-scrollbar-track {
+  width: 10px;
+  height: 10px;
   background: transparent;
 }
 
+.scroll-slim::-webkit-scrollbar-track {
+  background: rgb(var(--ink-950) / 0.18);
+  border-radius: 999px;
+}
+
 .scroll-slim::-webkit-scrollbar-thumb {
-  background: rgb(var(--brand-500) / 0.38);
-  border: 2px solid transparent;
+  background: rgb(var(--brand-400) / 0.46);
+  border: 3px solid rgb(var(--ink-900));
   border-radius: 999px;
   background-clip: padding-box;
 }
 
 .scroll-slim::-webkit-scrollbar-thumb:hover {
-  background-color: rgb(var(--brand-400) / 0.58);
+  background-color: rgb(var(--brand-300) / 0.68);
 }
 
 @layer utilities {

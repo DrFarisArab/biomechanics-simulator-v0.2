@@ -163,7 +163,7 @@ export function Sidebar() {
           <div className="mt-0.5 text-[15px] font-semibold text-ink-100">Select a Movement</div>
         </div>
 
-        <div className="flex flex-col gap-4 px-4 py-3">
+        <div className="scroll-slim flex flex-col gap-4 px-4 py-3 sm:min-h-0 sm:flex-1 sm:overflow-y-auto">
           <section>
             <div className="mb-1.5 text-[10px] font-semibold uppercase tracking-wider text-ink-500">
               Movement
@@ -176,7 +176,7 @@ export function Sidebar() {
                     key={item.id}
                     type="button"
                     onClick={() => setGravityMovement(item.id)}
-                    className={`h-9 rounded-md border px-2 text-[12px] font-medium transition ${
+                    className={`min-h-9 rounded-md border px-2 py-2 text-[12px] font-medium leading-tight transition ${
                       active
                         ? "border-brand-600/70 bg-brand-900/30 text-brand-300"
                         : "border-ink-700 bg-ink-800/40 text-ink-300 hover:border-ink-600 hover:bg-ink-800"
@@ -258,7 +258,7 @@ export function Sidebar() {
           <div className="mt-0.5 text-[15px] font-semibold text-ink-100">Select a joint</div>
         </div>
 
-        <div className="flex flex-col gap-3 px-4 py-3">
+        <div className="scroll-slim flex flex-col gap-3 px-4 py-3 sm:min-h-0 sm:flex-1 sm:overflow-y-auto">
           {JOINT_PICKER_SECTIONS.map((section) => (
             <section key={section.id}>
               <div className="mb-1.5 text-[10px] font-semibold uppercase tracking-wider text-ink-500">
@@ -378,7 +378,7 @@ export function Sidebar() {
         </div>
       )}
 
-      <div className="flex flex-col gap-2 px-4 py-3">
+      <div className="scroll-slim flex flex-col gap-2 px-4 py-3 sm:min-h-0 sm:flex-1 sm:overflow-y-auto">
         {Object.keys(dofs).map((dofId) => {
           const dofMeta = meta[dofId];
           const value = jointAngles[dofId] ?? 0;

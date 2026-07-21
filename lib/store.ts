@@ -52,6 +52,7 @@ interface ArmSimState {
   gravityEnabled: boolean;
   gravityCompensation: Record<string, Record<string, number>>;
   gravityRootOffsetY: number;
+  gravityRootOffset: Vec3;
   gravityMovement: GravityMovementState;
   lastEdited: { jointId: string; dofId: string } | null;
   setAppearance: (a: Appearance) => void;
@@ -69,7 +70,7 @@ interface ArmSimState {
   setGravityMovementAmount: (amount: number) => void;
   setGravityMovementSide: (side: GravityMovementSide) => void;
   resetGravityMovement: () => void;
-  setGravitySolution: (solution: { compensation: Record<string, Record<string, number>>; rootOffsetY: number }) => void;
+  setGravitySolution: (solution: { compensation: Record<string, Record<string, number>>; rootOffsetY: number; rootOffset?: Vec3 }) => void;
   resetAll: () => void;
   applyPose: (
     angles: Record<string, Record<string, number>>,
@@ -105,6 +106,7 @@ export const useArmSimStore = create<ArmSimState>((set) => ({
   gravityEnabled: false,
   gravityCompensation: {},
   gravityRootOffsetY: 0,
+  gravityRootOffset: [0, 0, 0],
   gravityMovement: DEFAULT_GRAVITY_MOVEMENT,
   lastEdited: null,
   // Skin overlay is a translucent reference layer meant to sit over the bare
@@ -121,6 +123,7 @@ export const useArmSimStore = create<ArmSimState>((set) => ({
       gravityEnabled: enabled,
       gravityCompensation: {},
       gravityRootOffsetY: 0,
+      gravityRootOffset: [0, 0, 0],
       gravityMovement: DEFAULT_GRAVITY_MOVEMENT,
     }),
   setGravityMovement: (id) =>
@@ -128,6 +131,7 @@ export const useArmSimStore = create<ArmSimState>((set) => ({
       gravityMovement: { ...s.gravityMovement, id, amount: 0 },
       gravityCompensation: {},
       gravityRootOffsetY: 0,
+      gravityRootOffset: [0, 0, 0],
     })),
   setGravityMovementAmount: (amount) =>
     set((s) => ({
@@ -138,15 +142,21 @@ export const useArmSimStore = create<ArmSimState>((set) => ({
       gravityMovement: { ...s.gravityMovement, side },
       gravityCompensation: {},
       gravityRootOffsetY: 0,
+      gravityRootOffset: [0, 0, 0],
     })),
   resetGravityMovement: () =>
     set({
       gravityMovement: DEFAULT_GRAVITY_MOVEMENT,
       gravityCompensation: {},
       gravityRootOffsetY: 0,
+      gravityRootOffset: [0, 0, 0],
     }),
   setGravitySolution: (solution) =>
-    set({ gravityCompensation: solution.compensation, gravityRootOffsetY: solution.rootOffsetY }),
+    set({
+      gravityCompensation: solution.compensation,
+      gravityRootOffsetY: solution.rootOffsetY,
+      gravityRootOffset: solution.rootOffset ?? [0, solution.rootOffsetY, 0],
+    }),
   setAngle: (jointId, dofId, value) =>
     set((s) => ({
       angles: {
@@ -185,6 +195,7 @@ export const useArmSimStore = create<ArmSimState>((set) => ({
       furnitureRotation: 0,
       gravityCompensation: {},
       gravityRootOffsetY: 0,
+      gravityRootOffset: [0, 0, 0],
       gravityMovement: DEFAULT_GRAVITY_MOVEMENT,
       lastEdited: null,
     }),
@@ -201,6 +212,7 @@ export const useArmSimStore = create<ArmSimState>((set) => ({
       selectedJoint: s.selectedJoint,
       gravityCompensation: {},
       gravityRootOffsetY: 0,
+      gravityRootOffset: [0, 0, 0],
       gravityMovement: DEFAULT_GRAVITY_MOVEMENT,
       lastEdited: null,
     })),

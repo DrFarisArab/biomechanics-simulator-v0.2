@@ -134,7 +134,7 @@ export function Footer() {
                 <div className="text-[12px] font-semibold text-ink-200">4. Choose a chain mode</div>
                 <p className="mt-0.5 text-[11px] leading-relaxed text-ink-400">
                   Use the right-side selector to choose Close-chain for coordinated Squat, Lunge,
-                  Hip Hike, and Calf Raise controls, or Open-chain for individual joint movement.
+                  Hip Hike, Calf Raise, and Bowing Forward controls, or Open-chain for individual joint movement.
                   Choose a side when available, then adjust the movement knob.
                 </p>
               </section>

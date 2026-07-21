@@ -11,6 +11,7 @@ import { gravitySolutionChanged, solveGravityConstraints } from "@/lib/gravityMo
 import {
   applyGravityMovement,
   gravityMovementLockedDofs,
+  gravityMovementPinsSupportPositions,
   gravityMovementStanceLeg,
   gravityMovementSupportProfileId,
   gravityMovementSupports,
@@ -45,7 +46,12 @@ export function GravityConstraintLayer() {
     hipLocalOffsets: {},
     jawRestPosition: null,
   });
-  const solverCalibrationRef = useRef<{ key: string; targetY: number[]; balanceAllowance: number } | null>(null);
+  const solverCalibrationRef = useRef<{
+    key: string;
+    targetY: number[];
+    targetPositions: THREE.Vector3[];
+    balanceAllowance: number;
+  } | null>(null);
   const solutionRef = useRef<ReturnType<typeof solveGravityConstraints> | null>(null);
 
   const angles = useArmSimStore((s) => s.angles);
@@ -70,6 +76,7 @@ export function GravityConstraintLayer() {
   );
   const lockedDofs = useMemo(() => gravityMovementLockedDofs(gravityMovement), [gravityMovement]);
   const verticalOnly = gravityMovementUsesVerticalOnlyCompensation(gravityMovement);
+  const pinSupportPositions = gravityMovementPinsSupportPositions(gravityMovement);
   const effectiveStanceLeg = gravityMovementStanceLeg(gravityMovement) ?? stanceLeg;
 
   useMemo(() => {
@@ -103,6 +110,7 @@ export function GravityConstraintLayer() {
       lastEdited,
       lockedDofs,
       verticalOnly,
+      pinSupportPositions,
       pose: poseRef.current,
       rigRoot,
       applyPose,
@@ -112,14 +120,18 @@ export function GravityConstraintLayer() {
     const current = useArmSimStore.getState();
     if (
       gravitySolutionChanged(
-        { compensation: current.gravityCompensation, rootOffsetY: current.gravityRootOffsetY },
+        {
+          compensation: current.gravityCompensation,
+          rootOffsetY: current.gravityRootOffsetY,
+          rootOffset: current.gravityRootOffset,
+        },
         next
       )
     ) {
       setGravitySolution(next);
     }
     invalidate(2);
-  }, [effectiveStanceLeg, gravityEnabled, invalidate, lastEdited, lockedDofs, movementAngles, rootPosition, rootRotation, setGravitySolution, supportProfileId, supports, verticalOnly]);
+  }, [effectiveStanceLeg, gravityEnabled, invalidate, lastEdited, lockedDofs, movementAngles, pinSupportPositions, rootPosition, rootRotation, setGravitySolution, supportProfileId, supports, verticalOnly]);
 
   useFrame(() => {
     const root = rigRootRef.current;

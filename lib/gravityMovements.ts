@@ -1,7 +1,7 @@
 import type { StanceLeg } from "./stanceMode";
 import type { PoseSupport } from "./gravityMode";
 
-export type GravityMovementId = "squat" | "lunge" | "hip_hike" | "calf_raise";
+export type GravityMovementId = "squat" | "lunge" | "hip_hike" | "calf_raise" | "bow_forward";
 export type GravityMovementSide = "left" | "right";
 
 export type GravityMovementState = {
@@ -55,6 +55,13 @@ export const GRAVITY_MOVEMENTS: GravityMovementDefinition[] = [
     controlLabel: "Heel rise",
     max: 30,
     summary: "Bilateral closed-chain plantarflexion",
+  },
+  {
+    id: "bow_forward",
+    label: "Bowing Forward",
+    controlLabel: "Forward bend",
+    max: 100,
+    summary: "Standing forward trunk flexion with feet fixed on the floor",
   },
 ];
 
@@ -117,6 +124,21 @@ function movementTargets(state: GravityMovementState): Record<string, Record<str
     };
   }
 
+  if (state.id === "bow_forward") {
+    return {
+      hip_left: { flexExt: Math.min(38, amount * 0.38) },
+      hip_right: { flexExt: Math.min(38, amount * 0.38) },
+      ankle_left: { dorsiPlantar: Math.min(16, amount * 0.16) },
+      ankle_right: { dorsiPlantar: Math.min(16, amount * 0.16) },
+      lumbar: { flexExt: Math.min(58, amount * 0.58) },
+      thoracic: { flexExt: Math.min(42, amount * 0.42) },
+      cervical: { flexExt: Math.min(22, amount * 0.22) },
+      head: { flexExt: Math.min(18, amount * 0.18) },
+      shoulder_left: { sagittalFlexExt: Math.min(100, amount) },
+      shoulder_right: { sagittalFlexExt: Math.min(100, amount) },
+    };
+  }
+
   return {
     ankle_left: { dorsiPlantar: -amount },
     ankle_right: { dorsiPlantar: -amount },
@@ -175,6 +197,13 @@ export function gravityMovementStanceLeg(state: GravityMovementState): StanceLeg
 export function gravityMovementUsesVerticalOnlyCompensation(state: GravityMovementState) {
   return (
     state.amount >= 0.5 &&
-    (state.id === "squat" || state.id === "hip_hike" || state.id === "calf_raise")
+    (state.id === "squat" ||
+      state.id === "hip_hike" ||
+      state.id === "calf_raise" ||
+      state.id === "bow_forward")
   );
+}
+
+export function gravityMovementPinsSupportPositions(state: GravityMovementState) {
+  return state.amount >= 0.5 && state.id === "bow_forward";
 }

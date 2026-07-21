@@ -46,12 +46,14 @@ type Candidate = { jointId: string; dofId: string; maxCompensation: number };
 type Calibration = {
   key: string;
   targetY: number[];
+  targetPositions: THREE.Vector3[];
   balanceAllowance: number;
 };
 
 export type GravitySolution = {
   compensation: Record<string, Record<string, number>>;
   rootOffsetY: number;
+  rootOffset: [number, number, number];
   com: THREE.Vector3;
   supportPositions: THREE.Vector3[];
   projectionSurfaceY: number;
@@ -213,6 +215,7 @@ export function solveGravityConstraints({
   lastEdited,
   lockedDofs = [],
   verticalOnly = false,
+  pinSupportPositions = false,
   pose,
   rigRoot,
   applyPose,
@@ -225,6 +228,7 @@ export function solveGravityConstraints({
   lastEdited: { jointId: string; dofId: string } | null;
   lockedDofs?: string[];
   verticalOnly?: boolean;
+  pinSupportPositions?: boolean;
   pose: RigPoseRefs;
   rigRoot: THREE.Group;
   applyPose: (angles: Record<string, Record<string, number>>) => void;
@@ -247,6 +251,7 @@ export function solveGravityConstraints({
     return {
       compensation: {},
       rootOffsetY: 0,
+      rootOffset: [0, 0, 0],
       com: centerOfMass(pose.bones, point),
       supportPositions: currentSupports,
       projectionSurfaceY: currentSupports.length > 0 ? Math.min(...currentSupports.map((position) => position.y)) : 0,
@@ -259,11 +264,13 @@ export function solveGravityConstraints({
     calibration.current = {
       key: calibrationKey,
       targetY: currentSupports.map((position) => position.y),
+      targetPositions: currentSupports.map((position) => position.clone()),
       balanceAllowance: supportDistance(com, currentSupports),
     };
     return {
       compensation: {},
       rootOffsetY: 0,
+      rootOffset: [0, 0, 0],
       com,
       supportPositions: currentSupports,
       projectionSurfaceY: projectionSurfaceY(supports, calibration.current.targetY),
@@ -319,9 +326,16 @@ export function solveGravityConstraints({
   }
 
   const finalSupports = supportPoints();
-  const averageError = finalSupports.reduce((sum, position, index) => sum + ((targetY[index] ?? position.y) - position.y), 0) /
-    Math.max(1, finalSupports.length);
-  rigRoot.position.y = averageError;
+  const supportCount = Math.max(1, finalSupports.length);
+  const averageErrorY = finalSupports.reduce((sum, position, index) => sum + ((targetY[index] ?? position.y) - position.y), 0) /
+    supportCount;
+  const averageError = pinSupportPositions
+    ? finalSupports.reduce((sum, position, index) => {
+        const target = calibration.current!.targetPositions[index];
+        return target ? sum.add(target.clone().sub(position)) : sum;
+      }, new THREE.Vector3()).divideScalar(supportCount)
+    : new THREE.Vector3(0, averageErrorY, 0);
+  rigRoot.position.copy(averageError);
   rigRoot.updateMatrixWorld(true);
   const shiftedSupports = supportPoints();
   const com = centerOfMass(pose.bones, new THREE.Vector3());
@@ -332,7 +346,8 @@ export function solveGravityConstraints({
   );
   return {
     compensation: cleaned,
-    rootOffsetY: averageError,
+    rootOffsetY: averageError.y,
+    rootOffset: [averageError.x, averageError.y, averageError.z],
     com,
     supportPositions: shiftedSupports,
     projectionSurfaceY: projectionSurfaceY(supports, targetY),
@@ -341,8 +356,13 @@ export function solveGravityConstraints({
 }
 
 export function gravitySolutionChanged(
-  previous: { compensation: Record<string, Record<string, number>>; rootOffsetY: number },
-  next: { compensation: Record<string, Record<string, number>>; rootOffsetY: number }
+  previous: { compensation: Record<string, Record<string, number>>; rootOffsetY: number; rootOffset?: [number, number, number] },
+  next: { compensation: Record<string, Record<string, number>>; rootOffsetY: number; rootOffset?: [number, number, number] }
 ) {
-  return !sameCompensation(previous.compensation, next.compensation) || Math.abs(previous.rootOffsetY - next.rootOffsetY) > 0.0001;
+  const previousOffset = previous.rootOffset ?? [0, previous.rootOffsetY, 0];
+  const nextOffset = next.rootOffset ?? [0, next.rootOffsetY, 0];
+  return (
+    !sameCompensation(previous.compensation, next.compensation) ||
+    previousOffset.some((value, index) => Math.abs(value - nextOffset[index]) > 0.0001)
+  );
 }

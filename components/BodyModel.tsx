@@ -99,7 +99,7 @@ export function BodyModel({ modelUrl }: { modelUrl: string }) {
   const showJointMarkers = useArmSimStore((s) => s.showJointMarkers);
   const gravityEnabled = useArmSimStore((s) => s.gravityEnabled);
   const gravityCompensation = useArmSimStore((s) => s.gravityCompensation);
-  const gravityRootOffsetY = useArmSimStore((s) => s.gravityRootOffsetY);
+  const gravityRootOffset = useArmSimStore((s) => s.gravityRootOffset);
   const gravityMovement = useArmSimStore((s) => s.gravityMovement);
   const movementAngles = useMemo(
     () => (gravityEnabled ? applyGravityMovement(angles, gravityMovement) : angles),
@@ -226,7 +226,11 @@ export function BodyModel({ modelUrl }: { modelUrl: string }) {
 
   return (
     <group position={rootPosition}>
-      <group ref={groupRef} quaternion={quaternion} position={[0, gravityEnabled ? gravityRootOffsetY : 0, 0]}>
+      <group
+        ref={groupRef}
+        quaternion={quaternion}
+        position={gravityEnabled ? gravityRootOffset : [0, 0, 0]}
+      >
         <primitive object={scene} />
         {showJointMarkers && markerJoints.map(({ jointId }) => {
           const isSelected = selectedJoint === jointId;
