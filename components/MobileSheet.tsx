@@ -103,7 +103,14 @@ export function MobileSheet({
         >
           <div className="h-1.5 w-10 rounded-full bg-ink-600" />
         </div>
-        <div className="scroll-slim flex min-h-0 flex-1 flex-col overflow-y-auto overscroll-contain touch-pan-y">
+        <div
+          className="scroll-slim flex min-h-0 flex-1 flex-col overflow-y-auto overscroll-contain touch-pan-y"
+          // At the peek snap, the sheet's lower portion sits below the
+          // viewport. Matching bottom padding makes that hidden height part
+          // of the scroll range, so a long panel's final cards can reach the
+          // actually visible bottom edge instead of stopping underneath it.
+          style={{ paddingBottom: offset }}
+        >
           {children}
         </div>
       </div>
