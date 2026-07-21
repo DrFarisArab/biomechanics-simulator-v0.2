@@ -154,7 +154,7 @@ export function Sidebar() {
   if (gravityEnabled) {
     const movement = GRAVITY_MOVEMENTS.find((item) => item.id === gravityMovement.id) ?? GRAVITY_MOVEMENTS[0];
     return (
-      <aside className="flex h-full w-full shrink-0 flex-col overflow-y-auto border-ink-800 bg-ink-900 sm:h-auto sm:w-80 sm:border-l">
+      <aside className="flex min-h-0 w-full shrink-0 flex-col border-ink-800 bg-ink-900 sm:h-auto sm:w-80 sm:border-l">
         <ChainModeSelector closedChain onChange={setChainMode} />
         <div className="border-b border-ink-800 px-4 py-3">
           <div className="text-[10px] font-semibold uppercase tracking-wider text-ink-500">
@@ -249,7 +249,7 @@ export function Sidebar() {
 
   if (!selectedJoint) {
     return (
-      <aside className="flex h-full w-full shrink-0 flex-col overflow-y-auto border-ink-800 bg-ink-900 sm:h-auto sm:w-80 sm:border-l">
+      <aside className="flex min-h-0 w-full shrink-0 flex-col border-ink-800 bg-ink-900 sm:h-auto sm:w-80 sm:border-l">
         <ChainModeSelector closedChain={false} onChange={setChainMode} />
         <div className="border-b border-ink-800 px-4 py-3">
           <div className="text-[10px] font-semibold uppercase tracking-wider text-ink-500">
@@ -323,7 +323,7 @@ export function Sidebar() {
       selectedJoint === `ankle_${stanceLeg}`);
 
   return (
-    <aside className="flex h-full w-full shrink-0 flex-col overflow-y-auto border-ink-800 bg-ink-900 sm:h-auto sm:w-80 sm:border-l">
+    <aside className="flex min-h-0 w-full shrink-0 flex-col border-ink-800 bg-ink-900 sm:h-auto sm:w-80 sm:border-l">
       <ChainModeSelector closedChain={false} onChange={setChainMode} />
       <div className="border-b border-ink-800 px-4 py-3">
         <div className="text-[10px] font-semibold uppercase tracking-wider text-ink-500">

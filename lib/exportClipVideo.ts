@@ -1,5 +1,6 @@
 import { clipDuration, type Clip } from "./clip";
 import { useRecordReplayStore } from "./recordReplayStore";
+import { saveBlobAsFile } from "./saveBlobAsFile";
 
 const EXPORT_FPS = 30;
 const VIDEO_BITS_PER_SECOND = 8_000_000;
@@ -9,41 +10,34 @@ const MP4_MIME_TYPES = [
   "video/mp4;codecs=avc1",
   "video/mp4",
 ];
+const WEBM_MIME_TYPES = [
+  "video/webm;codecs=vp9",
+  "video/webm;codecs=vp8",
+  "video/webm",
+];
 
 function nextPaint(): Promise<void> {
   return new Promise((resolve) => requestAnimationFrame(() => resolve()));
 }
 
-function getMp4MimeType(): string {
+function getVideoFormat(): { mimeType: string; extension: "mp4" | "webm" } {
   if (typeof MediaRecorder === "undefined") {
-    throw new Error("MP4 export is not supported by this browser.");
+    throw new Error("Video export is not supported by this browser.");
   }
-  const mimeType = MP4_MIME_TYPES.find((type) => MediaRecorder.isTypeSupported(type));
+  const mimeType = [...MP4_MIME_TYPES, ...WEBM_MIME_TYPES].find((type) => MediaRecorder.isTypeSupported(type));
   if (!mimeType) {
-    throw new Error("This browser cannot encode MP4 video. Please use a current version of Chrome, Edge, or Safari.");
+    throw new Error("This browser cannot encode video. Please use a current version of Chrome, Edge, or Safari.");
   }
-  return mimeType;
+  return { mimeType, extension: mimeType.includes("webm") ? "webm" : "mp4" };
 }
 
-function safeFilename(name: string): string {
+function safeFilename(name: string, extension: "mp4" | "webm"): string {
   const cleaned = name
     .trim()
     .toLowerCase()
     .replace(/[^a-z0-9]+/g, "-")
     .replace(/^-|-$/g, "");
-  return `${cleaned || "biomechanics-recording"}.mp4`;
-}
-
-function downloadBlob(blob: Blob, filename: string) {
-  const url = URL.createObjectURL(blob);
-  const anchor = document.createElement("a");
-  anchor.href = url;
-  anchor.download = filename;
-  anchor.style.display = "none";
-  document.body.appendChild(anchor);
-  anchor.click();
-  anchor.remove();
-  window.setTimeout(() => URL.revokeObjectURL(url), 30_000);
+  return `${cleaned || "biomechanics-recording"}.${extension}`;
 }
 
 function waitForForwardPlayback(
@@ -93,7 +87,7 @@ export async function exportClipToMp4(
     throw new Error("The model viewport is not ready to export.");
   }
 
-  const mimeType = getMp4MimeType();
+  const { mimeType, extension } = getVideoFormat();
   // Capture the WebGL canvas itself. Copying it through a second 2D canvas
   // reads an already-cleared buffer in some browsers, producing black video.
   const stream = source.captureStream(EXPORT_FPS);
@@ -106,7 +100,7 @@ export async function exportClipToMp4(
     });
   } catch {
     stream.getTracks().forEach((track) => track.stop());
-    throw new Error("The browser could not start MP4 encoding.");
+    throw new Error("The browser could not start video encoding.");
   }
   recorder.ondataavailable = (event) => {
     if (event.data.size > 0) chunks.push(event.data);
@@ -115,7 +109,7 @@ export async function exportClipToMp4(
   let recordingError: Error | null = null;
   const finishedRecording = new Promise<Blob>((resolve, reject) => {
     recorder.onerror = () => {
-      recordingError = new Error("The browser could not encode the MP4 video.");
+      recordingError = new Error("The browser could not encode the video.");
     };
     recorder.onstop = () => {
       if (recordingError) {
@@ -124,7 +118,7 @@ export async function exportClipToMp4(
       }
       const blob = new Blob(chunks, { type: mimeType });
       if (blob.size === 0) {
-        reject(new Error("The exported MP4 was empty."));
+        reject(new Error("The exported video was empty."));
       } else {
         resolve(blob);
       }
@@ -155,7 +149,7 @@ export async function exportClipToMp4(
     recorder.stop();
 
     const video = await finishedRecording;
-    downloadBlob(video, safeFilename(clip.name));
+    await saveBlobAsFile(video, safeFilename(clip.name, extension));
   } finally {
     if (recorder.state !== "inactive") recorder.stop();
     stream.getTracks().forEach((track) => track.stop());

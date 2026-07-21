@@ -21,6 +21,7 @@ import {
   VerticalPositionRelativeFrom,
   WidthType,
 } from "docx";
+import { saveBlobAsFile } from "./saveBlobAsFile";
 import {
   DURATION_LABELS,
   hasRedFlag,
@@ -431,12 +432,5 @@ export async function generateReportDocx(draft: Assessment): Promise<Blob> {
 }
 
 export function downloadDocxBlob(blob: Blob, fileName: string) {
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement("a");
-  a.href = url;
-  a.download = fileName;
-  document.body.appendChild(a);
-  a.click();
-  a.remove();
-  URL.revokeObjectURL(url);
+  return saveBlobAsFile(blob, fileName);
 }

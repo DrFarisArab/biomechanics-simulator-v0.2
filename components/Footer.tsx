@@ -152,7 +152,7 @@ export function Footer() {
                 <p className="mt-0.5 text-[11px] leading-relaxed text-ink-400">
                   Patient opens the assessment workspace, Tests provides orthopedic special tests,
                   and Record captures movements for replay. Add at least two keyframes, then use
-                  Export MP4 to download the animated model view as a video.
+                  Export Video to save the animated model view as a video.
                 </p>
               </section>
             </div>

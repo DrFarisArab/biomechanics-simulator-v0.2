@@ -320,7 +320,7 @@ export function RecordReplayPanel() {
     try {
       await exportClipToMp4(clip, setExportProgress);
     } catch (error) {
-      setExportError(error instanceof Error ? error.message : "The MP4 video could not be exported.");
+      setExportError(error instanceof Error ? error.message : "The video could not be exported.");
     } finally {
       setIsExporting(false);
     }
@@ -337,7 +337,7 @@ export function RecordReplayPanel() {
   );
 
   return (
-    <aside className="scroll-slim flex h-full w-full shrink-0 flex-col overflow-y-auto border-ink-800 bg-ink-900 sm:h-auto sm:w-80 sm:border-l">
+    <aside className="flex min-h-0 w-full shrink-0 flex-col border-ink-800 bg-ink-900 sm:h-auto sm:w-80 sm:border-l">
       <div className="flex items-center justify-between border-b border-ink-800 px-4 py-3">
         <div>
           <div className="text-[13px] font-semibold text-ink-100">Record &amp; Replay</div>
@@ -421,7 +421,7 @@ export function RecordReplayPanel() {
               disabled={!canExport || isExporting}
               className="w-full rounded-md border border-brand-700/60 bg-brand-900/25 px-3 py-2 text-[12px] font-semibold text-brand-300 transition hover:bg-brand-900/45 disabled:cursor-not-allowed disabled:opacity-40"
             >
-              {isExporting ? `Exporting MP4 · ${Math.round(exportProgress * 100)}%` : "↓ Export MP4"}
+              {isExporting ? `Exporting video · ${Math.round(exportProgress * 100)}%` : "↓ Export Video"}
             </button>
             {isExporting && (
               <div className="mt-2 h-1 overflow-hidden rounded-full bg-ink-800">

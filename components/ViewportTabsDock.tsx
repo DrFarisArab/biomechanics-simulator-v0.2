@@ -92,7 +92,7 @@ export function ViewportTabsDock({
   const openOrResumeAssessment = usePatientAssessmentStore((s) => s.openOrResumeAssessment);
 
   return (
-    <div className="pointer-events-none absolute inset-x-0 bottom-4 flex justify-center">
+    <div className="pointer-events-none fixed inset-x-0 bottom-11 z-30 flex justify-center sm:absolute sm:bottom-4 sm:z-auto">
       <div className="pointer-events-auto flex items-center gap-1 rounded-full border border-ink-700 bg-ink-900/90 p-1 shadow-lg shadow-black/20 backdrop-blur">
         <DockButton
           active={patientAssessmentOpen}

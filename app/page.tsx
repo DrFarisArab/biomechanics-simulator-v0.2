@@ -32,6 +32,7 @@ export default function Home() {
   const patientAssessmentOpen = usePatientAssessmentStore((s) => s.panelOpen);
   const setPatientAssessmentOpen = usePatientAssessmentStore((s) => s.setPanelOpen);
   const [jointListOpen, setJointListOpen] = useState(false);
+  const [poseMenuOpen, setPoseMenuOpen] = useState(false);
 
   const isPhone = useIsPhone();
 
@@ -79,6 +80,17 @@ export default function Home() {
     <div className="flex h-dvh w-screen flex-col overflow-hidden bg-ink-900 pl-safe pr-safe pt-safe pb-safe text-ink-100">
       <header className="flex h-12 shrink-0 items-center justify-between gap-2 border-b border-ink-800 bg-ink-900 px-4">
         <div className="flex min-w-0 items-center">
+          <button
+            type="button"
+            aria-label="Open pose menu"
+            aria-expanded={poseMenuOpen}
+            onClick={() => setPoseMenuOpen((open) => !open)}
+            className="mr-2 grid h-8 w-8 shrink-0 place-items-center rounded-md border border-ink-700 bg-ink-800 text-ink-300 transition hover:text-ink-100"
+          >
+            <svg viewBox="0 0 20 20" fill="none" className="h-5 w-5" aria-hidden>
+              <path d="M3 6h14M3 10h14M3 14h14" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
+            </svg>
+          </button>
           <div className="truncate text-[13px] font-semibold tracking-tight">Human Biomechanics Simulator</div>
           <div className="ml-2 hidden shrink-0 rounded bg-brand-900/40 px-1.5 py-0.5 text-[10px] font-medium text-brand-400 sm:inline-block">
             v0.2 · full body
@@ -87,7 +99,7 @@ export default function Home() {
         <Toolbar />
       </header>
       <div className="relative flex min-h-0 flex-1">
-        <PresetMenu />
+        <PresetMenu open={poseMenuOpen} onOpenChange={setPoseMenuOpen} />
         <main className="relative min-w-0 flex-1">
           <Scene />
           <MovementSummaryPanel />

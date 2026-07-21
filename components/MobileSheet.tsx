@@ -10,10 +10,10 @@ const PEEK = 0.5;
 
 // Phone-only swipe-up bottom sheet. Drag the grip handle to move the whole
 // sheet between two snaps (peek / full); a downward fling or a drag well below
-// peek dismisses it (so does tapping the scrim). Only the grip drives dragging
-// — the content region below scrolls internally (overscroll-contained), so the
-// two gestures never fight. The page behind is already locked (the app shell
-// is viewport-height with overflow hidden), so there's no double scroll.
+// peek dismisses it. Only the grip drives dragging
+// — the content region below owns vertical scrolling. The rest of the screen is
+// deliberately pointer-transparent so the 3D model remains available for orbit
+// and pinch zoom without closing or resetting the active panel.
 export function MobileSheet({
   open,
   onClose,
@@ -82,10 +82,9 @@ export function MobileSheet({
   if (!open) return null;
 
   return (
-    <div className="fixed inset-0 z-40 sm:hidden">
-      <div className="absolute inset-0 bg-black/30" onClick={onClose} aria-hidden />
+    <div className="pointer-events-none fixed inset-0 z-40 sm:hidden">
       <div
-        className="absolute inset-x-0 bottom-0 flex flex-col rounded-t-2xl border-t border-ink-700 bg-ink-900 shadow-2xl shadow-black/40"
+        className="pointer-events-auto absolute inset-x-0 bottom-0 flex flex-col rounded-t-2xl border-t border-ink-700 bg-ink-900 shadow-2xl shadow-black/40"
         style={{
           height: `${FULL * 100}dvh`,
           transform: `translateY(${offset}px)`,
@@ -104,7 +103,9 @@ export function MobileSheet({
         >
           <div className="h-1.5 w-10 rounded-full bg-ink-600" />
         </div>
-        <div className="flex min-h-0 flex-1 flex-col overflow-hidden">{children}</div>
+        <div className="scroll-slim flex min-h-0 flex-1 flex-col overflow-y-auto overscroll-contain touch-pan-y">
+          {children}
+        </div>
       </div>
     </div>
   );

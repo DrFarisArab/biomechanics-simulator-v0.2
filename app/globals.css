@@ -299,6 +299,39 @@ body {
   }
 }
 
+.report-pdf-export {
+  background-color: #ffffff !important;
+  border: none !important;
+  border-radius: 0 !important;
+  color: #171717 !important;
+  padding: 80px 56px 64px !important;
+}
+
+.report-pdf-export,
+.report-pdf-export * {
+  color: #171717 !important;
+  print-color-adjust: exact;
+  -webkit-print-color-adjust: exact;
+}
+
+.report-pdf-export [class*="bg-ink"],
+.report-pdf-export [class*="bg-brand"],
+.report-pdf-export [class*="bg-danger"] {
+  background-color: #ffffff !important;
+}
+
+.report-pdf-export [class*="border-ink"] {
+  border-color: #d4d4d4 !important;
+}
+
+.report-pdf-export [class*="text-brand"] {
+  color: #0f766e !important;
+}
+
+.report-pdf-export [class*="text-danger"] {
+  color: #b91c1c !important;
+}
+
 /* Degree slider — modern rectangular thumb, filled track, snaps to whole
    degrees (step=1 on the underlying input does the snapping; this is the
    visual language on top of that). Thumb/track pseudo-elements need real

@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState, type ReactNode } from "react";
+import { useMemo, useRef, useState, type ReactNode } from "react";
 import { usePatientAssessmentStore } from "@/lib/patientAssessmentStore";
 import {
   DURATION_LABELS,
@@ -49,6 +49,8 @@ export function Step5Report() {
   const draft = usePatientAssessmentStore((s) => s.draft);
   const setClinicalImpression = usePatientAssessmentStore((s) => s.setClinicalImpression);
   const startNewAssessment = usePatientAssessmentStore((s) => s.startNewAssessment);
+  const reportRef = useRef<HTMLDivElement | null>(null);
+  const [pdfState, setPdfState] = useState<"idle" | "generating" | "error">("idle");
   const [docxState, setDocxState] = useState<"idle" | "generating" | "error">("idle");
 
   const redFlagsTriggered = hasRedFlag(draft.redFlags);
@@ -74,7 +76,7 @@ export function Step5Report() {
     <div className="flex flex-col gap-3 px-4 py-3">
       <SectionLabel>Report</SectionLabel>
 
-      <div className="print-report flex flex-col gap-4 rounded-md border border-ink-700 bg-ink-950 p-3 text-[11px] text-ink-200 print:text-[#171717]">
+      <div ref={reportRef} className="print-report flex flex-col gap-4 rounded-md border border-ink-700 bg-ink-950 p-3 text-[11px] text-ink-200 print:text-[#171717]">
         {/* Header — colors below are theme-driven on-screen, print:-overridden
             to dark-on-light since the print stylesheet swaps this panel's
             themed card background for the clinic letterhead. */}
@@ -269,11 +271,29 @@ export function Step5Report() {
 
       <button
         type="button"
-        onClick={() => window.print()}
+        disabled={pdfState === "generating"}
+        onClick={async () => {
+          if (!reportRef.current) return;
+          setPdfState("generating");
+          try {
+            const { generateReportPdf, downloadReportPdf } = await import("@/lib/generateReportPdf");
+            const blob = await generateReportPdf(reportRef.current);
+            const fileName = `${(draft.patientName || "assessment").replace(/[^a-z0-9]+/gi, "_")}_${draft.assessmentDate}.pdf`;
+            await downloadReportPdf(blob, fileName);
+            setPdfState("idle");
+          } catch {
+            setPdfState("error");
+          }
+        }}
         className="print:hidden w-full rounded-md border border-brand-700/50 bg-brand-900/20 px-3 py-2 text-[12px] font-semibold text-brand-400 transition hover:bg-brand-900/40"
       >
-        Print / Export PDF
+        {pdfState === "generating" ? "Generating…" : "Generate PDF"}
       </button>
+      {pdfState === "error" && (
+        <div className="print:hidden -mt-1 text-[10px] text-danger-400">
+          Couldn&apos;t generate the PDF — try again after the report finishes rendering.
+        </div>
+      )}
 
       <button
         type="button"
@@ -288,7 +308,7 @@ export function Step5Report() {
             const { generateReportDocx, downloadDocxBlob } = await import("@/lib/generateReportDocx");
             const blob = await generateReportDocx(draft);
             const fileName = `${(draft.patientName || "assessment").replace(/[^a-z0-9]+/gi, "_")}_${draft.assessmentDate}.docx`;
-            downloadDocxBlob(blob, fileName);
+            await downloadDocxBlob(blob, fileName);
             setDocxState("idle");
           } catch {
             setDocxState("error");
