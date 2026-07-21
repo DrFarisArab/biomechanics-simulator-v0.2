@@ -204,6 +204,32 @@ body {
   overscroll-behavior: none;
 }
 
+/* Long panel content uses a restrained, translucent scrollbar so it reads as
+   navigation context rather than a bright browser control over the model. */
+.scroll-slim {
+  scrollbar-width: thin;
+  scrollbar-color: rgb(var(--brand-500) / 0.42) transparent;
+}
+
+.scroll-slim::-webkit-scrollbar {
+  width: 6px;
+}
+
+.scroll-slim::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.scroll-slim::-webkit-scrollbar-thumb {
+  background: rgb(var(--brand-500) / 0.38);
+  border: 2px solid transparent;
+  border-radius: 999px;
+  background-clip: padding-box;
+}
+
+.scroll-slim::-webkit-scrollbar-thumb:hover {
+  background-color: rgb(var(--brand-400) / 0.58);
+}
+
 @layer utilities {
   .text-balance {
     text-wrap: balance;

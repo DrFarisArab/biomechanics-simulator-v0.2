@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import { useArmSimStore } from "@/lib/store";
 import { ARM_DOF_META, ARM_JOINT_DOFS } from "@/lib/armDofs";
 import { TRUNK_DOF_META, TRUNK_JOINT_DOFS } from "@/lib/trunkDofs";
@@ -38,6 +38,7 @@ export function MovementSummaryPanel() {
   const gravityEnabled = useArmSimStore((s) => s.gravityEnabled);
   const gravityMovement = useArmSimStore((s) => s.gravityMovement);
   const gravityCompensation = useArmSimStore((s) => s.gravityCompensation);
+  const [summaryCollapsed, setSummaryCollapsed] = useState(false);
   const effectiveAngles = useMemo(() => {
     if (!gravityEnabled) return angles;
     return mergeGravityAngles(applyGravityMovement(angles, gravityMovement), gravityCompensation);
@@ -66,46 +67,64 @@ export function MovementSummaryPanel() {
   );
 
   return (
-    <div className="pointer-events-none absolute left-3 top-3 z-0 max-h-[36dvh] w-[min(15rem,calc(100%-1.5rem))] opacity-80 sm:left-4 sm:top-4">
-      <section className="flex max-h-[36dvh] flex-col overflow-hidden rounded-md border border-ink-700/45 bg-ink-950/48 shadow-sm shadow-black/10 backdrop-blur-[2px]">
-        <div className="shrink-0 border-b border-ink-800/60 px-2.5 py-2">
-          <div className="text-[10px] font-semibold uppercase tracking-wider text-ink-500">
+    <div className="pointer-events-none absolute left-2 top-2 z-0 w-[min(10rem,calc(100%-1rem))] opacity-70 sm:left-4 sm:top-4">
+      <section className="flex flex-col overflow-hidden rounded-md border border-ink-700/40 bg-ink-950/42 shadow-sm shadow-black/10 backdrop-blur-[2px]">
+        <div className={`flex shrink-0 items-center justify-between gap-2 px-2 py-1.5 ${summaryCollapsed ? "" : "border-b border-ink-800/55"}`}>
+          <div className="truncate text-[9px] font-semibold uppercase tracking-wider text-ink-500">
             Movement summary
           </div>
-          <div className="mt-0.5 text-[12px] font-semibold text-ink-300">
+          <button
+            type="button"
+            onClick={() => setSummaryCollapsed((collapsed) => !collapsed)}
+            aria-label={summaryCollapsed ? "Expand movement summary" : "Collapse movement summary"}
+            title={summaryCollapsed ? "Show movement details" : "Hide movement details"}
+            className="pointer-events-auto grid h-5 w-5 shrink-0 place-items-center rounded border border-ink-700/55 bg-ink-900/35 text-ink-400 transition hover:border-brand-600/60 hover:text-brand-300"
+          >
+            <svg viewBox="0 0 16 16" fill="none" className="h-3 w-3" aria-hidden>
+              <path
+                d={summaryCollapsed ? "m4 6 4 4 4-4" : "m4 10 4-4 4 4"}
+                stroke="currentColor"
+                strokeWidth="1.5"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+            </svg>
+          </button>
+        </div>
+        <div className={`overflow-hidden transition-[max-height,opacity] duration-200 ease-out ${summaryCollapsed ? "max-h-0 opacity-0" : "max-h-[24dvh] opacity-100"}`}>
+          <div className="px-2 pt-1.5 text-[10px] font-semibold text-ink-300">
             {movingJoints.length === 0 ? "Neutral pose" : `${movingJoints.length} joint${movingJoints.length === 1 ? "" : "s"} moving`}
           </div>
+          {movingJoints.length === 0 ? (
+            <div className="px-2 py-1.5 text-[10px] leading-relaxed text-ink-600">
+              No joint movement applied.
+            </div>
+          ) : (
+            <div className="scroll-slim mt-1 flex max-h-[19dvh] min-h-0 flex-col gap-1 overflow-y-auto p-1">
+              {movingJoints.map((joint) => (
+                <div
+                  key={joint.id}
+                  className="rounded border border-ink-700/35 bg-ink-900/28 px-1.5 py-1 text-left"
+                >
+                  <div className="flex min-w-0 items-baseline gap-1.5">
+                    <span className="min-w-0 truncate text-[10px] font-semibold text-ink-300">{joint.label}</span>
+                    <span className="shrink-0 text-[10px] font-medium text-brand-500">
+                      {joint.dofs.length}
+                    </span>
+                  </div>
+                  <div className="mt-0.5 flex flex-col gap-0.5">
+                    {joint.dofs.map((dof) => (
+                      <div key={dof.id} className="flex items-baseline justify-between gap-1.5 text-[10px]">
+                        <span className="min-w-0 truncate text-ink-500">{dof.label}</span>
+                        <span className="shrink-0 font-mono tabular-nums text-brand-400">{formatValue(dof.value, dof.unit)}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
         </div>
-
-        {movingJoints.length === 0 ? (
-          <div className="px-2.5 py-2.5 text-[11px] leading-relaxed text-ink-600">
-            No joint movement applied.
-          </div>
-        ) : (
-          <div className="scroll-slim flex min-h-0 flex-col gap-1 overflow-y-auto p-1.5">
-            {movingJoints.map((joint) => (
-              <div
-                key={joint.id}
-                className="rounded border border-ink-700/35 bg-ink-900/28 px-2 py-1.5 text-left"
-              >
-                <div className="flex min-w-0 items-baseline gap-1.5">
-                  <span className="min-w-0 truncate text-[11px] font-semibold text-ink-300">{joint.label}</span>
-                  <span className="shrink-0 text-[10px] font-medium text-brand-500">
-                    {joint.dofs.length}
-                  </span>
-                </div>
-                <div className="mt-0.5 flex flex-col gap-0.5">
-                  {joint.dofs.map((dof) => (
-                    <div key={dof.id} className="flex items-baseline justify-between gap-1.5 text-[10px]">
-                      <span className="min-w-0 truncate text-ink-500">{dof.label}</span>
-                      <span className="shrink-0 font-mono tabular-nums text-brand-400">{formatValue(dof.value, dof.unit)}</span>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            ))}
-          </div>
-        )}
       </section>
     </div>
   );

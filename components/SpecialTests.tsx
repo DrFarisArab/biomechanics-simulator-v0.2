@@ -261,8 +261,14 @@ function RegionView({
 
   return (
     <div className="flex flex-col gap-3 px-4 py-3">
-      <button onClick={onBack} className="w-fit text-[11px] font-medium text-ink-300 transition hover:text-ink-200">
-        ← All regions
+      <button
+        type="button"
+        onClick={onBack}
+        aria-label="Back to all regions"
+        className="inline-flex min-h-9 w-fit items-center gap-1.5 rounded-md border border-ink-700 bg-ink-800/45 px-3 text-[12px] font-semibold text-ink-200 transition hover:border-brand-600/60 hover:bg-ink-800 hover:text-brand-300 active:bg-ink-700"
+      >
+        <span aria-hidden>←</span>
+        All regions
       </button>
       <div>
         <div className="text-[15px] font-semibold text-ink-100">{region.name}</div>
@@ -517,8 +523,14 @@ function TestDetailView({
 
   return (
     <div className="flex flex-col gap-3 px-4 py-3">
-      <button onClick={onBack} className="w-fit text-[11px] font-medium text-ink-300 transition hover:text-ink-200">
-        ← {region?.name ?? "Back"}
+      <button
+        type="button"
+        onClick={onBack}
+        aria-label={`Back to ${region?.name ?? "previous view"}`}
+        className="inline-flex min-h-9 w-fit items-center gap-1.5 rounded-md border border-ink-700 bg-ink-800/45 px-3 text-[12px] font-semibold text-ink-200 transition hover:border-brand-600/60 hover:bg-ink-800 hover:text-brand-300 active:bg-ink-700"
+      >
+        <span aria-hidden>←</span>
+        {region?.name ?? "Back"}
       </button>
 
       <div>
@@ -581,8 +593,14 @@ function CorrectionsListView({ onBack, onOpenTest }: { onBack: () => void; onOpe
 
   return (
     <div className="flex flex-col gap-3 px-4 py-3">
-      <button onClick={onBack} className="w-fit text-[11px] font-medium text-ink-300 transition hover:text-ink-200">
-        ← All regions
+      <button
+        type="button"
+        onClick={onBack}
+        aria-label="Back to all regions"
+        className="inline-flex min-h-9 w-fit items-center gap-1.5 rounded-md border border-ink-700 bg-ink-800/45 px-3 text-[12px] font-semibold text-ink-200 transition hover:border-brand-600/60 hover:bg-ink-800 hover:text-brand-300 active:bg-ink-700"
+      >
+        <span aria-hidden>←</span>
+        All regions
       </button>
       <div className="text-[15px] font-semibold text-ink-100">Corrected special tests</div>
       <div className="text-[11px] leading-relaxed text-ink-400">
@@ -625,8 +643,14 @@ function CorrectionsListView({ onBack, onOpenTest }: { onBack: () => void; onOpe
 function ClustersView({ onBack, onOpenTest }: { onBack: () => void; onOpenTest: (id: string) => void }) {
   return (
     <div className="flex flex-col gap-3 px-4 py-3">
-      <button onClick={onBack} className="w-fit text-[11px] font-medium text-ink-300 transition hover:text-ink-200">
-        ← All regions
+      <button
+        type="button"
+        onClick={onBack}
+        aria-label="Back to all regions"
+        className="inline-flex min-h-9 w-fit items-center gap-1.5 rounded-md border border-ink-700 bg-ink-800/45 px-3 text-[12px] font-semibold text-ink-200 transition hover:border-brand-600/60 hover:bg-ink-800 hover:text-brand-300 active:bg-ink-700"
+      >
+        <span aria-hidden>←</span>
+        All regions
       </button>
       <div className="text-[15px] font-semibold text-ink-100">Clinical clusters</div>
       <div className="text-[11px] leading-relaxed text-ink-400">
