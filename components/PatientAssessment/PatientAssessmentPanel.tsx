@@ -78,11 +78,13 @@ export function PatientAssessmentPanel() {
 
       <StepIndicator />
 
-      {step === 1 && <Step1PatientInfo />}
-      {step === 2 && <Step2ChiefComplaint />}
-      {step === 3 && <Step3JointSelection />}
-      {step === 4 && <Step4SpecialTests />}
-      {step === 5 && <Step5Report />}
+      <div className="scroll-slim sm:min-h-0 sm:flex-1 sm:overflow-y-auto">
+        {step === 1 && <Step1PatientInfo />}
+        {step === 2 && <Step2ChiefComplaint />}
+        {step === 3 && <Step3JointSelection />}
+        {step === 4 && <Step4SpecialTests />}
+        {step === 5 && <Step5Report />}
+      </div>
 
       {step < 5 && (
         <div className="mt-auto flex items-center justify-between border-t border-ink-800 px-4 py-3">
