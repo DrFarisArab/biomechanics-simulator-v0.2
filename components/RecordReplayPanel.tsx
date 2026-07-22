@@ -25,6 +25,52 @@ function formatTime(t: number): string {
   return `${t.toFixed(1)}s`;
 }
 
+// Collapsible step-by-step guide for the keyframe workflow — recording here
+// means posing the model at a point in time, saving that pose, moving time
+// forward, and posing again, rather than a continuous real-time capture.
+// That's not obvious from the controls alone, so this is offered inline at
+// both stages (picking what to track, and the pose editor itself) rather
+// than only in the app-wide "How to use" modal in Footer.tsx.
+function RecordingHelp({ variant }: { variant: "pick" | "edit" }) {
+  const [open, setOpen] = useState(false);
+  return (
+    <div className="rounded-md border border-brand-700/40 bg-brand-900/10">
+      <button
+        type="button"
+        onClick={() => setOpen((v) => !v)}
+        aria-expanded={open}
+        className="flex w-full items-center justify-between px-2.5 py-2 text-left text-[11px] font-semibold text-brand-400"
+      >
+        <span>How recording works</span>
+        <span className={`text-[10px] transition-transform ${open ? "rotate-180" : ""}`}>⌄</span>
+      </button>
+      {open && (
+        <div className="flex flex-col gap-1.5 border-t border-brand-800/40 px-2.5 py-2 text-[11px] leading-relaxed text-ink-300">
+          {variant === "pick" ? (
+            <>
+              <p>Recording keyframes a pose over time — it&apos;s not a live capture.</p>
+              <p>1. Pick a closed-chain movement, or one or more joints to track.</p>
+              <p>2. Tap Start Recording to open the pose editor.</p>
+              <p>3. Pose the tracked joint(s), then save it as a keyframe.</p>
+              <p>4. Move the time forward, pose again, and save another keyframe.</p>
+              <p>5. Press play to preview the motion between keyframes, then export as video if you like it.</p>
+            </>
+          ) : (
+            <>
+              <p>1. Adjust the sliders below to pose the tracked joint(s) at the current time.</p>
+              <p>2. Tap &ldquo;Set Movement&rdquo; to save this pose as a keyframe.</p>
+              <p>3. Move time forward — drag the scrub bar or use the +/− time buttons — then pose again and set another keyframe.</p>
+              <p>4. Press ▶ to play back; the model eases smoothly between your keyframes.</p>
+              <p>5. Tap a tick on the timeline to jump to it, shift-tap (or shift-click) to delete it.</p>
+              <p>6. Happy with the motion? Use Export Video below to save it.</p>
+            </>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
+
 function JointPicker() {
   const pendingJoints = useRecordReplayStore((s) => s.pendingJoints);
   const pendingClosedChainMovement = useRecordReplayStore((s) => s.pendingClosedChainMovement);
@@ -38,6 +84,8 @@ function JointPicker() {
 
   return (
     <div className="flex flex-col gap-4 px-4 py-3">
+      <RecordingHelp variant="pick" />
+
       <section className="flex flex-col gap-2">
         <div>
           <div className="text-[10px] font-semibold uppercase tracking-wider text-ink-400">
@@ -375,6 +423,8 @@ export function RecordReplayPanel() {
 
           <div className={`scroll-slim flex min-h-0 flex-1 flex-col overflow-y-auto ${isExporting ? "pointer-events-none opacity-60" : ""}`}>
             <div className="flex flex-col gap-3 px-4 py-3">
+              <RecordingHelp variant="edit" />
+
               {clip.closedChainMovement ? (
                 <ClosedChainMovementEditor movementId={clip.closedChainMovement} />
               ) : (

@@ -1,8 +1,9 @@
 "use client";
 
-import { useEffect, useMemo, useRef } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import * as THREE from "three";
-import { useFrame, useLoader, useThree } from "@react-three/fiber";
+import { useFrame, useLoader, useThree, type ThreeEvent } from "@react-three/fiber";
+import { Html } from "@react-three/drei";
 import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js";
 import { clone as cloneSkinned } from "three/examples/jsm/utils/SkeletonUtils.js";
 import { useArmSimStore } from "@/lib/store";
@@ -49,6 +50,35 @@ const JOINT_MARKER_MIDPOINT: Record<string, [string, string]> = {
   forearm_right: ["forearmR", "handR"],
 };
 
+// The combined full-body GLB exports the visible muscle meshes slightly
+// posterior to the skeleton inside the same armature. Measured from the
+// baked GLB bounds: muscle center z ~= 0.012, skeleton center z ~= 0.037.
+const FULL_BODY_MUSCLE_ALIGNMENT_Z = 0.025;
+
+function alignFullBodyMuscleLayer(scene: THREE.Object3D) {
+  scene.traverse((child) => {
+    const mesh = child as THREE.Mesh;
+    if (!mesh.isMesh) return;
+    if (!mesh.name.toLowerCase().includes("muscle")) return;
+    mesh.position.z += FULL_BODY_MUSCLE_ALIGNMENT_Z;
+    mesh.updateMatrix();
+  });
+}
+
+function anatomyLabelFromMesh(object: THREE.Object3D) {
+  const raw = object.name || object.parent?.name || "";
+  const label = raw
+    .trim()
+    .replace(/\.\d+$/, "")
+    .replace(/([A-Za-z])0+\d+$/, "$1")
+    .replace(/\.([lr])$/i, (_, side: string) => ` (${side.toUpperCase()})`)
+    .replace(/[_-]+/g, " ")
+    .replace(/\s+/g, " ")
+    .replace(/\b([CTL])(\d{1,2})\s+\d+$/i, "$1$2")
+    .trim();
+  return label || null;
+}
+
 /**
  * v0.2 unified body model — ONE armature (v2_body_rig) covering the full
  * body: pelvis/lumbar/thoracic/cervical/head, both arms (shoulder->elbow->
@@ -69,9 +99,10 @@ export function BodyModel({ modelUrl }: { modelUrl: string }) {
   });
   const scene = useMemo(() => {
     const cloned = cloneSkinned(gltf.scene) as THREE.Object3D;
+    if (modelUrl.includes("v2-body-full")) alignFullBodyMuscleLayer(cloned);
     recolorMaterials(cloned);
     return cloned;
-  }, [gltf]);
+  }, [gltf, modelUrl]);
   const bonesRef = useRef<Record<string, THREE.Object3D | undefined>>({});
   const restQuatsRef = useRef<Record<string, THREE.Quaternion | undefined>>({});
   // Pelvis's own rest LOCAL position, plus the stance hips' rest local
@@ -87,6 +118,7 @@ export function BodyModel({ modelUrl }: { modelUrl: string }) {
   const markerRefs = useRef<Record<string, THREE.Mesh | null>>({});
   const condyleMarkerRefs = useRef<{ left: THREE.Mesh | null; right: THREE.Mesh | null }>({ left: null, right: null });
   const groupRef = useRef<THREE.Group>(null);
+  const [hoveredBoneLabel, setHoveredBoneLabel] = useState<{ name: string; position: [number, number, number]; fontSize: number } | null>(null);
 
   const selectJoint = useArmSimStore((s) => s.selectJoint);
   const hoverJoint = useArmSimStore((s) => s.hoverJoint);
@@ -99,7 +131,6 @@ export function BodyModel({ modelUrl }: { modelUrl: string }) {
   const showJointMarkers = useArmSimStore((s) => s.showJointMarkers);
   const gravityEnabled = useArmSimStore((s) => s.gravityEnabled);
   const gravityCompensation = useArmSimStore((s) => s.gravityCompensation);
-  const gravityRootOffset = useArmSimStore((s) => s.gravityRootOffset);
   const gravityMovement = useArmSimStore((s) => s.gravityMovement);
   const movementAngles = useMemo(
     () => (gravityEnabled ? applyGravityMovement(angles, gravityMovement) : angles),
@@ -110,6 +141,7 @@ export function BodyModel({ modelUrl }: { modelUrl: string }) {
     [angles, gravityCompensation, gravityEnabled, movementAngles]
   );
   const effectiveStanceLeg = gravityEnabled ? gravityMovementStanceLeg(gravityMovement) ?? stanceLeg : stanceLeg;
+  const showBoneHoverLabels = modelUrl.includes("v2-body-skeleton");
 
   const markerJoints = useMemo(() => {
     // Single clean skin (v2_body_rig, 41 joints, no name collisions) — every
@@ -162,6 +194,7 @@ export function BodyModel({ modelUrl }: { modelUrl: string }) {
   // can't detect — so we invalidate() a couple of frames after each pose
   // change to actually paint it (and let the marker-tracking useFrame run).
   const invalidate = useThree((s) => s.invalidate);
+  const camera = useThree((s) => s.camera);
 
   useEffect(() => {
     applyRigPose(
@@ -188,6 +221,28 @@ export function BodyModel({ modelUrl }: { modelUrl: string }) {
     if (typeof window !== "undefined") (window as unknown as { __three?: unknown }).__three = state;
     const group = groupRef.current;
     if (!group) return;
+
+    // Apply the gravity-solver's compensating root offset imperatively, read
+    // fresh from the store every painted frame — NOT as a declarative JSX
+    // `position` prop bound to the reactive `gravityRootOffset` hook value.
+    // GravityConstraintLayer computes that offset in its OWN effect, which
+    // fires one render after this component's own pose-applying effect (the
+    // one above that calls applyRigPose): the reactive prop would render one
+    // tick behind, i.e. it'd briefly show the new bend angle still paired
+    // with the PREVIOUS tick's offset before snapping to the correct one.
+    // During a continuous slider drag that shows up as visible jitter/shake,
+    // most noticeably for "Bowing Forward" (gravityMovements.ts), whose
+    // pinned-support offset is large (the whole trunk shifts back to keep
+    // the feet planted). Reading getState() here instead means whatever
+    // actually gets drawn is always the current solve result — same pattern
+    // GravityConstraintLayer already uses for its own COM marker.
+    const gravityState = useArmSimStore.getState();
+    if (gravityState.gravityEnabled) {
+      group.position.set(...gravityState.gravityRootOffset);
+    } else if (group.position.x !== 0 || group.position.y !== 0 || group.position.z !== 0) {
+      group.position.set(0, 0, 0);
+    }
+
     for (const { jointId, bone, bone2 } of markerJoints) {
       const marker = markerRefs.current[jointId];
       if (!marker) continue;
@@ -224,14 +279,44 @@ export function BodyModel({ modelUrl }: { modelUrl: string }) {
     [rootRotation]
   );
 
+  const handleSkeletonPointerMove = (event: ThreeEvent<PointerEvent>) => {
+    if (!showBoneHoverLabels) return;
+    const name = anatomyLabelFromMesh(event.object);
+    if (!name) return;
+    const localPoint = event.point.clone();
+    groupRef.current?.worldToLocal(localPoint);
+    setHoveredBoneLabel({
+      name,
+      position: [localPoint.x, localPoint.y + 0.035, localPoint.z],
+      fontSize: Math.round(THREE.MathUtils.clamp(event.point.distanceTo(camera.position) * 2.4 + 4, 8, 11)),
+    });
+  };
+
+  const handleSkeletonPointerOut = () => {
+    if (!showBoneHoverLabels) return;
+    setHoveredBoneLabel(null);
+    document.body.style.cursor = "default";
+  };
+
   return (
     <group position={rootPosition}>
       <group
         ref={groupRef}
         quaternion={quaternion}
-        position={gravityEnabled ? gravityRootOffset : [0, 0, 0]}
+        onPointerMove={handleSkeletonPointerMove}
+        onPointerOut={handleSkeletonPointerOut}
       >
         <primitive object={scene} />
+        {hoveredBoneLabel && (
+          <Html position={hoveredBoneLabel.position} center occlude={false}>
+            <div
+              className="pointer-events-none whitespace-nowrap font-semibold text-ink-50 drop-shadow-[0_1px_3px_rgba(0,0,0,0.9)]"
+              style={{ fontSize: `${hoveredBoneLabel.fontSize}px` }}
+            >
+              {hoveredBoneLabel.name}
+            </div>
+          </Html>
+        )}
         {showJointMarkers && markerJoints.map(({ jointId }) => {
           const isSelected = selectedJoint === jointId;
           const isHovered = hoveredJoint === jointId;
