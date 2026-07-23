@@ -14,6 +14,7 @@ import { getDracoLoader } from "@/lib/dracoLoader";
 import { mergeGravityAngles } from "@/lib/gravityMode";
 import { applyGravityMovement, gravityMovementStanceLeg } from "@/lib/gravityMovements";
 import { ALL_RIG_BONE_NAMES, applyRigPose } from "@/lib/rigPose";
+import { captureScapularCouplingRefs, type ScapularCouplingRefs } from "@/lib/scapularRhythm";
 
 // Joint id -> the bone whose own local origin (head) IS that joint's pivot.
 // lumbar/thoracic/cervical are now per-vertebra CHAINS (see trunkDofs.ts) —
@@ -99,7 +100,9 @@ export function BodyModel({ modelUrl }: { modelUrl: string }) {
   });
   const scene = useMemo(() => {
     const cloned = cloneSkinned(gltf.scene) as THREE.Object3D;
-    if (modelUrl.includes("v2-body-full")) alignFullBodyMuscleLayer(cloned);
+    if (modelUrl.includes("v2-body-full")) {
+      alignFullBodyMuscleLayer(cloned);
+    }
     recolorMaterials(cloned);
     return cloned;
   }, [gltf, modelUrl]);
@@ -115,6 +118,8 @@ export function BodyModel({ modelUrl }: { modelUrl: string }) {
   // because, unlike every other joint here, the TMJ's pivot itself
   // translates (see mandibleDofs.ts's applyMandiblePose), not just rotates.
   const jawRestPosRef = useRef<THREE.Vector3 | null>(null);
+  const scapulaRestPosRef = useRef<{ left?: THREE.Vector3; right?: THREE.Vector3 }>({});
+  const scapularCouplingRefsRef = useRef<ScapularCouplingRefs>({});
   const markerRefs = useRef<Record<string, THREE.Mesh | null>>({});
   const condyleMarkerRefs = useRef<{ left: THREE.Mesh | null; right: THREE.Mesh | null }>({ left: null, right: null });
   const groupRef = useRef<THREE.Group>(null);
@@ -163,6 +168,11 @@ export function BodyModel({ modelUrl }: { modelUrl: string }) {
       right: found.thighR?.position.clone(),
     };
     jawRestPosRef.current = found.jaw ? found.jaw.position.clone() : null;
+    scapulaRestPosRef.current = {
+      left: found.scapulaL?.position.clone(),
+      right: found.scapulaR?.position.clone(),
+    };
+    scapularCouplingRefsRef.current = captureScapularCouplingRefs(scene);
     if (typeof window !== "undefined") {
       (window as unknown as { __bodyScene: THREE.Object3D }).__bodyScene = scene;
     }
@@ -204,6 +214,8 @@ export function BodyModel({ modelUrl }: { modelUrl: string }) {
         pelvisRestPosition: pelvisRestPosRef.current,
         hipLocalOffsets: hipLocalOffsetsRef.current,
         jawRestPosition: jawRestPosRef.current,
+        scapulaRestPositions: scapulaRestPosRef.current,
+        scapularCouplingRefs: scapularCouplingRefsRef.current,
       },
       effectiveAngles,
       effectiveStanceLeg

@@ -7,7 +7,11 @@ import { TRUNK_DOF_META, TRUNK_JOINT_DOFS } from "@/lib/trunkDofs";
 import { LEG_DOF_META, LEG_JOINT_DOFS } from "@/lib/legDofs";
 import { MANDIBLE_DOF_META, MANDIBLE_JOINT_DOFS } from "@/lib/mandibleDofs";
 import { ALL_JOINT_IDS, JOINT_LABELS } from "@/lib/jointLabels";
-import { applyGravityMovement } from "@/lib/gravityMovements";
+import {
+  applyGravityMovement,
+  gravityMovementIsScapular,
+  GRAVITY_MOVEMENTS,
+} from "@/lib/gravityMovements";
 import { mergeGravityAngles } from "@/lib/gravityMode";
 
 const ALL_JOINT_DOFS = { ...ARM_JOINT_DOFS, ...TRUNK_JOINT_DOFS, ...LEG_JOINT_DOFS, ...MANDIBLE_JOINT_DOFS };
@@ -15,11 +19,13 @@ const ALL_DOF_META = { ...ARM_DOF_META, ...TRUNK_DOF_META, ...LEG_DOF_META, ...M
 
 const MOVING_THRESHOLD = 0.5;
 
+type DofUnit = "°" | "mm" | "cm";
+
 type MovingDof = {
   id: string;
   label: string;
   value: number;
-  unit: "°" | "mm";
+  unit: DofUnit;
 };
 
 type MovingJoint = {
@@ -28,9 +34,9 @@ type MovingJoint = {
   dofs: MovingDof[];
 };
 
-function formatValue(value: number, unit: "°" | "mm") {
-  const rounded = unit === "mm" ? Math.round(value * 10) / 10 : Math.round(value);
-  return `${rounded > 0 ? "+" : ""}${rounded}${unit}`;
+function formatValue(value: number, unit: DofUnit) {
+  const rounded = unit === "°" ? Math.round(value) : Math.round(value * 10) / 10;
+  return `${rounded > 0 ? "+" : ""}${rounded}${unit === "°" ? unit : ` ${unit}`}`;
 }
 
 export function MovementSummaryPanel() {
@@ -56,7 +62,7 @@ export function MovementSummaryPanel() {
               id: dofId,
               label: ALL_DOF_META[jointId]?.[dofId]?.label ?? dofId,
               value,
-              unit: jointId === "mandible" ? "mm" : "°",
+              unit: (jointId === "mandible" ? "mm" : "°") as DofUnit,
             } satisfies MovingDof;
           })
           .filter((dof): dof is MovingDof => dof !== null);
@@ -64,6 +70,33 @@ export function MovementSummaryPanel() {
         return { id: jointId, label: JOINT_LABELS[jointId], dofs };
       }).filter((joint): joint is MovingJoint => joint !== null),
     [effectiveAngles]
+  );
+
+  // Scapular closed-chain movements drive a `scapula` pseudo-joint that isn't
+  // in the standard DOF tables, so surface it here as its own summary row
+  // rather than leaving the panel reading "Neutral pose" mid-movement.
+  const scapularJoint = useMemo<MovingJoint | null>(() => {
+    if (!gravityEnabled || !gravityMovementIsScapular(gravityMovement)) return null;
+    if (gravityMovement.amount < MOVING_THRESHOLD) return null;
+    const def = GRAVITY_MOVEMENTS.find((m) => m.id === gravityMovement.id);
+    if (!def) return null;
+    return {
+      id: "scapula",
+      label: "Scapula (bilateral)",
+      dofs: [
+        {
+          id: gravityMovement.id,
+          label: def.controlLabel,
+          value: gravityMovement.amount,
+          unit: def.unit === "cm" ? "cm" : "°",
+        },
+      ],
+    };
+  }, [gravityEnabled, gravityMovement]);
+
+  const summaryJoints = useMemo(
+    () => (scapularJoint ? [...movingJoints, scapularJoint] : movingJoints),
+    [movingJoints, scapularJoint]
   );
 
   return (
@@ -93,15 +126,15 @@ export function MovementSummaryPanel() {
         </div>
         <div className={`overflow-hidden transition-[max-height,opacity] duration-200 ease-out ${summaryCollapsed ? "max-h-0 opacity-0" : "max-h-[24dvh] opacity-100"}`}>
           <div className="px-2 pt-1.5 text-[10px] font-semibold text-ink-300">
-            {movingJoints.length === 0 ? "Neutral pose" : `${movingJoints.length} joint${movingJoints.length === 1 ? "" : "s"} moving`}
+            {summaryJoints.length === 0 ? "Neutral pose" : `${summaryJoints.length} joint${summaryJoints.length === 1 ? "" : "s"} moving`}
           </div>
-          {movingJoints.length === 0 ? (
+          {summaryJoints.length === 0 ? (
             <div className="px-2 py-1.5 text-[10px] leading-relaxed text-ink-600">
               No joint movement applied.
             </div>
           ) : (
             <div className="pointer-events-auto scroll-slim mt-1 flex max-h-[19dvh] min-h-0 flex-col gap-1 overflow-y-auto overscroll-contain p-1">
-              {movingJoints.map((joint) => (
+              {summaryJoints.map((joint) => (
                 <div
                   key={joint.id}
                   className="rounded border border-ink-700/35 bg-ink-900/28 px-1.5 py-1 text-left"

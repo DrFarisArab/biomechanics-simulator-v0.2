@@ -16,6 +16,7 @@ import {
   gravityMovementSupportProfileId,
   gravityMovementSupports,
   gravityMovementUsesVerticalOnlyCompensation,
+  gravityMovementIsScapular,
 } from "@/lib/gravityMovements";
 import { ALL_RIG_BONE_NAMES, applyRigPose, type RigPoseRefs } from "@/lib/rigPose";
 import { getDracoLoader } from "@/lib/dracoLoader";
@@ -78,6 +79,11 @@ export function GravityConstraintLayer() {
   const verticalOnly = gravityMovementUsesVerticalOnlyCompensation(gravityMovement);
   const pinSupportPositions = gravityMovementPinsSupportPositions(gravityMovement);
   const effectiveStanceLeg = gravityMovementStanceLeg(gravityMovement) ?? stanceLeg;
+  // Scapular movements pose the shoulder girdle but must not trigger a
+  // whole-body balance solve — disabling the solver here still lets the pose
+  // render (solveGravityConstraints applies the pose regardless) while
+  // returning a zero compensation/offset, so the body stays planted.
+  const scapularMovement = gravityMovementIsScapular(gravityMovement);
 
   useMemo(() => {
     const bones: RigPoseRefs["bones"] = {};
@@ -90,6 +96,10 @@ export function GravityConstraintLayer() {
       pelvisRestPosition: bones.pelvis?.position.clone() ?? null,
       hipLocalOffsets: { left: bones.thighL?.position.clone(), right: bones.thighR?.position.clone() },
       jawRestPosition: bones.jaw?.position.clone() ?? null,
+      scapulaRestPositions: {
+        left: bones.scapulaL?.position.clone(),
+        right: bones.scapulaR?.position.clone(),
+      },
     };
   }, [scene]);
 
@@ -103,7 +113,7 @@ export function GravityConstraintLayer() {
     const applyPose = (workingAngles: Record<string, Record<string, number>>) =>
       applyRigPose(poseRef.current, workingAngles, effectiveStanceLeg);
     const next = solveGravityConstraints({
-      enabled: gravityEnabled,
+      enabled: gravityEnabled && !scapularMovement,
       supportProfileId,
       supports,
       angles: movementAngles,
@@ -131,7 +141,7 @@ export function GravityConstraintLayer() {
       setGravitySolution(next);
     }
     invalidate(2);
-  }, [effectiveStanceLeg, gravityEnabled, invalidate, lastEdited, lockedDofs, movementAngles, pinSupportPositions, rootPosition, rootRotation, setGravitySolution, supportProfileId, supports, verticalOnly]);
+  }, [effectiveStanceLeg, gravityEnabled, invalidate, lastEdited, lockedDofs, movementAngles, pinSupportPositions, rootPosition, rootRotation, scapularMovement, setGravitySolution, supportProfileId, supports, verticalOnly]);
 
   useFrame(() => {
     const root = rigRootRef.current;

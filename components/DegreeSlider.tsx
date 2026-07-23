@@ -45,12 +45,14 @@ export function DegreeSlider({
   value,
   min,
   max,
+  step = 1,
   disabled = false,
   onChange,
 }: {
   value: number;
   min: number;
   max: number;
+  step?: number;
   disabled?: boolean;
   onChange: (next: number) => void;
 }) {
@@ -69,8 +71,8 @@ export function DegreeSlider({
         <button
           type="button"
           disabled={disabled || value <= min}
-          onClick={() => onChange(clamp(value - 1))}
-          aria-label="Decrease by 1°"
+          onClick={() => onChange(clamp(value - step))}
+          aria-label="Decrease"
           className="grid h-6 w-6 shrink-0 place-items-center rounded border border-ink-600 bg-ink-800 text-[13px] font-semibold leading-none text-ink-300 transition hover:border-brand-600/60 hover:text-brand-300 active:bg-ink-700 disabled:cursor-not-allowed disabled:opacity-30 disabled:hover:border-ink-600 disabled:hover:text-ink-300"
         >
           −
@@ -82,7 +84,7 @@ export function DegreeSlider({
             className="degree-range"
             min={min}
             max={max}
-            step={1}
+            step={step}
             value={value}
             disabled={disabled}
             onChange={(e) => onChange(Number(e.target.value))}
@@ -104,8 +106,8 @@ export function DegreeSlider({
         <button
           type="button"
           disabled={disabled || value >= max}
-          onClick={() => onChange(clamp(value + 1))}
-          aria-label="Increase by 1°"
+          onClick={() => onChange(clamp(value + step))}
+          aria-label="Increase"
           className="grid h-6 w-6 shrink-0 place-items-center rounded border border-ink-600 bg-ink-800 text-[13px] font-semibold leading-none text-ink-300 transition hover:border-brand-600/60 hover:text-brand-300 active:bg-ink-700 disabled:cursor-not-allowed disabled:opacity-30 disabled:hover:border-ink-600 disabled:hover:text-ink-300"
         >
           +

@@ -217,7 +217,9 @@ export function Sidebar() {
             <div className="mb-1 flex items-baseline justify-between gap-2">
               <div className="text-[12px] font-medium text-ink-200">{movement.controlLabel}</div>
               <div className="shrink-0 font-mono text-[12px] tabular-nums text-brand-400">
-                {Math.round(gravityMovement.amount)}°
+                {movement.unit === "cm"
+                  ? `${gravityMovement.amount.toFixed(1)} cm`
+                  : `${Math.round(gravityMovement.amount)}°`}
               </div>
             </div>
             <div className="mb-1.5 text-[10px] leading-relaxed text-ink-500">{movement.summary}</div>
@@ -225,6 +227,7 @@ export function Sidebar() {
               value={gravityMovement.amount}
               min={0}
               max={movement.max}
+              step={movement.unit === "cm" ? 0.5 : 1}
               onChange={setGravityMovementAmount}
             />
           </section>

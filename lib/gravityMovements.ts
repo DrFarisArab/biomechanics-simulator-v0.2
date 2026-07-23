@@ -1,8 +1,33 @@
 import type { StanceLeg } from "./stanceMode";
 import type { PoseSupport } from "./gravityMode";
 
-export type GravityMovementId = "squat" | "lunge" | "hip_hike" | "calf_raise" | "bow_forward";
+export type GravityMovementId =
+  | "squat"
+  | "lunge"
+  | "hip_hike"
+  | "calf_raise"
+  | "bow_forward"
+  | "scap_elevation"
+  | "scap_depression"
+  | "scap_retraction"
+  | "scap_protraction"
+  | "scap_upward_rot"
+  | "scap_downward_rot";
 export type GravityMovementSide = "left" | "right";
+
+// The scapular movements are upper-body demonstrations, not ground-contact
+// closed-chain movements — they share the same panel/slider infrastructure
+// but bypass the balance solver (moving the scapulae/arms shifts COM only
+// trivially, and we don't want the whole body drifting to compensate). See
+// gravityMovementIsScapular + GravityConstraintLayer's `enabled` gate.
+export const SCAPULAR_MOVEMENT_IDS: GravityMovementId[] = [
+  "scap_elevation",
+  "scap_depression",
+  "scap_retraction",
+  "scap_protraction",
+  "scap_upward_rot",
+  "scap_downward_rot",
+];
 
 export type GravityMovementState = {
   id: GravityMovementId;
@@ -17,6 +42,10 @@ export type GravityMovementDefinition = {
   max: number;
   summary: string;
   sideLabel?: string;
+  // Slider unit — degrees for rotations (default), centimetres for the
+  // translational scapular glides (elevation/depression), which are a
+  // superior/inferior slide of the scapula on the thorax, not an angle.
+  unit?: "deg" | "cm";
 };
 
 export const DEFAULT_GRAVITY_MOVEMENT: GravityMovementState = {
@@ -62,6 +91,57 @@ export const GRAVITY_MOVEMENTS: GravityMovementDefinition[] = [
     controlLabel: "Forward bend",
     max: 100,
     summary: "Standing forward trunk flexion with feet fixed on the floor",
+  },
+  // --- Scapulothoracic movements (bilateral) --------------------------------
+  // ROM maxima are clinical scapular values: elevation/depression are the
+  // superior/inferior glide of the scapula on the thorax (measured as
+  // translation, ~5 cm up / ~2.5 cm down in a healthy shrug); protraction/
+  // retraction are the horizontal swing around the rib cage; upward rotation
+  // reaches ~60° through full arm elevation while downward rotation from rest
+  // is comparatively limited (~20°). Both scapulae move together.
+  {
+    id: "scap_elevation",
+    label: "Elevation",
+    controlLabel: "Scapular elevation",
+    max: 5,
+    unit: "cm",
+    summary: "Bilateral scapular elevation (shrug) — superior glide on the thorax",
+  },
+  {
+    id: "scap_depression",
+    label: "Depression",
+    controlLabel: "Scapular depression",
+    max: 2.5,
+    unit: "cm",
+    summary: "Bilateral scapular depression — inferior glide on the thorax",
+  },
+  {
+    id: "scap_retraction",
+    label: "Retraction",
+    controlLabel: "Scapular retraction",
+    max: 25,
+    summary: "Bilateral retraction — scapulae drawn medially toward the spine",
+  },
+  {
+    id: "scap_protraction",
+    label: "Protraction",
+    controlLabel: "Scapular protraction",
+    max: 40,
+    summary: "Bilateral protraction — scapulae drawn forward around the rib cage",
+  },
+  {
+    id: "scap_upward_rot",
+    label: "Upward Rotation",
+    controlLabel: "Upward rotation",
+    max: 60,
+    summary: "Bilateral upward rotation — glenoid turns to face upward",
+  },
+  {
+    id: "scap_downward_rot",
+    label: "Downward Rotation",
+    controlLabel: "Downward rotation",
+    max: 20,
+    summary: "Bilateral downward rotation — glenoid turns to face downward",
   },
 ];
 
@@ -123,6 +203,19 @@ function movementTargets(state: GravityMovementState): Record<string, Record<str
       [`hip_${state.side}`]: { abdAdd: Math.min(20, amount * 1.2) },
     };
   }
+
+  // Scapular movements drive a single `scapula` pseudo-joint consumed by
+  // applyScapularRhythm (scapularRhythm.ts). elevDep is a signed centimetre
+  // glide (superior +), protRet a signed degree swing (protraction +),
+  // upDownRot a signed degree rotation (upward +) — the slider is always a
+  // positive 0→max amount, so the depression/retraction/downward buttons
+  // negate it here to point their shared axis the other way.
+  if (state.id === "scap_elevation") return { scapula: { elevDep: amount } };
+  if (state.id === "scap_depression") return { scapula: { elevDep: -amount } };
+  if (state.id === "scap_protraction") return { scapula: { protRet: amount } };
+  if (state.id === "scap_retraction") return { scapula: { protRet: -amount } };
+  if (state.id === "scap_upward_rot") return { scapula: { upDownRot: amount } };
+  if (state.id === "scap_downward_rot") return { scapula: { upDownRot: -amount } };
 
   if (state.id === "bow_forward") {
     return {
@@ -206,4 +299,12 @@ export function gravityMovementUsesVerticalOnlyCompensation(state: GravityMoveme
 
 export function gravityMovementPinsSupportPositions(state: GravityMovementState) {
   return state.amount >= 0.5 && state.id === "bow_forward";
+}
+
+// Scapulothoracic movements are upper-body only: they pose the scapulae (and
+// the arms that ride on them) but must not trigger the whole-body balance
+// solve — GravityConstraintLayer gates the solver's `enabled` on this so the
+// body stays put while the shoulder girdle moves.
+export function gravityMovementIsScapular(state: GravityMovementState) {
+  return SCAPULAR_MOVEMENT_IDS.includes(state.id);
 }

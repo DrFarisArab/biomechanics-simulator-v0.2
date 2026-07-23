@@ -3,7 +3,7 @@ import { applyArmPose, ARM_BONE_NAMES } from "./armDofs";
 import { applyTrunkPose, TRUNK_BONE_NAMES } from "./trunkDofs";
 import { applyLegPose, LEG_BONE_NAMES } from "./legDofs";
 import { applyMandiblePose, MANDIBLE_BONE_NAMES } from "./mandibleDofs";
-import { applyScapularRhythm } from "./scapularRhythm";
+import { applyScapularRhythm, type ScapularCouplingRefs } from "./scapularRhythm";
 import { computePelvisPivotOffset, stanceLegRotationCorrection, type StanceLeg } from "./stanceMode";
 import { lumbopelvicTiltDeg } from "./lumbopelvicRhythm";
 
@@ -17,6 +17,8 @@ export type RigPoseRefs = {
   pelvisRestPosition: THREE.Vector3 | null;
   hipLocalOffsets: { left?: THREE.Vector3; right?: THREE.Vector3 };
   jawRestPosition: THREE.Vector3 | null;
+  scapulaRestPositions?: { left?: THREE.Vector3; right?: THREE.Vector3 };
+  scapularCouplingRefs?: ScapularCouplingRefs;
 };
 
 export function applyRigPose(
@@ -42,7 +44,13 @@ export function applyRigPose(
     }
   }
 
-  applyScapularRhythm(pose.bones, pose.restQuats, angles);
+  applyScapularRhythm(
+    pose.bones,
+    pose.restQuats,
+    angles,
+    pose.scapulaRestPositions,
+    pose.scapularCouplingRefs
+  );
 
   const pelvis = pose.bones.pelvis;
   if (pelvis && pose.pelvisRestPosition) {

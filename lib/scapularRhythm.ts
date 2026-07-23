@@ -68,11 +68,127 @@ export function scapularReductionDeg(dofId: "abdAdd" | "flexExt", degrees: numbe
   return scapUpwardDeg(magnitude) * ST_FLEX_SHARE;
 }
 
+// Sign of the protraction swing per side, about the body's vertical axis, so
+// that a POSITIVE `scapula.protRet` draws BOTH glenoids forward around the
+// rib cage (protraction) and a negative value draws them back (retraction).
+// Verified live against the loaded rig — flip a value here if a side swings
+// the wrong way.
+const PROTRACTION_SIGN = { left: -1, right: 1 } as const;
+
+const WORLD_UP = new THREE.Vector3(0, 1, 0);
+const WORLD_FORWARD = new THREE.Vector3(0, 0, 1);
+const _parentQuat = new THREE.Quaternion();
+const _parentQuatInv = new THREE.Quaternion();
+const _swing = new THREE.Quaternion();
+const _swingLocal = new THREE.Quaternion();
+const _glide = new THREE.Vector3();
+const _clavicleDelta = new THREE.Quaternion();
+const _clavicleOffset = new THREE.Vector3();
+const _clavicleMovedLateral = new THREE.Vector3();
+const _parentWorldQuat = new THREE.Quaternion();
+const _parentWorldQuatInv = new THREE.Quaternion();
+const _worldAnchor = new THREE.Vector3();
+const _worldLateral = new THREE.Vector3();
+const _worldAxis = new THREE.Vector3();
+
+export type ScapularCouplingRef = {
+  object: THREE.Object3D;
+  restPosition: THREE.Vector3;
+  restQuaternion: THREE.Quaternion;
+  restScale: THREE.Vector3;
+  anchor: THREE.Vector3;
+  lateral: THREE.Vector3;
+  rotationAxis: THREE.Vector3;
+};
+
+export type ScapularCouplingRefs = { left?: ScapularCouplingRef; right?: ScapularCouplingRef };
+
+/** Capture the static clavicle meshes used by the atlas export. They are not
+ * armature joints, so the shoulder-girdle motion must pose them explicitly.
+ * The medial endpoint is anchored to the manubrium; the opposite endpoint is
+ * used to carry the scapula during elevation/depression. */
+export function captureScapularCouplingRefs(scene: THREE.Object3D): ScapularCouplingRefs {
+  scene.updateMatrixWorld(true);
+  const manubrium = scene.getObjectByName("Manubrium of sternum");
+  if (!manubrium) return {};
+  const sternumBox = new THREE.Box3().setFromObject(manubrium);
+  const sternumCenter = sternumBox.getCenter(new THREE.Vector3());
+  const refs: ScapularCouplingRefs = {};
+
+  for (const side of ["left", "right"] as const) {
+    const object = scene.getObjectByName(side === "left" ? "Clavicle.l" : "Clavicle.r");
+    if (!object) continue;
+    const box = new THREE.Box3().setFromObject(object);
+    const medialX = side === "left" ? box.min.x : box.max.x;
+    const lateralX = side === "left" ? box.max.x : box.min.x;
+    _worldAnchor.set(
+      medialX,
+      THREE.MathUtils.clamp(sternumCenter.y, box.min.y, box.max.y),
+      THREE.MathUtils.clamp(sternumCenter.z, box.min.z, box.max.z)
+    );
+    _worldLateral.set(lateralX, _worldAnchor.y, _worldAnchor.z);
+    const parent = object.parent ?? scene;
+    parent.updateWorldMatrix(true, false);
+    parent.getWorldQuaternion(_parentWorldQuat);
+    _parentWorldQuatInv.copy(_parentWorldQuat).invert();
+    const anchor = parent.worldToLocal(_worldAnchor.clone());
+    const lateral = parent.worldToLocal(_worldLateral.clone());
+    _worldAxis.copy(WORLD_FORWARD).applyQuaternion(_parentWorldQuatInv).normalize();
+    refs[side] = {
+      object,
+      restPosition: object.position.clone(),
+      restQuaternion: object.quaternion.clone(),
+      restScale: object.scale.clone(),
+      anchor,
+      lateral,
+      rotationAxis: _worldAxis.clone(),
+    };
+  }
+  return refs;
+}
+
+function applyClavicleCoupling(ref: ScapularCouplingRef, elevationCm: number) {
+  ref.object.position.copy(ref.restPosition);
+  ref.object.quaternion.copy(ref.restQuaternion);
+  ref.object.scale.copy(ref.restScale);
+  if (!elevationCm) return;
+
+  const length = Math.max(0.001, ref.anchor.distanceTo(ref.lateral));
+  const angle = Math.atan2(elevationCm / 100, length);
+  const sideSign = ref.lateral.x > ref.anchor.x ? 1 : -1;
+  _clavicleDelta.setFromAxisAngle(ref.rotationAxis, angle * sideSign);
+  _clavicleOffset.copy(ref.restPosition).sub(ref.anchor).applyQuaternion(_clavicleDelta);
+  ref.object.position.copy(ref.anchor).add(_clavicleOffset);
+  ref.object.quaternion.copy(_clavicleDelta).multiply(ref.restQuaternion);
+}
+
+/**
+ * Drives the scapula bones. Two independent contributions are composed:
+ *
+ *  1. Scapulohumeral rhythm — the scapula's automatic upward rotation that
+ *     tracks the shoulder's own abduction/flexion/scaption (unchanged; this
+ *     is what every normal shoulder pose relies on).
+ *  2. An OPTIONAL explicit scapular pose (`angles.scapula`), used by the
+ *     closed-chain scapular movements (gravityMovements.ts). Present only
+ *     while one of those movements is dialled in, so ordinary posing is
+ *     completely unaffected — the block is skipped when the key is absent.
+ *
+ * Upward/downward rotation reuses the SAME frontal-plane (local-Z) mechanism
+ * as the rhythm, so the two just add. Protraction/retraction and elevation/
+ * depression have no local-axis equivalent (the scapula bone's rest frame is
+ * heavily tilted, so its local axes don't line up with the body planes), so
+ * they're expressed in the body/world frame and converted into the bone's
+ * parent space — a rotation about world-up for the horizontal swing, and a
+ * superior/inferior translation for the glide.
+ */
 export function applyScapularRhythm(
   bones: Record<string, THREE.Object3D | undefined>,
   restQuats: Record<string, THREE.Quaternion | undefined>,
-  angles: Record<string, Record<string, number> | undefined>
+  angles: Record<string, Record<string, number> | undefined>,
+  scapulaRestPositions?: { left?: THREE.Vector3; right?: THREE.Vector3 },
+  couplingRefs?: ScapularCouplingRefs
 ) {
+  const scap = angles.scapula;
   for (const side of ["left", "right"] as const) {
     const boneName = side === "left" ? "scapulaL" : "scapulaR";
     const bone = bones[boneName];
@@ -80,11 +196,14 @@ export function applyScapularRhythm(
     if (!bone || !rest) continue;
 
     const shoulder = angles[`shoulder_${side}`];
-    const upwardDeg = scapularContributionDeg(
+    let upwardDeg = scapularContributionDeg(
       shoulder?.abdAdd ?? 0,
       shoulder?.flexExt ?? 0,
       shoulder?.scaption_out ?? 0
     );
+    // Explicit upward (+) / downward (−) rotation rides the same axis.
+    if (scap) upwardDeg += scap.upDownRot ?? 0;
+
     // frontal-plane axis (z), sign mirrored L/R same as every other paired
     // frontal DOF in this rig (left=-1, right=+1) — same sign convention
     // as shoulder_*.abdAdd, since scapula and upper_arm share the same
@@ -94,5 +213,49 @@ export function applyScapularRhythm(
       new THREE.Euler(0, 0, THREE.MathUtils.degToRad(upwardDeg * sign), "XYZ")
     );
     bone.quaternion.copy(rest).multiply(delta);
+
+    const restPos = side === "left" ? scapulaRestPositions?.left : scapulaRestPositions?.right;
+    if (restPos) bone.position.copy(restPos);
+
+    const protRet = scap?.protRet ?? 0;
+    const elevDep = scap?.elevDep ?? 0;
+    const coupling = couplingRefs?.[side];
+    if (coupling) applyClavicleCoupling(coupling, elevDep);
+    if (!protRet && !elevDep) continue;
+
+    // Both the horizontal swing and the vertical glide are defined in the
+    // body/world frame, so convert through the parent's world orientation.
+    const parent = bone.parent;
+    if (parent) {
+      parent.updateWorldMatrix(true, false);
+      parent.getWorldQuaternion(_parentQuat);
+    } else {
+      _parentQuat.identity();
+    }
+    _parentQuatInv.copy(_parentQuat).invert();
+
+    if (protRet) {
+      // World-up rotation, conjugated into parent space, then pre-multiplied
+      // onto the bone's current (rhythm+rotation) local quaternion.
+      _swing.setFromAxisAngle(
+        WORLD_UP,
+        THREE.MathUtils.degToRad(protRet * PROTRACTION_SIGN[side])
+      );
+      _swingLocal.copy(_parentQuatInv).multiply(_swing).multiply(_parentQuat);
+      bone.quaternion.premultiply(_swingLocal);
+    }
+
+    if (elevDep && restPos) {
+      // Carry the scapula from the clavicle's lateral endpoint. This keeps
+      // the shoulder girdle coupled to the sternoclavicular anchor instead
+      // of translating the scapula independently through the clavicle.
+      if (coupling) {
+        _clavicleMovedLateral.copy(coupling.lateral).sub(coupling.anchor).applyQuaternion(_clavicleDelta).add(coupling.anchor);
+        _glide.copy(_clavicleMovedLateral).sub(coupling.lateral).applyQuaternion(_parentQuatInv);
+      } else {
+        _glide.copy(WORLD_UP).multiplyScalar(elevDep / 100).applyQuaternion(_parentQuatInv);
+      }
+      bone.position.copy(restPos).add(_glide);
+    }
   }
 }

@@ -21,7 +21,7 @@ const MODEL_URLS = {
   // Bones + all muscles bound so far (arms + trunk) together, same unified
   // rig — exported combined so the skeleton is visible for reference under
   // the muscles, not muscles floating with nothing underneath.
-  muscles: "/models/v2-body-full.glb",
+  muscles: "/models/v2-body-musclelbone-combined.glb",
 } as const;
 
 // Rest-pose local point the camera should orbit around AND frame the view
