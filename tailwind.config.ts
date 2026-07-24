@@ -25,6 +25,13 @@ const config: Config = {
         ink: themedScale("ink"),
         brand: themedScale("brand"),
         danger: themedScale("danger"),
+        // Single saturated accent (NOT part of the muted brand scale — see
+        // globals.css's --warm) reserved for "this is the selected option"
+        // states. The brand scale is deliberately soft/low-contrast (calming
+        // clinic palette), which made selected chips hard to spot at a
+        // glance, especially in dark mode. `warm` stays a consistently
+        // punchy orange across every theme/mode combination instead.
+        warm: "rgb(var(--warm) / <alpha-value>)",
       },
     },
   },

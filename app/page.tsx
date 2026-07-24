@@ -91,7 +91,7 @@ export default function Home() {
               <path d="M3 6h14M3 10h14M3 14h14" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
             </svg>
           </button>
-          <div className="truncate text-[13px] font-semibold tracking-tight">3D PhysioMotion</div>
+          <div className="truncate text-[13px] font-semibold tracking-tight">SukonMed 3D Diagno</div>
           <div className="ml-2 shrink-0 text-[10px] font-medium uppercase tracking-wide text-ink-400">HBS</div>
         </div>
         <Toolbar />

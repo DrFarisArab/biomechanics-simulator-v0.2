@@ -5,6 +5,7 @@ import * as THREE from "three";
 import { Canvas, useThree, type ThreeEvent } from "@react-three/fiber";
 import { OrbitControls, Grid, GizmoHelper, GizmoViewport, useProgress } from "@react-three/drei";
 import { BodyModel } from "./BodyModel";
+import { TherapistHand } from "./TherapistHand";
 import { SkinOverlay } from "./SkinOverlay";
 import { GravityConstraintLayer } from "./GravityConstraintLayer";
 import { ClipPlaybackDriver } from "./ClipPlaybackDriver";
@@ -13,6 +14,7 @@ import { Chair } from "./furniture/Chair";
 import { Bed } from "./furniture/Bed";
 import { useArmSimStore } from "@/lib/store";
 import { useRecordReplayStore } from "@/lib/recordReplayStore";
+import { useHandEditorStore } from "@/lib/handEditorStore";
 import { useThemeStore } from "@/lib/themeStore";
 import { getBrand500, getGridColors, getInk950 } from "@/lib/themeColors";
 
@@ -111,6 +113,9 @@ export function Scene() {
   // Clip/preview playback is the one case that needs a continuous loop, so
   // flip back to "always" only while a clip is actually playing.
   const isAnimating = useRecordReplayStore((s) => s.isPlaying || s.previewPlaying);
+  // The hand-placement editor drives a drag gizmo; keep the loop live while
+  // it's open so dragging/rotating stays smooth (on-demand would stutter).
+  const isEditingHands = useHandEditorStore((s) => s.editingTestId !== null);
 
   // Startup warm-up: render continuously until the async GLBs have finished
   // loading (drei's useProgress tracks the three loading manager), then a
@@ -162,7 +167,7 @@ export function Scene() {
         // final rendered frame lets MediaRecorder encode the actual model
         // pixels instead of a cleared WebGL buffer.
         gl={{ alpha: false, preserveDrawingBuffer: true }}
-        frameloop={isAnimating || !warmupDone ? "always" : "demand"}
+        frameloop={isAnimating || isEditingHands || !warmupDone ? "always" : "demand"}
         className="!bg-ink-950"
       >
         <color attach="background" args={[background]} />
@@ -172,6 +177,7 @@ export function Scene() {
         <Suspense fallback={null}>
           <GravityConstraintLayer />
           <BodyModel key={appearance} modelUrl={MODEL_URLS[appearance]} />
+          <TherapistHand />
           {showSkin && <SkinOverlay />}
           {furniture === "chair" && <Chair />}
           {furniture === "bed" && <Bed rotationY={furnitureRotation} />}

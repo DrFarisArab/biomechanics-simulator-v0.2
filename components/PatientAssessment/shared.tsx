@@ -35,17 +35,20 @@ export function ChipButton({
       onClick={onClick}
       className={`flex items-center gap-1.5 rounded-md border px-2 py-1.5 text-left text-[11px] font-medium transition ${
         checked
-          ? "border-brand-600/60 bg-brand-900/25 text-brand-400"
+          ? "border-warm bg-warm text-ink-950 font-semibold"
           : "border-ink-700 bg-ink-800/40 text-ink-300 hover:border-ink-600"
       }`}
     >
       {showCheckbox && (
         <span
           className={`grid h-3.5 w-3.5 shrink-0 place-items-center rounded-sm border ${
-            checked ? "border-brand-500 bg-brand-500" : "border-ink-600"
+            // Dark square (not brand-500) so the checkmark still reads
+            // crisply once it's sitting on the solid warm chip background
+            // above, instead of two similarly-muted tones blending together.
+            checked ? "border-ink-950 bg-ink-950" : "border-ink-600"
           }`}
         >
-          {checked && <span className="text-[9px] leading-none text-ink-950">✓</span>}
+          {checked && <span className="text-[9px] leading-none text-warm">✓</span>}
         </span>
       )}
       {children}

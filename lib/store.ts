@@ -41,6 +41,11 @@ interface ArmSimState {
   rootPosition: Vec3;
   rootRotation: Vec3;
   activePreset: string | null;
+  // The Special Test whose position is currently applied (test id, e.g. "lx1"),
+  // or null. Distinct from activePreset because several manual tests share one
+  // generic pose (e.g. anterior/posterior knee drawer both use "hooklying") —
+  // the examiner-hand overlay (TherapistHand) keys off the specific test.
+  activeSpecialTestId: string | null;
   gravitySupportProfileId: string;
   stanceLeg: StanceLeg;
   furniture: Furniture;
@@ -65,6 +70,7 @@ interface ArmSimState {
   setShowSkin: (show: boolean) => void;
   setShowJointMarkers: (show: boolean) => void;
   setShowCommandBox: (show: boolean) => void;
+  setActiveSpecialTestId: (id: string | null) => void;
   setGravityEnabled: (enabled: boolean) => void;
   setGravityMovement: (id: GravityMovementId) => void;
   setGravityMovementAmount: (amount: number) => void;
@@ -82,6 +88,7 @@ interface ArmSimState {
       furnitureRotation?: number;
       stanceLeg?: StanceLeg;
       supportProfileId?: string;
+      specialTestId?: string;
     }
   ) => void;
 }
@@ -123,6 +130,7 @@ export const useArmSimStore = create<ArmSimState>((set) => ({
   rootPosition: [0, 0, 0],
   rootRotation: [0, 0, 0],
   activePreset: null,
+  activeSpecialTestId: null,
   gravitySupportProfileId: "standing",
   stanceLeg: "none",
   furniture: "none",
@@ -147,6 +155,9 @@ export const useArmSimStore = create<ArmSimState>((set) => ({
   setShowSkin: (show) => set({ showSkin: show }),
   setShowJointMarkers: (show) => set({ showJointMarkers: show }),
   setShowCommandBox: (show) => set({ showCommandBox: show }),
+  // Show a test's examiner-hand/arrow markers without changing the pose —
+  // used for tests that have no shipped 3D position but still get placements.
+  setActiveSpecialTestId: (id) => set({ activeSpecialTestId: id }),
   setGravityEnabled: (enabled) => {
     cancelPendingGravityAmount();
     set({
@@ -206,6 +217,7 @@ export const useArmSimStore = create<ArmSimState>((set) => ({
         [jointId]: { ...s.angles[jointId], [dofId]: value },
       },
       activePreset: null,
+      activeSpecialTestId: null,
       lastEdited: { jointId, dofId },
     })),
   // Per-joint merge patch — unlike applyPose (which resets every joint to
@@ -231,6 +243,7 @@ export const useArmSimStore = create<ArmSimState>((set) => ({
       rootPosition: [0, 0, 0],
       rootRotation: [0, 0, 0],
       activePreset: null,
+      activeSpecialTestId: null,
       gravitySupportProfileId: "standing",
       stanceLeg: "none",
       furniture: "none",
@@ -247,6 +260,7 @@ export const useArmSimStore = create<ArmSimState>((set) => ({
       rootPosition: opts?.rootPosition ?? [0, 0, 0],
       rootRotation: opts?.rootRotation ?? [0, 0, 0],
       activePreset: opts?.presetId ?? null,
+      activeSpecialTestId: opts?.specialTestId ?? null,
       gravitySupportProfileId: opts?.supportProfileId ?? opts?.presetId ?? "standing",
       furniture: opts?.furniture ?? "none",
       furnitureRotation: opts?.furnitureRotation ?? 0,

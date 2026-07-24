@@ -459,3 +459,23 @@ body {
   border-color: rgb(var(--ink-700));
   box-shadow: none;
 }
+
+/* ---------------------------------------------------------------------
+   Universal button click/tap feedback. Every <button> gets a brief
+   brand-tinted highlight ring plus a slight press on :active, so a click
+   is always visibly acknowledged — matters on the touch / Android build
+   where there is no hover state. Uses filter + box-shadow (not
+   background) so it layers over each button's own colour instead of
+   overriding it. Skips disabled buttons. Buttons that already carry a
+   Tailwind `transition` animate it smoothly; the rest snap, which still
+   reads as responsive.
+   --------------------------------------------------------------------- */
+button {
+  -webkit-tap-highlight-color: transparent;
+}
+
+button:not(:disabled):active {
+  filter: brightness(1.15);
+  transform: scale(0.97);
+  box-shadow: 0 0 0 2px rgb(var(--brand-500) / 0.75);
+}

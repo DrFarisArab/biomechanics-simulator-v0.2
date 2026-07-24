@@ -16,7 +16,7 @@ const geistMono = localFont({
 });
 
 export const metadata: Metadata = {
-  title: "3D PhysioMotion",
+  title: "SukonMed 3D Diagno",
   description: "Human Biomechanics Simulator",
 };
 

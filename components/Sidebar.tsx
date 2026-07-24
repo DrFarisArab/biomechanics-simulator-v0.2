@@ -178,7 +178,7 @@ export function Sidebar() {
                     onClick={() => setGravityMovement(item.id)}
                     className={`min-h-9 rounded-md border px-2 py-2 text-[12px] font-medium leading-tight transition ${
                       active
-                        ? "border-brand-600/70 bg-brand-900/30 text-brand-300"
+                        ? "border-warm bg-warm text-ink-950 font-semibold"
                         : "border-ink-700 bg-ink-800/40 text-ink-300 hover:border-ink-600 hover:bg-ink-800"
                     }`}
                   >
@@ -202,7 +202,7 @@ export function Sidebar() {
                     onClick={() => setGravityMovementSide(side)}
                     className={`flex-1 rounded border px-2 py-1.5 text-[11px] font-medium capitalize transition ${
                       gravityMovement.side === side
-                        ? "border-brand-600/60 bg-brand-900/25 text-brand-400"
+                        ? "border-warm bg-warm text-ink-950 font-semibold"
                         : "border-ink-700 text-ink-400 hover:text-ink-200"
                     }`}
                   >
@@ -291,7 +291,7 @@ export function Sidebar() {
                       onBlur={() => hoverJoint(null)}
                       className={`flex h-9 items-center justify-between gap-2 rounded-md border px-2.5 text-left transition ${
                         isHovered
-                          ? "border-brand-600/70 bg-brand-900/30 text-brand-200"
+                          ? "border-warm bg-warm text-ink-950 font-semibold"
                           : "border-ink-700 bg-ink-800/40 text-ink-200 hover:border-ink-600 hover:bg-ink-800"
                       }`}
                     >
@@ -374,7 +374,7 @@ export function Sidebar() {
                 onClick={() => setStanceLeg(opt.id)}
                 className={`flex-1 rounded border px-1.5 py-1 text-[11px] font-medium transition ${
                   stanceLeg === opt.id
-                    ? "border-brand-600/60 bg-brand-900/25 text-brand-400"
+                    ? "border-warm bg-warm text-ink-950 font-semibold"
                     : "border-ink-700 text-ink-400 hover:text-ink-200"
                 }`}
               >

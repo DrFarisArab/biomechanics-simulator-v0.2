@@ -99,9 +99,42 @@ export type ScapularCouplingRef = {
   anchor: THREE.Vector3;
   lateral: THREE.Vector3;
   rotationAxis: THREE.Vector3;
+  // World orientation of the clavicle's OWN parent at capture time. The
+  // scapula's glide vector below is derived from the clavicle's rest-frame
+  // motion but has to be applied in the SCAPULA's parent frame (an
+  // articulating spine bone, thoracic_v11 — a different object than the
+  // clavicle's parent, the static rig root). World space is the only frame
+  // both agree on, so this is the hop used to get from one to the other.
+  parentWorldQuat: THREE.Quaternion;
 };
 
 export type ScapularCouplingRefs = { left?: ScapularCouplingRef; right?: ScapularCouplingRef };
+
+// three.js's GLTFLoader runs every node/mesh name through
+// PropertyBinding.sanitizeNodeName (spaces -> "_", reserved characters like
+// "." stripped outright) to build unique animation-safe names — so the
+// literal export names baked into the .glb ("Clavicle.l", "Manubrium of
+// sternum") never survive into the loaded scene as-is (they come out
+// "Claviclel", "Manubrium_of_sternum"). Matching by exact string here silently
+// found nothing, `captureScapularCouplingRefs` returned {}, and every caller
+// treated that as "no coupling available" — which is why scapular elevation/
+// depression was translating the scapula in a straight line with no clavicle
+// rotation at all. Comparing on a stripped-down alphanumeric form survives
+// that sanitization (and anything else that mangles names the same way)
+// instead of hard-coding the sanitized spelling, which would just be
+// fragile in the same way for the next rename.
+function normalizeName(name: string): string {
+  return name.replace(/[^a-zA-Z0-9]/g, "").toLowerCase();
+}
+
+function findByNormalizedName(root: THREE.Object3D, targetName: string): THREE.Object3D | undefined {
+  const target = normalizeName(targetName);
+  let found: THREE.Object3D | undefined;
+  root.traverse((child) => {
+    if (!found && normalizeName(child.name) === target) found = child;
+  });
+  return found;
+}
 
 /** Capture the static clavicle meshes used by the atlas export. They are not
  * armature joints, so the shoulder-girdle motion must pose them explicitly.
@@ -109,14 +142,14 @@ export type ScapularCouplingRefs = { left?: ScapularCouplingRef; right?: Scapula
  * used to carry the scapula during elevation/depression. */
 export function captureScapularCouplingRefs(scene: THREE.Object3D): ScapularCouplingRefs {
   scene.updateMatrixWorld(true);
-  const manubrium = scene.getObjectByName("Manubrium of sternum");
+  const manubrium = findByNormalizedName(scene, "Manubrium of sternum");
   if (!manubrium) return {};
   const sternumBox = new THREE.Box3().setFromObject(manubrium);
   const sternumCenter = sternumBox.getCenter(new THREE.Vector3());
   const refs: ScapularCouplingRefs = {};
 
   for (const side of ["left", "right"] as const) {
-    const object = scene.getObjectByName(side === "left" ? "Clavicle.l" : "Clavicle.r");
+    const object = findByNormalizedName(scene, side === "left" ? "Clavicle.l" : "Clavicle.r");
     if (!object) continue;
     const box = new THREE.Box3().setFromObject(object);
     const medialX = side === "left" ? box.min.x : box.max.x;
@@ -142,6 +175,7 @@ export function captureScapularCouplingRefs(scene: THREE.Object3D): ScapularCoup
       anchor,
       lateral,
       rotationAxis: _worldAxis.clone(),
+      parentWorldQuat: _parentWorldQuat.clone(),
     };
   }
   return refs;
@@ -250,8 +284,26 @@ export function applyScapularRhythm(
       // the shoulder girdle coupled to the sternoclavicular anchor instead
       // of translating the scapula independently through the clavicle.
       if (coupling) {
+        // The clavicle-side math above (anchor/lateral/_clavicleDelta) all
+        // lives in the CLAVICLE's own parent frame — the static rig root,
+        // captured once in captureScapularCouplingRefs. The scapula bone
+        // being positioned here hangs off `thoracic_v11`, an articulating
+        // spine bone whose world orientation changes with trunk pose, so
+        // `_parentQuatInv` (recomputed above from the scapula's actual
+        // live parent) is a DIFFERENT frame than the one this delta was
+        // just computed in. World space is the only frame both agree on:
+        // rotate the clavicle-parent-local delta out to world with the
+        // clavicle parent's (fixed) world orientation, then into the
+        // scapula parent's local space with its live one. Skipping the
+        // first hop is what let the scapula glide in the wrong direction
+        // — invisibly at rest pose, where the two frames happen to
+        // coincide, but wrong as soon as the trunk is flexed/rotated.
         _clavicleMovedLateral.copy(coupling.lateral).sub(coupling.anchor).applyQuaternion(_clavicleDelta).add(coupling.anchor);
-        _glide.copy(_clavicleMovedLateral).sub(coupling.lateral).applyQuaternion(_parentQuatInv);
+        _glide
+          .copy(_clavicleMovedLateral)
+          .sub(coupling.lateral)
+          .applyQuaternion(coupling.parentWorldQuat)
+          .applyQuaternion(_parentQuatInv);
       } else {
         _glide.copy(WORLD_UP).multiplyScalar(elevDep / 100).applyQuaternion(_parentQuatInv);
       }

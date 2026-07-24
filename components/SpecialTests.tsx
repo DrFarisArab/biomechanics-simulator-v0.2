@@ -5,6 +5,8 @@ import { useArmSimStore } from "@/lib/store";
 import { useRecordReplayStore } from "@/lib/recordReplayStore";
 import { usePoseOverrideStore } from "@/lib/poseOverrideStore";
 import { exportCorrection, deleteCorrectionFile } from "@/lib/exportCorrection";
+import { HandPlacementEditor } from "./HandPlacementEditor";
+import { AuthorPoseButton } from "./AuthorPoseButton";
 import { buildTestPreviewClip } from "@/lib/testPreviewClip";
 import { ARM_JOINT_DOFS, ARM_DOF_META } from "@/lib/armDofs";
 import { TRUNK_JOINT_DOFS, TRUNK_DOF_META } from "@/lib/trunkDofs";
@@ -78,11 +80,7 @@ export function ApplyPoseButton({ test }: { test: SpecialTest }) {
   const previewClipForTest = useMemo(() => (preset ? buildTestPreviewClip(preset) : null), [preset]);
 
   if (!preset) {
-    return (
-      <div className="rounded-md border border-dashed border-ink-700 bg-ink-800/20 px-3 py-2.5 text-[11px] leading-relaxed text-ink-400">
-        3D pose preview not yet available for this test — the reference info above is still accurate. More positions are being added over time.
-      </div>
-    );
+    return <AuthorPoseButton test={test} />;
   }
 
   const isThisPreviewPlaying = previewPlaying && previewClip?.id === previewClipForTest?.id;
@@ -91,6 +89,7 @@ export function ApplyPoseButton({ test }: { test: SpecialTest }) {
     stopPreview();
     applyPose(preset.angles, {
       presetId: preset.id,
+      specialTestId: test.id,
       supportProfileId: preset.baseId ?? preset.id,
       rootPosition: preset.rootPosition,
       rootRotation: preset.rootRotation,
@@ -113,6 +112,7 @@ export function ApplyPoseButton({ test }: { test: SpecialTest }) {
     // flash of the end pose before playback catches up to t=0.
     applyPose(preset.angles, {
       presetId: preset.id,
+      specialTestId: test.id,
       supportProfileId: preset.baseId ?? preset.id,
       rootPosition: preset.rootPosition,
       rootRotation: preset.rootRotation,
@@ -137,7 +137,7 @@ export function ApplyPoseButton({ test }: { test: SpecialTest }) {
           onClick={togglePreview}
           className={`flex w-full items-center justify-center gap-1.5 rounded-md border px-3 py-2 text-[12px] font-semibold transition ${
             isThisPreviewPlaying
-              ? "border-brand-600/60 bg-brand-900/25 text-brand-400"
+              ? "border-warm bg-warm text-ink-950 font-semibold"
               : "border-ink-700 bg-ink-800/40 text-ink-300 hover:border-ink-600"
           }`}
         >
@@ -442,7 +442,7 @@ function EditPoseView({ test, onDone }: { test: SpecialTest; onDone: () => void 
               onClick={() => selectJoint(j)}
               className={`rounded border px-2 py-1 text-[11px] font-medium transition ${
                 selectedJoint === j
-                  ? "border-brand-600/60 bg-brand-900/25 text-brand-400"
+                  ? "border-warm bg-warm text-ink-950 font-semibold"
                   : "border-ink-700 bg-ink-800/40 text-ink-300 hover:border-ink-600"
               }`}
             >
@@ -573,6 +573,8 @@ function TestDetailView({
       )}
 
       <ApplyPoseButton test={test} />
+
+      <HandPlacementEditor testId={test.id} />
 
       {hasPose && (
         <button

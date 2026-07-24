@@ -19,7 +19,7 @@ function ResultChip({ value, active, onClick }: { value: TestResult; active: boo
         active
           ? notable
             ? "border border-danger-600/60 bg-danger-900/30 text-danger-400"
-            : "border border-brand-600/60 bg-brand-900/25 text-brand-400"
+            : "border border-warm bg-warm text-ink-950 font-semibold"
           : "border border-ink-700 bg-ink-800/40 text-ink-400 hover:border-ink-600"
       }`}
     >

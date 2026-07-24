@@ -105,7 +105,7 @@ function JointPicker() {
                 aria-pressed={selected}
                 className={`rounded-md border px-2 py-2 text-left text-[11px] font-medium transition ${
                   selected
-                    ? "border-brand-600/60 bg-brand-900/25 text-brand-400"
+                    ? "border-warm bg-warm text-ink-950 font-semibold"
                     : "border-ink-700 bg-ink-800/40 text-ink-300 hover:border-ink-600"
                 }`}
               >
@@ -134,16 +134,19 @@ function JointPicker() {
                 onClick={() => toggleJoint(jointId)}
                 className={`flex items-center gap-1.5 rounded-md border px-2 py-1.5 text-left text-[11px] font-medium transition ${
                   checked
-                    ? "border-brand-600/60 bg-brand-900/25 text-brand-400"
+                    ? "border-warm bg-warm text-ink-950 font-semibold"
                     : "border-ink-700 bg-ink-800/40 text-ink-300 hover:border-ink-600"
                 }`}
               >
                 <span
                   className={`grid h-3.5 w-3.5 shrink-0 place-items-center rounded-sm border ${
-                    checked ? "border-brand-500 bg-brand-500" : "border-ink-600"
+                    // Dark square (not brand-500) so it reads crisply against
+                    // the solid warm chip background instead of two muted
+                    // tones blending together.
+                    checked ? "border-ink-950 bg-ink-950" : "border-ink-600"
                   }`}
                 >
-                  {checked && <span className="text-[9px] leading-none text-ink-950">✓</span>}
+                  {checked && <span className="text-[9px] leading-none text-warm">✓</span>}
                 </span>
                 {JOINT_LABELS[jointId]}
               </button>
@@ -185,7 +188,7 @@ function ClosedChainMovementEditor({ movementId }: { movementId: GravityMovement
                 onClick={() => setGravityMovementSide(side)}
                 className={`rounded-md border px-2 py-1.5 text-[11px] font-medium capitalize transition ${
                   gravityMovement.side === side
-                    ? "border-brand-600/60 bg-brand-900/25 text-brand-400"
+                    ? "border-warm bg-warm text-ink-950 font-semibold"
                     : "border-ink-700 bg-ink-800/40 text-ink-300 hover:border-ink-600"
                 }`}
               >
@@ -278,7 +281,7 @@ function Timeline() {
           title="Loop (plays forward, then backward, repeating)"
           aria-pressed={loop}
           className={`grid h-7 w-7 shrink-0 place-items-center rounded-md border text-[12px] transition ${
-            loop ? "border-brand-600/60 bg-brand-900/25 text-brand-400" : "border-ink-700 bg-ink-800/50 text-ink-300"
+            loop ? "border-warm bg-warm text-ink-950 font-semibold" : "border-ink-700 bg-ink-800/50 text-ink-300"
           }`}
         >
           ⇄
@@ -467,7 +470,7 @@ export function RecordReplayPanel() {
                     disabled={isExporting}
                     className={`rounded px-2 py-1 text-[10px] font-medium transition ${
                       clip.easing === e
-                        ? "border border-brand-600/60 bg-brand-900/25 text-brand-400"
+                        ? "border border-warm bg-warm text-ink-950 font-semibold"
                         : "border border-ink-700 text-ink-300 hover:text-ink-200"
                     } disabled:cursor-not-allowed disabled:opacity-50`}
                   >

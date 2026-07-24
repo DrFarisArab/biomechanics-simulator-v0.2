@@ -2,7 +2,7 @@ import type { CapacitorConfig } from "@capacitor/cli";
 
 const config: CapacitorConfig = {
   appId: "com.drfaris.physiomotion",
-  appName: "3D PhysioMotion",
+  appName: "SukonMed 3D Diagno",
   webDir: "out",
   android: {
     backgroundColor: "#0D1B2A",
